@@ -1,5 +1,8 @@
+#include "game.hpp"
 
 int main(int argc, char** argv) {
-	return 0;
+    Game game;
+    game.run();
+    return 0;
 }
 
