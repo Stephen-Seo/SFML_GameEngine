@@ -1,6 +1,6 @@
 
-#ifndef SCENENODE_HPP
-#define SCENENODE_HPP
+#ifndef SCENE_NODE_HPP
+#define SCENE_NODE_HPP
 
 #include <memory>
 #include <algorithm>
