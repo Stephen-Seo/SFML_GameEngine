@@ -40,8 +40,8 @@ void Game::processEvents()
         case sf::Event::KeyReleased:
             handlePlayerInput(event.key.code, false);
             break;
-		default:
-			break;
+        default:
+            break;
         }
     }
 }
