@@ -6,6 +6,6 @@ namespace States
     enum ID
     {
     };
-};
+}
 
 #endif

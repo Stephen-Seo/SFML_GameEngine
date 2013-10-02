@@ -5,7 +5,9 @@ LINK = -L/home/stephen/Downloads/SFML-latestish/lib -lsfml-graphics -lsfml-windo
 BINDIR = bin
 SOURCES = \
         src/game.o \
-        src/sceneNode.o
+        src/sceneNode.o \
+        src/stateStack.o \
+        src/state.o
 
 all: $(BINDIR)/2DPrimer
 

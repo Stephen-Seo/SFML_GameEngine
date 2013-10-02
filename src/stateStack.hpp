@@ -15,7 +15,7 @@ public:
     {
         Push,
         Pop,
-        Clear,
+        Clear
     };
 
     explicit StateStack(State::Context context);

@@ -1,9 +1,13 @@
 
-#ifdef STATE_HPP
+#ifndef STATE_HPP
 #define STATE_HPP
 
-#include "stateStack.hpp"
+#include <SFML/Graphics.hpp>
+
 #include "resourceHolder.hpp"
+#include "resourceIdentifiers.hpp"
+
+class StateStack;
 
 class State
 {
