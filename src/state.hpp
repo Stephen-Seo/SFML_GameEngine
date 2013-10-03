@@ -6,6 +6,7 @@
 
 #include "resourceHolder.hpp"
 #include "resourceIdentifiers.hpp"
+#include "stateIdentifiers.hpp"
 
 class StateStack;
 

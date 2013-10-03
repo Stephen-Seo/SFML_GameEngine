@@ -1,14 +1,20 @@
 
 #include "stateStack.hpp"
 
+StateStack::PendingChange::PendingChange(Action action, States::ID stateID)
+: action(action), stateID(stateID)
+{
+}
+
 StateStack::StateStack(State::Context context)
+: stack(), pendingList(), context(context), factories()
 {
 }
 
 template <class T>
-StateStack::registerState(States::ID stateID)
+void StateStack::registerState(States::ID stateID)
 {
-    mFactories[stateID] = [this] ()
+    factories[stateID] = [this] ()
     {
         return State::Ptr(new T(*this, context));
     };
@@ -16,10 +22,19 @@ StateStack::registerState(States::ID stateID)
 
 void StateStack::update(sf::Time dt)
 {
+    std::for_each(stack.begin(), stack.end(), [dt] (State::Ptr& state)
+    {
+        state->update(dt);
+    } );
+    applyPendingChanges();
 }
 
 void StateStack::draw()
 {
+    std::for_each(stack.begin(), stack.end(), [] (State::Ptr& state)
+    {
+        state->draw();
+    } );
 }
 
 void StateStack::handleEvent(const sf::Event& event)
@@ -34,18 +49,22 @@ void StateStack::handleEvent(const sf::Event& event)
 
 void StateStack::pushState(States::ID stateID)
 {
+    pendingList.push_back(PendingChange(StateStack::Push, stateID));
 }
 
 void StateStack::popState()
 {
+    pendingList.push_back(PendingChange(StateStack::Pop));
 }
 
 void StateStack::clearStates()
 {
+    pendingList.push_back(PendingChange(StateStack::Clear));
 }
 
 bool StateStack::isEmpty() const
 {
+    return stack.empty();
 }
 
 State::Ptr StateStack::createState(States::ID stateID)
@@ -57,4 +76,19 @@ State::Ptr StateStack::createState(States::ID stateID)
 
 void StateStack::applyPendingChanges()
 {
+    std::for_each(pendingList.begin(), pendingList.end(), [this] (PendingChange& change)
+    {
+        switch (change.action)
+        {
+        case Push:
+            stack.push_back(createState(change.stateID));
+            break;
+        case Pop:
+            stack.pop_back();
+            break;
+        case Clear:
+            stack.clear();
+            break;
+        }
+    } );
 }

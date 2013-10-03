@@ -2,7 +2,8 @@
 #ifndef STATE_STACK_HPP
 #define STATE_STACK_HPP
 
-//#include <SFML/NonCopyable.hpp>
+#include <cassert>
+
 #include <SFML/System.hpp>
 
 #include "state.hpp"
@@ -38,6 +39,7 @@ private:
 
     struct PendingChange
     {
+        explicit PendingChange(Action action, States::ID stateID = States::None);
         Action action;
         States::ID stateID;
     };

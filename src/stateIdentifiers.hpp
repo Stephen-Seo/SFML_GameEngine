@@ -5,6 +5,7 @@ namespace States
 {
     enum ID
     {
+        None
     };
 }
 
