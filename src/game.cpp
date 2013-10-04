@@ -2,7 +2,10 @@
 #include "game.hpp"
 
 Game::Game()
-: window(sf::VideoMode(720,480), "SFML App")
+: window(sf::VideoMode(720,480), "SFML App"),
+textureHolder(),
+fontHolder(),
+stateStack(State::Context(window, textureHolder, fontHolder))
 {
     frameTime = sf::seconds(1.f / 60.f);
 }
@@ -29,31 +32,24 @@ void Game::processEvents()
     sf::Event event;
     while (window.pollEvent(event))
     {
-        switch (event.type)
-        {
-        case sf::Event::Closed:
+        stateStack.handleEvent(event);
+        if(event.type == sf::Event::Closed)
             window.close();
-            break;
-        case sf::Event::KeyPressed:
-            handlePlayerInput(event.key.code, true);
-            break;
-        case sf::Event::KeyReleased:
-            handlePlayerInput(event.key.code, false);
-            break;
-        default:
-            break;
-        }
     }
 }
 
 void Game::update(sf::Time deltaTime)
 {
+    stateStack.update(deltaTime);
 }
 
 void Game::draw()
 {
+    window.clear();
+    stateStack.draw();
+    window.display();
 }
 
-void Game::handlePlayerInput(sf::Keyboard::Key key, bool isPressed)
+void Game::registerStates()
 {
 }

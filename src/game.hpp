@@ -5,6 +5,11 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
+#include "resourceHolder.hpp"
+#include "resourceIdentifiers.hpp"
+#include "state.hpp"
+#include "stateStack.hpp"
+
 class Game
 {
 public:
@@ -14,11 +19,15 @@ private:
     void processEvents();
     void update(sf::Time deltaTime);
     void draw();
-
-    void handlePlayerInput(sf::Keyboard::Key key, bool isPressed);
+    void registerStates();
 
     sf::RenderWindow window;
     sf::Time frameTime;
+
+    TextureHolder textureHolder;
+    FontHolder fontHolder;
+
+    StateStack stateStack;
 };
 
 #endif
