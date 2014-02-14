@@ -50,4 +50,13 @@ private:
     std::map<States::ID, std::function<State::Ptr()>> factories;
 };
 
+template <class T>
+void StateStack::registerState(States::ID stateID)
+{
+    factories[stateID] = [this] ()
+    {
+        return State::Ptr(new T(*this, context));
+    };
+}
+
 #endif

@@ -5,7 +5,9 @@ Game::Game()
 : window(sf::VideoMode(720,480), "SFML App"),
 textureHolder(),
 fontHolder(),
-stateStack(State::Context(window, textureHolder, fontHolder))
+mPlayer(),
+sPlayer(),
+stateStack(State::Context(window, textureHolder, fontHolder, mPlayer, sPlayer))
 {
     frameTime = sf::seconds(1.f / 60.f);
 }

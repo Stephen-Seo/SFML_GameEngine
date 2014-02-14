@@ -11,27 +11,19 @@ StateStack::StateStack(State::Context context)
 {
 }
 
-template <class T>
-void StateStack::registerState(States::ID stateID)
-{
-    factories[stateID] = [this] ()
-    {
-        return State::Ptr(new T(*this, context));
-    };
-}
-
 void StateStack::update(sf::Time dt)
 {
-    std::for_each(stack.begin(), stack.end(), [dt] (State::Ptr& state)
+    for(auto iter = stack.rbegin(); iter != stack.rend(); ++iter)
     {
-        state->update(dt);
-    } );
+        if(!(*iter)->update(dt))
+            break;
+    }
     applyPendingChanges();
 }
 
 void StateStack::draw()
 {
-    std::for_each(stack.begin(), stack.end(), [] (State::Ptr& state)
+    std::for_each(stack.rbegin(), stack.rend(), [] (State::Ptr& state)
     {
         state->draw();
     } );
@@ -91,4 +83,5 @@ void StateStack::applyPendingChanges()
             break;
         }
     } );
+    pendingList.clear();
 }

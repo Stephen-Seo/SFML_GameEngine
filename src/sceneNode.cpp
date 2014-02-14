@@ -31,20 +31,19 @@ void SceneNode::draw(sf::RenderTarget& target,
     states.transform *= getTransform();
 
     drawCurrent(target, states);
-/*
-    for(auto itr = children.begin(); itr != children.end(); ++itr)
-    {
-        (*itr)->draw(target, states);
-    }
-*/
-
-    std::for_each(children.begin(), children.end(),
-        [&target, &states] (const SceneNode::Ptr& child) { child->draw(target, states); });
+    drawChildren(target, states);
 }
 
 void SceneNode::drawCurrent(sf::RenderTarget& target,
                             sf::RenderStates states) const
 {}
+
+void SceneNode::drawChildren(sf::RenderTarget& target,
+                             sf::RenderStates states) const
+{
+    std::for_each(children.begin(), children.end(),
+        [&target, &states] (const SceneNode::Ptr& child) { child->draw(target, states); });
+}
 
 void SceneNode::update(sf::Time dt)
 {

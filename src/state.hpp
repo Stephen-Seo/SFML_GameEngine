@@ -7,6 +7,8 @@
 #include "resourceHolder.hpp"
 #include "resourceIdentifiers.hpp"
 #include "stateIdentifiers.hpp"
+#include "musicPlayer.hpp"
+#include "soundPlayer.hpp"
 
 class StateStack;
 
@@ -19,11 +21,15 @@ public:
     {
         Context(sf::RenderWindow& window,
                 TextureHolder& textures,
-                FontHolder& fonts);
+                FontHolder& fonts,
+                MusicPlayer& mPlayer,
+                SoundPlayer& sPlayer);
 
         sf::RenderWindow* window;
         TextureHolder* textures;
         FontHolder* fonts;
+        MusicPlayer* mPlayer;
+        SoundPlayer* sPlayer;
     };
 
     State(StateStack& stack, Context context);

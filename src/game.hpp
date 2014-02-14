@@ -27,6 +27,9 @@ private:
     TextureHolder textureHolder;
     FontHolder fontHolder;
 
+    MusicPlayer mPlayer;
+    SoundPlayer sPlayer;
+
     StateStack stateStack;
 };
 
