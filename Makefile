@@ -1,34 +1,40 @@
 CXX = g++ -W -Wall -Wextra -pedantic -std=c++0x
 CFLAGS = -c -g
-INCLUDE = 
-LINK = -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lsfml-network
+INCLUDE = -I/home/stephen/SFML2/include/
+LINK = -L/home/stephen/SFML2/shared/ -lsfml-graphics -lsfml-window -lsfml-system -lsfml-audio -lsfml-network
+BUILDDIR = build
 BINDIR = bin
+SRCDIR = src
 SOURCES = \
-        src/game.o \
-        src/sceneNode.o \
-        src/stateStack.o \
-        src/state.o \
-        src/musicPlayer.o \
-        src/soundPlayer.o
+		main.o \
+        game.o \
+        sceneNode.o \
+        stateStack.o \
+        state.o \
+        musicPlayer.o \
+        soundPlayer.o
 
-all: $(BINDIR) $(BINDIR)/2DPrimer
+all: $(BUILDDIR) $(BINDIR) $(BINDIR)/2DPrimer
 
 test: tests/UnitTests
+
+$(BUILDDIR):
+		mkdir -p $(BUILDDIR)
 
 $(BINDIR):
 		mkdir -p $(BINDIR)
 
-$(BINDIR)/2DPrimer: $(SOURCES) src/main.o
-		$(CXX) -o $(BINDIR)/2DPrimer $(SOURCES) src/main.o $(LINK) 
+$(BINDIR)/2DPrimer: $(addprefix $(BUILDDIR)/,$(SOURCES))
+		$(CXX) -o $(BINDIR)/2DPrimer $(addprefix $(BUILDDIR)/,$(SOURCES)) $(LINK) 
 
 tests/UnitTests: $(SOURCES) src/unitTests.o
 		$(CXX) -o tests/UnitTests $(SOURCES) src/UnitTests.o $(LINK)
 
-clean:		src.clean tests.clean
+clean:		$(BUILDDIR).clean tests.clean
 		rm -f $(BINDIR)/2DPrimer
 
 %.clean:
 		rm -f $*/*.o
 
-%.o:		%.cpp
-		$(CXX) $(INCLUDE) $(CFLAGS) -o $*.o $*.cpp
+%.o:		$(%.cpp:$(BUILDDIR)/=$(SRCDIR)/)
+		$(CXX) $(INCLUDE) $(CFLAGS) -o $@ $(subst $(BUILDDIR)/,$(SRCDIR)/,$*.cpp)
