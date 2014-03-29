@@ -27,8 +27,8 @@ $(BINDIR):
 $(BINDIR)/2DPrimer: $(addprefix $(BUILDDIR)/,$(SOURCES))
 		$(CXX) -o $(BINDIR)/2DPrimer $(addprefix $(BUILDDIR)/,$(SOURCES)) $(LINK) 
 
-tests/UnitTests: $(SOURCES) src/unitTests.o
-		$(CXX) -o tests/UnitTests $(SOURCES) src/UnitTests.o $(LINK)
+tests/UnitTests: $(addprefix $(BUILDDIR)/,$(SOURCES)) $(BUILDDIR)/unitTests.o
+		$(CXX) -o tests/UnitTests $(addprefix $(BUILDDIR)/,$(SOURCES)) build/UnitTests.o $(LINK)
 
 clean:		$(BUILDDIR).clean tests.clean
 		rm -f $(BINDIR)/2DPrimer
