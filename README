@@ -1,0 +1,8 @@
+To build project, make directory "build" and cd to it. Then use the commands:
+cmake ..
+make
+
+To setup Makefile with SFML-2 in a non-standard directory:
+cmake -D SFML_ROOT=${Directory} ..
+
+To set install directory, use -D CMAKE_INSTALL_PREFIX=${Directory}
