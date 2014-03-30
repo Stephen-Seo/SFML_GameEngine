@@ -8,7 +8,7 @@ list(APPEND LINKER_FLAGS "-lsfml-network")
 cmake_minimum_required(VERSION 2.6)
 project(2DPrimer)
 
-find_package(SFML)
+find_package(SFML 2)
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
