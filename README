@@ -6,3 +6,7 @@ To setup Makefile with SFML-2 in a non-standard directory:
 cmake -D SFML_ROOT=${Directory} ../src
 
 To set install directory, use -D CMAKE_INSTALL_PREFIX=${Directory}
+
+To add Eclipse project files, add the option:
+-G"Eclipse CDT4 - Unix Makefiles"
+
