@@ -9,6 +9,7 @@ mPlayer(),
 sPlayer(),
 stateStack(State::Context(window, textureHolder, fontHolder, mPlayer, sPlayer))
 {
+	registerStates();
     frameTime = sf::seconds(1.f / 60.f);
 }
 
