@@ -31,3 +31,18 @@ void MusicPlayer::setPaused(bool paused)
     else
         mMusic.play();
 }
+
+void MusicPlayer::setVolume(float volume)
+{
+	mMusic.setVolume(volume);
+}
+
+float MusicPlayer::getVolume() const
+{
+	return mMusic.getVolume();
+}
+
+sf::SoundSource::Status MusicPlayer::getStatus()
+{
+	return mMusic.getStatus();
+}
