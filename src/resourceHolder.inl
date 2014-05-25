@@ -21,6 +21,26 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id, const std::string
 }
 
 template <class Resource, class Identifier>
+void ResourceHolder<Resource, Identifier>::unload(Identifier id)
+{
+    auto found = resourceMap.find(id);
+    if(found != resourceMap.end())
+    {
+        resourceMap.erase(found);
+    }
+}
+
+template <class Resource, class Identifier>
+bool ResourceHolder<Resource, Identifier>::isLoaded(Identifier id)
+{
+    auto found = resourceMap.find(id);
+    if(found != resourceMap.end())
+        return true;
+    else
+        return false;
+}
+
+template <class Resource, class Identifier>
 Resource& ResourceHolder<Resource, Identifier>::get(Identifier id)
 {
     auto found = resourceMap.find(id);

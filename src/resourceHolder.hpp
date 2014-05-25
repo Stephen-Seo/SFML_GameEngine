@@ -16,6 +16,10 @@ public:
     template <class Parameter>
     void load(Identifier id, const std::string& filename, const Parameter& secondParam);
 
+    void unload(Identifier id);
+
+    bool isLoaded(Identifier id);
+
     Resource& get(Identifier id);
     const Resource& get(Identifier id) const;
 private:
