@@ -147,7 +147,10 @@ GuiCommand* GuiButton::update(sf::Time time)
     }
 
     if(passCommand)
-        return guiCommand;
+    {
+        passCommand = false;
+        return &guiCommand;
+    }
     else
         return NULL;
 }
@@ -247,7 +250,8 @@ void GuiSlider::processEvent(sf::Event event)
         }
     }
     else if(event.type == sf::Event::EventType::MouseButtonReleased &&
-            event.mouseButton.button == sf::Mouse::Button::Left)
+            event.mouseButton.button == sf::Mouse::Button::Left &&
+            clickedOn)
     {
         clickedOn = false;
     }
@@ -290,11 +294,17 @@ GuiCommand* GuiSlider::update(sf::Time time)
         }
     }
 
+    return returnValue();
+}
+
+GuiCommand* GuiSlider::returnValue()
+{
     if(passCommand || clickedOn)
     {
         guiCommand.type = GuiCommand::Type::VALUE_FLOAT;
         guiCommand.value.f = currentValue;
-        return guiCommand;
+        passCommand = false;
+        return &guiCommand;
     }
     else
         return NULL;
@@ -314,4 +324,155 @@ void GuiSlider::draw(sf::RenderTarget& target, sf::RenderStates states)
         target.draw(bgShape, states);
         target.draw(sliderShape, states);
     }
+}
+
+GuiIntSlider::GuiIntSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, sf::Color slider, sf::Color bg, sf::Vector2f sliderSize, sf::FloatRect sliderRect) :
+GuiSlider(window, guiCommand, currentValue, llimit, hlimit, slider, bg, sliderSize, sliderRect)
+{}
+
+GuiIntSlider::GuiIntSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, const sf::Texture& slider, const sf::Texture& bg) :
+GuiSlider(window, guiCommand, currentValue, llimit, hlimit, slider, bg)
+{}
+
+GuiCommand* GuiIntSlider::returnValue()
+{
+    if(passCommand || clickedOn)
+    {
+        guiCommand.type = GuiCommand::Type::VALUE_INT;
+        guiCommand.value.i = int(currentValue + 0.5f);
+        passCommand = false;
+        return &guiCommand;
+    }
+    else
+        return NULL;
+}
+
+GuiCheckbox::GuiCheckbox(sf::RenderWindow* window, GuiCommand guiCommand, bool initialValue, sf::Color color, sf::Vector2f size) :
+GuiObject(window, guiCommand),
+usesTexture(false),
+currentValue(initialValue),
+clickedOn(false),
+checkLines(sf::PrimitiveType::Lines, 4)
+{
+    boxShape.setFillColor(sf::Color::Transparent);
+    boxShape.setOutlineColor(color);
+    boxShape.setOutlineThickness(3.0f);
+    boxShape.setSize(size);
+
+    checkLines[0].position = sf::Vector2f(0.0f, 0.0f);
+    checkLines[1].position = sf::Vector2f(size.x, size.y);
+    checkLines[2].position = sf::Vector2f(size.x, 0.0f);
+    checkLines[3].position = sf::Vector2f(0.0f, size.y);
+
+    for(int i = 0; i < 4; ++i)
+        checkLines[i].color = color;
+}
+
+GuiCheckbox::GuiCheckbox(sf::RenderWindow* window, GuiCommand guiCommand, bool initialValue, const sf::Texture& box, const sf::Texture& check) :
+GuiObject(window, guiCommand),
+usesTexture(true),
+currentValue(initialValue),
+clickedOn(false),
+boxSprite(box),
+checkSprite(check)
+{}
+
+void GuiCheckbox::processEvent(sf::Event event)
+{
+    if(event.type == sf::Event::EventType::MouseButtonPressed &&
+       event.mouseButton.button == sf::Mouse::Button::Left)
+    {
+        sf::Vector2f coords = window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x,event.mouseButton.y));
+        coords = getInverseTransform().transformPoint(coords);
+
+        if(usesTexture)
+        {
+            if(coords.x >= 0.0f && coords.x <= boxSprite.getLocalBounds().width &&
+               coords.y >= 0.0f && coords.y <= boxSprite.getLocalBounds().height)
+            {
+                clickedOn = true;
+            }
+        }
+        else
+        {
+            if(coords.x >= 0.0f && coords.x <= boxShape.getSize().x &&
+               coords.y >= 0.0f && coords.y <= boxShape.getSize().y)
+            {
+                clickedOn = true;
+            }
+        }
+    }
+    else if(event.type == sf::Event::EventType::MouseButtonReleased &&
+            event.mouseButton.button == sf::Mouse::Button::Left &&
+            clickedOn)
+    {
+        sf::Vector2f coords = window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x,event.mouseButton.y));
+        coords = getInverseTransform().transformPoint(coords);
+
+        if(usesTexture)
+        {
+            if(coords.x >= 0.0f && coords.x <= boxSprite.getLocalBounds().width &&
+               coords.y >= 0.0f && coords.y <= boxSprite.getLocalBounds().height)
+            {
+                currentValue = !currentValue;
+                passCommand = true;
+            }
+        }
+        else
+        {
+            if(coords.x >= 0.0f && coords.x <= boxShape.getSize().x &&
+               coords.y >= 0.0f && coords.y <= boxShape.getSize().y)
+            {
+                currentValue = !currentValue;
+                passCommand = true;
+            }
+        }
+
+        clickedOn = false;
+    }
+}
+
+GuiCommand* GuiCheckbox::update(sf::Time time)
+{
+    if(passCommand)
+    {
+        passCommand = false;
+        guiCommand.type = GuiCommand::Type::VALUE_BOOL;
+        guiCommand.value.b = currentValue;
+        return &guiCommand;
+    }
+    else
+        return NULL;
+}
+
+void GuiCheckbox::draw(sf::RenderTarget& target, sf::RenderStates states)
+{
+    states.transform *= getTransform();
+
+    if(usesTexture)
+    {
+        target.draw(boxSprite, states);
+        if(currentValue)
+        {
+            target.draw(checkSprite, states);
+        }
+    }
+    else
+    {
+        target.draw(boxShape, states);
+        if(currentValue)
+        {
+            target.draw(checkLines, states);
+        }
+    }
+}
+
+GuiText::GuiText(sf::RenderWindow& window, GuiCommand guiCommand, sf::Text text) :
+GuiObject(window, guiCommand),
+text(text)
+{}
+
+void GuiText::processEvent(sf::Event event)
+{
+
 }

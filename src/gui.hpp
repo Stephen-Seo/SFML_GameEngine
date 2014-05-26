@@ -106,9 +106,20 @@ protected:
     float llimit;
     float hlimit;
     float offset;
-
-private:
     bool clickedOn;
+
+    virtual GuiCommand* returnValue();
+};
+
+class GuiIntSlider : public GuiSlider
+{
+public:
+    GuiIntSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, sf::Color slider, sf::Color bg, sf::Vector2f sliderSize, sf::FloatRect sliderRect);
+    GuiIntSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, const sf::Texture& slider, const sf::Texture& bg);
+
+protected:
+    GuiCommand* returnValue();
+
 };
 
 class GuiCheckbox : public GuiObject
@@ -116,14 +127,16 @@ class GuiCheckbox : public GuiObject
 public:
     typedef std::unique_ptr<GuiCheckbox> Ptr;
 
-    GuiCheckbox(GuiCommand guiCommand, sf::Color color);
-    GuiCheckbox(GuiCommand guiCommand, Textures::ID box, Textures::ID check);
+    GuiCheckbox(sf::RenderWindow* window, GuiCommand guiCommand, bool initialValue, sf::Color color, sf::Vector2f size);
+    GuiCheckbox(sf::RenderWindow* window, GuiCommand guiCommand, bool initialValue, const sf::Texture& box, const sf::Texture& check);
 
     virtual void processEvent(sf::Event event);
     virtual GuiCommand* update(sf::Time time);
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states);
 protected:
     bool usesTexture;
+    bool currentValue;
+    bool clickedOn;
 
     sf::Sprite boxSprite;
     sf::Sprite checkSprite;
@@ -136,7 +149,7 @@ class GuiText : public GuiObject
 public:
     typedef std::unique_ptr<GuiText> Ptr;
 
-    GuiText(GuiCommand guiCommand, sf::Text);
+    GuiText(sf::RenderWindow* window, GuiCommand guiCommand, sf::Text text);
 
     virtual void processEvent(sf::Event event);
     virtual GuiCommand* update(sf::Time time);
