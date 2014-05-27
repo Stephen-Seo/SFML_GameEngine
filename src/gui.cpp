@@ -28,6 +28,9 @@ guiCommand(guiCommand),
 window(window)
 {}
 
+GuiObject::~GuiObject()
+{}
+
 GuiButton::GuiButton(sf::RenderWindow* window, GuiCommand guiCommand, sf::Color color, sf::Color activeColor, sf::Vector2f size, sf::Text text) :
 GuiObject(window, guiCommand),
 usesTexture(false),
@@ -467,12 +470,89 @@ void GuiCheckbox::draw(sf::RenderTarget& target, sf::RenderStates states)
     }
 }
 
-GuiText::GuiText(sf::RenderWindow& window, GuiCommand guiCommand, sf::Text text) :
+
+GuiText::GuiText(sf::RenderWindow* window, GuiCommand guiCommand, sf::Text text) :
 GuiObject(window, guiCommand),
 text(text)
 {}
 
 void GuiText::processEvent(sf::Event event)
-{
+{}
 
+GuiCommand* GuiText::update(sf::Time time)
+{
+    return NULL;
+}
+
+void GuiText::draw(sf::RenderTarget& target, sf::RenderStates states)
+{
+    states.transform *= getTransform();
+
+    target.draw(text, states);
+}
+
+GuiImage::GuiImage(sf::RenderWindow* window, GuiCommand guiCommand, const sf::Texture& texture) :
+GuiObject(window, guiCommand),
+sprite(texture)
+{}
+
+void GuiImage::processEvent(sf::Event event)
+{}
+
+GuiCommand* GuiImage::update(sf::Time time)
+{
+    return NULL;
+}
+
+void GuiImage::draw(sf::RenderTarget& target, sf::RenderStates states)
+{
+    states.transform *= getTransform();
+
+    target.draw(sprite, states);
+}
+
+GuiSystem::GuiSystem()
+{}
+
+void GuiSystem::processEvent(sf::Event event)
+{
+    for(auto iter = guiList.begin(); iter != guiList.end(); ++iter)
+    {
+        (*iter)->processEvent(event);
+    }
+}
+
+void GuiSystem::update(sf::Time time) //TODO finish this
+{
+    for(auto iter = guiList.begin(); iter != guiList.end(); ++iter)
+    {
+        GuiCommand* command = (*iter)->update(time);
+        if(command != NULL)
+        {
+        }
+    }
+}
+
+void GuiSystem::draw(sf::RenderWindow& window)
+{
+    for(auto iter = guiList.begin(); iter != guiList.end(); ++iter)
+    {
+        window.draw(*(*iter));
+    }
+}
+
+void GuiSystem::add(GuiObject* guiObject)
+{
+    GuiObject::Ptr guiObjectPtr(guiObject);
+    add(guiObjectPtr);
+}
+
+void GuiSystem::add(GuiObject::Ptr& guiObject)
+{
+    guiList.push_back(std::move(guiObject));
+}
+
+void GuiSystem::clear()
+{
+    guiList.clear();
 }

@@ -163,7 +163,7 @@ class GuiImage : public GuiObject
 public:
     typedef std::unique_ptr<GuiImage> Ptr;
 
-    GuiImage(GuiCommand guiCommand, Textures::ID texture);
+    GuiImage(sf::RenderWindow* window, GuiCommand guiCommand, const sf::Texture& texture);
 
     virtual void processEvent(sf::Event event);
     virtual GuiCommand* update(sf::Time time);
@@ -178,11 +178,11 @@ public:
     GuiSystem();
 
     void processEvent(sf::Event event);
-    void update(sf::Time);
-    void draw();
+    void update(sf::Time time);
+    void draw(sf::RenderWindow& window);
 
     void add(GuiObject* guiObject);
-    void add(GuiObject::Ptr guiObject);
+    void add(GuiObject::Ptr& guiObject);
     void clear();
 private:
     std::list<GuiObject::Ptr> guiList;
