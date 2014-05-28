@@ -4,6 +4,8 @@
 
 #include <list>
 #include <memory>
+#include <functional>
+#include <cassert>
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 
@@ -32,10 +34,24 @@ public:
         States::ID id;
     };
 
-    GuiCommand(Type type, Value value);
+    union Ptr {
+        Ptr(bool* b);
+        Ptr(int* i);
+        Ptr(float* f);
+
+        bool* b;
+        int* i;
+        float* f;
+    };
+
+    GuiCommand(Type type, Value value, Ptr ptr);
 
     Type type;
     Value value;
+
+private:
+    friend class GuiSystem;
+    Ptr ptr;
 };
 
 class GuiObject : public sf::Drawable, public sf::Transformable
@@ -172,13 +188,13 @@ protected:
     sf::Sprite sprite;
 };
 
-class GuiSystem : public sf::NonCopyable
+class GuiSystem : private sf::NonCopyable
 {
 public:
     GuiSystem();
 
     void processEvent(sf::Event event);
-    void update(sf::Time time);
+    void update(sf::Time time, std::function<void(States::ID)> requestStackPush, std::function<void()> requestStackPop);
     void draw(sf::RenderWindow& window);
 
     void add(GuiObject* guiObject);

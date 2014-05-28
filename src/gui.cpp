@@ -17,9 +17,22 @@ GuiCommand::Value::Value(States::ID id) :
 id(id)
 {}
 
-GuiCommand::GuiCommand(GuiCommand::Type type, GuiCommand::Value value) :
+GuiCommand::Ptr::Ptr(bool* b) :
+b(b)
+{}
+
+GuiCommand::Ptr::Ptr(int* i) :
+i(i)
+{}
+
+GuiCommand::Ptr::Ptr(float* f) :
+f(f)
+{}
+
+GuiCommand::GuiCommand(GuiCommand::Type type, GuiCommand::Value value, GuiCommand::Ptr ptr) :
 type(type),
-value(value)
+value(value),
+ptr(ptr)
 {}
 
 GuiObject::GuiObject(sf::RenderWindow* window, GuiCommand guiCommand) :
@@ -522,13 +535,39 @@ void GuiSystem::processEvent(sf::Event event)
     }
 }
 
-void GuiSystem::update(sf::Time time) //TODO finish this
+void GuiSystem::update(sf::Time time, std::function<void(States::ID)> requestStackPush, std::function<void()> requestStackPop)
 {
     for(auto iter = guiList.begin(); iter != guiList.end(); ++iter)
     {
         GuiCommand* command = (*iter)->update(time);
         if(command != NULL)
         {
+            if(command->type == GuiCommand::Type::STATE)
+            {
+                if(command->value.id == States::ID::None)
+                {
+                    requestStackPop();
+                }
+                else
+                {
+                    requestStackPush(command->value.id);
+                }
+            }
+            else if(command->type == GuiCommand::Type::VALUE_BOOL)
+            {
+                assert(command->ptr.b);
+                *(command->ptr.b) = command->value.b;
+            }
+            else if(command->type == GuiCommand::Type::VALUE_INT)
+            {
+                assert(command->ptr.i);
+                *(command->ptr.i) = command->value.i;
+            }
+            else if(command->type == GuiCommand::Type::VALUE_FLOAT)
+            {
+                assert(command->ptr.f);
+                *(command->ptr.f) = command->value.f;
+            }
         }
     }
 }
