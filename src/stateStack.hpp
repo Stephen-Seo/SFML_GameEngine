@@ -3,6 +3,7 @@
 #define STATE_STACK_HPP
 
 #include <cassert>
+#include <functional>
 
 #include <SFML/System.hpp>
 
