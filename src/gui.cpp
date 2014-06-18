@@ -173,7 +173,7 @@ GuiCommand* GuiButton::update(sf::Time time)
 
 void GuiButton::draw(sf::RenderTarget& target, sf::RenderStates states)
 {
-    states.transform *= getTransform();
+    states.transform *= window->getView().getTransform() * getTransform();
 
     if(usesTexture)
     {
@@ -328,7 +328,7 @@ GuiCommand* GuiSlider::returnValue()
 
 void GuiSlider::draw(sf::RenderTarget& target, sf::RenderStates states)
 {
-    states.transform *= getTransform();
+    states.transform *= window->getView().getTransform() * getTransform();
 
     if(usesTexture)
     {
@@ -463,7 +463,7 @@ GuiCommand* GuiCheckbox::update(sf::Time time)
 
 void GuiCheckbox::draw(sf::RenderTarget& target, sf::RenderStates states)
 {
-    states.transform *= getTransform();
+    states.transform *= window->getView().getTransform() * getTransform();
 
     if(usesTexture)
     {
@@ -499,7 +499,7 @@ GuiCommand* GuiText::update(sf::Time time)
 
 void GuiText::draw(sf::RenderTarget& target, sf::RenderStates states)
 {
-    states.transform *= getTransform();
+    states.transform *= window->getView().getTransform() * getTransform();
 
     target.draw(text, states);
 }
@@ -519,7 +519,7 @@ GuiCommand* GuiImage::update(sf::Time time)
 
 void GuiImage::draw(sf::RenderTarget& target, sf::RenderStates states)
 {
-    states.transform *= getTransform();
+    states.transform *= window->getView().getTransform() * getTransform();
 
     target.draw(sprite, states);
 }

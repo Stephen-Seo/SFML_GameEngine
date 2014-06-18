@@ -1,15 +1,15 @@
 cmake_minimum_required(VERSION 2.6)
-project(2DPrimer)
+project(Game_Project)
 
-file(GLOB_RECURSE 2DPrimer_SOURCES "*.cpp")
-add_executable(2DPrimerMain ${2DPrimer_SOURCES})
+file(GLOB_RECURSE Game_Project_SOURCES "*.cpp")
+add_executable(Game_Project ${Game_Project_SOURCES})
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cmake_modules" ${CMAKE_MODULE_PATH})
 
 find_package(SFML 2 REQUIRED system window graphics network audio)
 if(SFML_FOUND)
     include_directories(${SFML_INCLUDE_DIR})
-    target_link_libraries(2DPrimerMain ${SFML_LIBRARIES})
+    target_link_libraries(Game_Project ${SFML_LIBRARIES})
 endif()
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra")
