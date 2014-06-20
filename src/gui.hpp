@@ -9,8 +9,7 @@
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
 
-#include "stateIdentifiers.hpp"
-#include "resourceIdentifiers.hpp"
+#include "state.hpp"
 
 class GuiCommand
 {
@@ -62,9 +61,8 @@ public:
     GuiObject(sf::RenderWindow* window, GuiCommand guiCommand);
     virtual ~GuiObject();
 
-    virtual void processEvent(sf::Event event) = 0;
+    virtual void processEvent(const sf::Event& event) = 0;
     virtual GuiCommand* update(sf::Time time) = 0;
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) = 0;
 protected:
     bool passCommand;
     GuiCommand guiCommand;
@@ -79,9 +77,9 @@ public:
     GuiButton(sf::RenderWindow* window, GuiCommand guiCommand, sf::Color color, sf::Color activeColor, sf::Vector2f size, sf::Text text = sf::Text());
     GuiButton(sf::RenderWindow* window, GuiCommand guiCommand, const sf::Texture& texture, const sf::Texture& hovering, const sf::Texture& active, sf::Text text = sf::Text());
 
-    virtual void processEvent(sf::Event event);
+    virtual void processEvent(const sf::Event& event);
     virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states);
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 protected:
     bool usesTexture;
@@ -106,9 +104,9 @@ public:
     GuiSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, sf::Color slider, sf::Color bg, sf::Vector2f sliderSize, sf::FloatRect sliderRect);
     GuiSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, const sf::Texture& slider, const sf::Texture& bg);
 
-    virtual void processEvent(sf::Event event);
+    virtual void processEvent(const sf::Event& event);
     virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states);
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 
 protected:
     bool usesTexture;
@@ -146,9 +144,9 @@ public:
     GuiCheckbox(sf::RenderWindow* window, GuiCommand guiCommand, bool initialValue, sf::Color color, sf::Vector2f size);
     GuiCheckbox(sf::RenderWindow* window, GuiCommand guiCommand, bool initialValue, const sf::Texture& box, const sf::Texture& check);
 
-    virtual void processEvent(sf::Event event);
+    virtual void processEvent(const sf::Event& event);
     virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states);
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 protected:
     bool usesTexture;
     bool currentValue;
@@ -165,13 +163,13 @@ class GuiText : public GuiObject
 public:
     typedef std::unique_ptr<GuiText> Ptr;
 
-    GuiText(sf::RenderWindow* window, GuiCommand guiCommand, sf::Text text);
+    GuiText(sf::RenderWindow* window, GuiCommand guiCommand, sf::Text* text);
 
-    virtual void processEvent(sf::Event event);
+    virtual void processEvent(const sf::Event& event);
     virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states);
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 protected:
-    sf::Text text;
+    sf::Text* text;
 };
 
 class GuiImage : public GuiObject
@@ -181,9 +179,9 @@ public:
 
     GuiImage(sf::RenderWindow* window, GuiCommand guiCommand, const sf::Texture& texture);
 
-    virtual void processEvent(sf::Event event);
+    virtual void processEvent(const sf::Event& event);
     virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states);
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 protected:
     sf::Sprite sprite;
 };
@@ -191,10 +189,10 @@ protected:
 class GuiSystem : private sf::NonCopyable
 {
 public:
-    GuiSystem();
+    GuiSystem(State* state);
 
-    void processEvent(sf::Event event);
-    void update(sf::Time time, std::function<void(States::ID)> requestStackPush, std::function<void()> requestStackPop);
+    void processEvent(const sf::Event& event);
+    void update(sf::Time time);
     void draw(sf::RenderWindow& window);
 
     void add(GuiObject* guiObject);
@@ -202,6 +200,7 @@ public:
     void clear();
 private:
     std::list<GuiObject::Ptr> guiList;
+    State* state;
 };
 
 #endif

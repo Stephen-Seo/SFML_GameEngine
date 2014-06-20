@@ -69,7 +69,7 @@ hovering(false),
 clickedOn(false)
 {}
 
-void GuiButton::processEvent(sf::Event event)
+void GuiButton::processEvent(const sf::Event& event)
 {
     if(event.type == sf::Event::EventType::MouseButtonPressed &&
        event.mouseButton.button == sf::Mouse::Button::Left)
@@ -165,32 +165,34 @@ GuiCommand* GuiButton::update(sf::Time time)
     if(passCommand)
     {
         passCommand = false;
+        if(guiCommand.type == GuiCommand::Type::VALUE_BOOL)
+            guiCommand.value.b = !guiCommand.value.b;
         return &guiCommand;
     }
     else
         return NULL;
 }
 
-void GuiButton::draw(sf::RenderTarget& target, sf::RenderStates states)
+void GuiButton::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    states.transform *= window->getView().getTransform() * getTransform();
+    states.transform *= getTransform();
 
     if(usesTexture)
     {
         if(clickedOn)
-            target.draw(activeSprite);
+            target.draw(activeSprite, states);
         else if(hovering)
-            target.draw(hoveringSprite);
+            target.draw(hoveringSprite, states);
         else
-            target.draw(normalSprite);
+            target.draw(normalSprite, states);
     }
     else
     {
-        target.draw(rect);
+        target.draw(rect, states);
     }
 
     if(text.getFont() != NULL)
-        target.draw(text);
+        target.draw(text, states);
 }
 
 GuiSlider::GuiSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, sf::Color slider, sf::Color bg, sf::Vector2f sliderSize, sf::FloatRect sliderRect) :
@@ -235,7 +237,7 @@ clickedOn(false)
     bgSprite.setPosition(0.0f, rect.height / 2.0f - bgSprite.getLocalBounds().height / 2.0f);
 }
 
-void GuiSlider::processEvent(sf::Event event)
+void GuiSlider::processEvent(const sf::Event& event)
 {
     if(event.type == sf::Event::EventType::MouseButtonPressed &&
        event.mouseButton.button == sf::Mouse::Button::Left)
@@ -326,9 +328,9 @@ GuiCommand* GuiSlider::returnValue()
         return NULL;
 }
 
-void GuiSlider::draw(sf::RenderTarget& target, sf::RenderStates states)
+void GuiSlider::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    states.transform *= window->getView().getTransform() * getTransform();
+    states.transform *= getTransform();
 
     if(usesTexture)
     {
@@ -393,7 +395,7 @@ boxSprite(box),
 checkSprite(check)
 {}
 
-void GuiCheckbox::processEvent(sf::Event event)
+void GuiCheckbox::processEvent(const sf::Event& event)
 {
     if(event.type == sf::Event::EventType::MouseButtonPressed &&
        event.mouseButton.button == sf::Mouse::Button::Left)
@@ -461,9 +463,9 @@ GuiCommand* GuiCheckbox::update(sf::Time time)
         return NULL;
 }
 
-void GuiCheckbox::draw(sf::RenderTarget& target, sf::RenderStates states)
+void GuiCheckbox::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    states.transform *= window->getView().getTransform() * getTransform();
+    states.transform *= getTransform();
 
     if(usesTexture)
     {
@@ -484,12 +486,12 @@ void GuiCheckbox::draw(sf::RenderTarget& target, sf::RenderStates states)
 }
 
 
-GuiText::GuiText(sf::RenderWindow* window, GuiCommand guiCommand, sf::Text text) :
+GuiText::GuiText(sf::RenderWindow* window, GuiCommand guiCommand, sf::Text* text) :
 GuiObject(window, guiCommand),
 text(text)
 {}
 
-void GuiText::processEvent(sf::Event event)
+void GuiText::processEvent(const sf::Event& event)
 {}
 
 GuiCommand* GuiText::update(sf::Time time)
@@ -497,11 +499,11 @@ GuiCommand* GuiText::update(sf::Time time)
     return NULL;
 }
 
-void GuiText::draw(sf::RenderTarget& target, sf::RenderStates states)
+void GuiText::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    states.transform *= window->getView().getTransform() * getTransform();
+    states.transform *= getTransform();
 
-    target.draw(text, states);
+    target.draw(*text, states);
 }
 
 GuiImage::GuiImage(sf::RenderWindow* window, GuiCommand guiCommand, const sf::Texture& texture) :
@@ -509,7 +511,7 @@ GuiObject(window, guiCommand),
 sprite(texture)
 {}
 
-void GuiImage::processEvent(sf::Event event)
+void GuiImage::processEvent(const sf::Event& event)
 {}
 
 GuiCommand* GuiImage::update(sf::Time time)
@@ -517,17 +519,18 @@ GuiCommand* GuiImage::update(sf::Time time)
     return NULL;
 }
 
-void GuiImage::draw(sf::RenderTarget& target, sf::RenderStates states)
+void GuiImage::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
-    states.transform *= window->getView().getTransform() * getTransform();
+    states.transform *= getTransform();
 
     target.draw(sprite, states);
 }
 
-GuiSystem::GuiSystem()
+GuiSystem::GuiSystem(State* state) :
+state(state)
 {}
 
-void GuiSystem::processEvent(sf::Event event)
+void GuiSystem::processEvent(const sf::Event& event)
 {
     for(auto iter = guiList.begin(); iter != guiList.end(); ++iter)
     {
@@ -535,7 +538,7 @@ void GuiSystem::processEvent(sf::Event event)
     }
 }
 
-void GuiSystem::update(sf::Time time, std::function<void(States::ID)> requestStackPush, std::function<void()> requestStackPop)
+void GuiSystem::update(sf::Time time)
 {
     for(auto iter = guiList.begin(); iter != guiList.end(); ++iter)
     {
@@ -546,11 +549,15 @@ void GuiSystem::update(sf::Time time, std::function<void(States::ID)> requestSta
             {
                 if(command->value.id == States::ID::None)
                 {
-                    requestStackPop();
+                    state->requestStackPop();
+                }
+                else if(command->value.id == States::ID::Quit)
+                {
+                    *(state->getContext().isQuitting) = true;
                 }
                 else
                 {
-                    requestStackPush(command->value.id);
+                    state->requestStackPush(command->value.id);
                 }
             }
             else if(command->type == GuiCommand::Type::VALUE_BOOL)
