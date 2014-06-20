@@ -7,7 +7,7 @@ textureHolder(),
 fontHolder(),
 mPlayer(),
 sPlayer(),
-stateStack(State::Context(window, textureHolder, fontHolder, mPlayer, sPlayer))
+stateStack(State::Context(window, textureHolder, fontHolder, mPlayer, sPlayer, isQuitting))
 {
 	registerStates();
     frameTime = sf::seconds(1.f / 60.f);
@@ -17,7 +17,7 @@ void Game::run()
 {
     sf::Clock clock;
     sf::Time lastUpdateTime = sf::Time::Zero;
-    while (window.isOpen())
+    while (window.isOpen() && !isQuitting)
     {
         lastUpdateTime += clock.restart();
         while (lastUpdateTime > frameTime)
@@ -28,6 +28,9 @@ void Game::run()
         }
         draw();
     }
+
+    if(window.isOpen())
+        window.close();
 }
 
 void Game::processEvents()

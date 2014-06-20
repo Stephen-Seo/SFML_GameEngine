@@ -31,6 +31,8 @@ private:
     SoundPlayer sPlayer;
 
     StateStack stateStack;
+
+    bool isQuitting;
 };
 
 #endif

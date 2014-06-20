@@ -23,13 +23,15 @@ public:
                 TextureHolder& textures,
                 FontHolder& fonts,
                 MusicPlayer& mPlayer,
-                SoundPlayer& sPlayer);
+                SoundPlayer& sPlayer,
+                bool& isQuitting);
 
         sf::RenderWindow* window;
         TextureHolder* textures;
         FontHolder* fonts;
         MusicPlayer* mPlayer;
         SoundPlayer* sPlayer;
+        bool* isQuitting;
     };
 
     State(StateStack& stack, Context context);
@@ -40,6 +42,8 @@ public:
     virtual bool handleEvent(const sf::Event& event) = 0;
 
 protected:
+    friend class GuiSystem;
+
     void requestStackPush(States::ID stateID);
     void requestStackPop();
     void requestStateClear();
