@@ -7,7 +7,8 @@ textureHolder(),
 fontHolder(),
 mPlayer(),
 sPlayer(),
-stateStack(State::Context(window, textureHolder, fontHolder, mPlayer, sPlayer, isQuitting))
+stateStack(State::Context(window, textureHolder, fontHolder, mPlayer, sPlayer, isQuitting)),
+isQuitting(false)
 {
 	registerStates();
     frameTime = sf::seconds(1.f / 60.f);
