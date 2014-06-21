@@ -29,6 +29,10 @@ GuiCommand::Ptr::Ptr(float* f) :
 f(f)
 {}
 
+GuiCommand::Ptr::Ptr() :
+b(NULL)
+{}
+
 GuiCommand::GuiCommand(GuiCommand::Type type, GuiCommand::Value value, GuiCommand::Ptr ptr) :
 type(type),
 value(value),

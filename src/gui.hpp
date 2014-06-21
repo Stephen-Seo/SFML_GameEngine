@@ -37,6 +37,7 @@ public:
         Ptr(bool* b);
         Ptr(int* i);
         Ptr(float* f);
+        Ptr();
 
         bool* b;
         int* i;
