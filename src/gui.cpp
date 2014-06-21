@@ -53,9 +53,10 @@ activeColor(activeColor),
 hovering(false),
 clickedOn(false)
 {
-    this->rect.setSize(size);
-    this->rect.setFillColor(color);
-    this->rect.setOutlineColor(color);
+    rect.setSize(size);
+    rect.setFillColor(color);
+    rect.setOutlineColor(color);
+    rect.setOutlineThickness(1.0f);
 }
 
 GuiButton::GuiButton(sf::RenderWindow* window, GuiCommand guiCommand, const sf::Texture& texture, const sf::Texture& hovering, const sf::Texture& active, sf::Text text) :
@@ -74,7 +75,7 @@ void GuiButton::processEvent(const sf::Event& event)
     if(event.type == sf::Event::EventType::MouseButtonPressed &&
        event.mouseButton.button == sf::Mouse::Button::Left)
     {
-        sf::Vector2f coords = window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x,event.mouseButton.y));
+        sf::Vector2f coords(event.mouseButton.x, event.mouseButton.y);
         coords = getInverseTransform().transformPoint(coords);
         if(usesTexture)
         {
@@ -97,7 +98,7 @@ void GuiButton::processEvent(const sf::Event& event)
             event.mouseButton.button == sf::Mouse::Button::Left &&
             clickedOn)
     {
-        sf::Vector2f coords = window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x,event.mouseButton.y));
+        sf::Vector2f coords(event.mouseButton.x, event.mouseButton.y);
         coords = getInverseTransform().transformPoint(coords);
         if(usesTexture)
         {
@@ -122,7 +123,7 @@ void GuiButton::processEvent(const sf::Event& event)
 
 GuiCommand* GuiButton::update(sf::Time time)
 {
-    sf::Vector2f coords = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
+    sf::Vector2f coords(sf::Mouse::getPosition(*window));
     coords = getInverseTransform().transformPoint(coords);
 
     if(usesTexture)
@@ -242,7 +243,7 @@ void GuiSlider::processEvent(const sf::Event& event)
     if(event.type == sf::Event::EventType::MouseButtonPressed &&
        event.mouseButton.button == sf::Mouse::Button::Left)
     {
-        sf::Vector2f coords = window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x,event.mouseButton.y));
+        sf::Vector2f coords(event.mouseButton.x, event.mouseButton.y);
         coords = getInverseTransform().transformPoint(coords);
         if(usesTexture)
         {
@@ -279,7 +280,7 @@ GuiCommand* GuiSlider::update(sf::Time time)
 {
     if(clickedOn)
     {
-        sf::Vector2f coords = window->mapPixelToCoords(sf::Mouse::getPosition(*window));
+        sf::Vector2f coords(sf::Mouse::getPosition(*window));
         coords = getInverseTransform().transformPoint(coords);
 
         if(usesTexture)
@@ -400,7 +401,7 @@ void GuiCheckbox::processEvent(const sf::Event& event)
     if(event.type == sf::Event::EventType::MouseButtonPressed &&
        event.mouseButton.button == sf::Mouse::Button::Left)
     {
-        sf::Vector2f coords = window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x,event.mouseButton.y));
+        sf::Vector2f coords(event.mouseButton.x, event.mouseButton.y);
         coords = getInverseTransform().transformPoint(coords);
 
         if(usesTexture)
@@ -424,7 +425,7 @@ void GuiCheckbox::processEvent(const sf::Event& event)
             event.mouseButton.button == sf::Mouse::Button::Left &&
             clickedOn)
     {
-        sf::Vector2f coords = window->mapPixelToCoords(sf::Vector2i(event.mouseButton.x,event.mouseButton.y));
+        sf::Vector2f coords(event.mouseButton.x,event.mouseButton.y);
         coords = getInverseTransform().transformPoint(coords);
 
         if(usesTexture)
@@ -581,10 +582,19 @@ void GuiSystem::update(sf::Time time)
 
 void GuiSystem::draw(sf::RenderWindow& window)
 {
+    sf::Vector2f center = window.getView().getCenter();
+    sf::Vector2f size = window.getView().getSize();
+    float rotation = window.getView().getRotation();
+    window.setView(sf::View(sf::Vector2f(size.x/2.0f, size.y/2.0f), size));
+
     for(auto iter = guiList.begin(); iter != guiList.end(); ++iter)
     {
         window.draw(*(*iter));
     }
+
+    sf::View view(center, size);
+    view.setRotation(rotation);
+    window.setView(view);
 }
 
 void GuiSystem::add(GuiObject* guiObject)
