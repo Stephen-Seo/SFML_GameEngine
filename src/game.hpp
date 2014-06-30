@@ -7,6 +7,7 @@
 
 #include "resourceHolder.hpp"
 #include "resourceIdentifiers.hpp"
+#include "resourceManager.hpp"
 #include "state.hpp"
 #include "stateStack.hpp"
 
@@ -19,13 +20,14 @@ private:
     void processEvents();
     void update(sf::Time deltaTime);
     void draw();
+
+    void registerResources();
     void registerStates();
 
     sf::RenderWindow window;
     sf::Time frameTime;
 
-    TextureHolder textureHolder;
-    FontHolder fontHolder;
+    ResourceManager resourceManager;
 
     MusicPlayer mPlayer;
     SoundPlayer sPlayer;

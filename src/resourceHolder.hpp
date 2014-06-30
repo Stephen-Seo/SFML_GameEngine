@@ -7,14 +7,17 @@
 #include <map>
 #include <string>
 #include <stdexcept>
+#include <iostream>
 
 template <class Resource, class Identifier>
 class ResourceHolder
 {
 public:
-    void load(Identifier id, const std::string& filename);
+    void registerResource(Identifier id, const std::string& filename);
+
+    void load(Identifier id);
     template <class Parameter>
-    void load(Identifier id, const std::string& filename, const Parameter& secondParam);
+    void load(Identifier id, const Parameter& secondParam);
 
     void unload(Identifier id);
 
@@ -23,7 +26,10 @@ public:
     Resource& get(Identifier id);
     const Resource& get(Identifier id) const;
 private:
+    friend class ResourceManager;
+
     std::map<Identifier, std::unique_ptr<Resource>> resourceMap;
+    std::map<Identifier, std::string> pathMap;
 };
 
 #include "resourceHolder.inl"

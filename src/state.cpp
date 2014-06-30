@@ -2,10 +2,9 @@
 #include "state.hpp"
 #include "stateStack.hpp"
 
-State::Context::Context(sf::RenderWindow& window, TextureHolder& textures, FontHolder& fonts, MusicPlayer& mPlayer, SoundPlayer& sPlayer, bool& isQuitting) :
+State::Context::Context(sf::RenderWindow& window, ResourceManager& resourceManager, MusicPlayer& mPlayer, SoundPlayer& sPlayer, bool& isQuitting) :
 window(&window),
-textures(&textures),
-fonts(&fonts),
+resourceManager(&resourceManager),
 mPlayer(&mPlayer),
 sPlayer(&sPlayer),
 isQuitting(&isQuitting)
@@ -17,6 +16,11 @@ State::State(StateStack& stack, Context context)
 
 State::~State()
 {}
+
+ResourcesSet State::getNeededResources()
+{
+    return ResourcesSet(tset, fset, sset);
+}
 
 void State::requestStackPush(States::ID stateID)
 {

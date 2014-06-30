@@ -10,6 +10,8 @@
 #include "musicPlayer.hpp"
 #include "soundPlayer.hpp"
 
+class ResourceManager;
+
 class StateStack;
 
 class State
@@ -20,15 +22,13 @@ public:
     struct Context
     {
         Context(sf::RenderWindow& window,
-                TextureHolder& textures,
-                FontHolder& fonts,
+                ResourceManager& resourceManager,
                 MusicPlayer& mPlayer,
                 SoundPlayer& sPlayer,
                 bool& isQuitting);
 
         sf::RenderWindow* window;
-        TextureHolder* textures;
-        FontHolder* fonts;
+        ResourceManager* resourceManager;
         MusicPlayer* mPlayer;
         SoundPlayer* sPlayer;
         bool* isQuitting;
@@ -41,6 +41,7 @@ public:
     virtual bool update(sf::Time dt) = 0;
     virtual bool handleEvent(const sf::Event& event) = 0;
 
+    ResourcesSet getNeededResources();
 protected:
     friend class GuiSystem;
 
@@ -49,6 +50,10 @@ protected:
     void requestStateClear();
 
     Context getContext() const;
+
+    TextureSet tset;
+    FontSet fset;
+    SoundSet sset;
 private:
     StateStack* stack;
     Context context;

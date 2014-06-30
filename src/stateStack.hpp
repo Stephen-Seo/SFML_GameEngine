@@ -4,11 +4,13 @@
 
 #include <cassert>
 #include <functional>
+#include <vector>
 
 #include <SFML/System.hpp>
 
 #include "state.hpp"
 #include "stateIdentifiers.hpp"
+#include "resourceIdentifiers.hpp"
 
 class StateStack : private sf::NonCopyable
 {
@@ -34,6 +36,8 @@ public:
     void clearStates();
 
     bool isEmpty() const;
+
+    ResourcesSet getNeededResources();
 private:
     State::Ptr createState(States::ID stateID);
     void applyPendingChanges();

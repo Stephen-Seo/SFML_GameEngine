@@ -59,6 +59,44 @@ bool StateStack::isEmpty() const
     return stack.empty();
 }
 
+ResourcesSet StateStack::getNeededResources()
+{
+    ResourcesSet resourcesSet;
+    resourcesSet.tset = new TextureSet;
+    resourcesSet.fset = new FontSet;
+    resourcesSet.sset = new SoundSet;
+
+    for(auto iter = stack.begin(); iter != stack.end(); ++iter)
+    {
+        ResourcesSet stateSet = (*iter)->getNeededResources();
+        if(stateSet.tset != NULL)
+        {
+            for(auto siter = stateSet.tset->begin(); siter != stateSet.tset->end(); ++siter)
+            {
+                resourcesSet.tset->insert(*siter);
+            }
+        }
+
+        if(stateSet.fset != NULL)
+        {
+            for(auto siter = stateSet.fset->begin(); siter != stateSet.fset->end(); ++siter)
+            {
+                resourcesSet.fset->insert(*siter);
+            }
+        }
+
+        if(stateSet.sset != NULL)
+        {
+            for(auto siter = stateSet.sset->begin(); siter != stateSet.sset->end(); ++siter)
+            {
+                resourcesSet.sset->insert(*siter);
+            }
+        }
+    }
+
+    return resourcesSet;
+}
+
 State::Ptr StateStack::createState(States::ID stateID)
 {
     auto found = factories.find(stateID);

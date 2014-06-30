@@ -3,14 +3,15 @@
 
 Game::Game()
 : window(sf::VideoMode(720,480), "SFML App"),
-textureHolder(),
-fontHolder(),
+resourceManager(&stateStack),
 mPlayer(),
 sPlayer(),
-stateStack(State::Context(window, textureHolder, fontHolder, mPlayer, sPlayer, isQuitting)),
+stateStack(State::Context(window, resourceManager, mPlayer, sPlayer, isQuitting)),
 isQuitting(false)
 {
+    registerResources();
 	registerStates();
+
     frameTime = sf::seconds(1.f / 60.f);
 }
 
@@ -57,6 +58,14 @@ void Game::draw()
     window.display();
 }
 
+// register resources via resourceManager
+// Resource IDs must be listed in resourceIdentifiers.hpp
+void Game::registerResources()
+{
+}
+
+// register states via stateStack
+// State IDs must be listed in stateIdentifiers.hpp
 void Game::registerStates()
 {
 }
