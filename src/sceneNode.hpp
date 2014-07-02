@@ -8,6 +8,7 @@
 
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
+#include <SFML/Window.hpp>
 
 class SceneNode : public sf::Transformable, public sf::Drawable,
                   private sf::NonCopyable
@@ -21,6 +22,7 @@ public:
     Ptr detachChild(const SceneNode& node);
 
     void update(sf::Time dt);
+    void handleEvent(const sf::Event& event);
 
     sf::Transform getWorldTransform() const;
     sf::Vector2f getWorldPosition() const;
@@ -34,6 +36,9 @@ private:
 
     virtual void updateCurrent(sf::Time dt);
     void updateChildren(sf::Time dt);
+
+    virtual void handleEventCurrent(const sf::Event& event);
+    void passEvent(const sf::Event& event);
 
     std::vector<Ptr>    children;
     SceneNode*          parent;

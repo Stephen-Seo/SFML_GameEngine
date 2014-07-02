@@ -3,11 +3,11 @@
 #include "componentHolder.hpp"
 
 Component::Component(ComponentHolder* holder) :
-holder(holder),
 reqUpdate(false),
 reqEvents(false),
 reqDraw(false),
-reqMessage(false)
+reqMessage(false),
+holder(holder)
 {}
 
 bool Component::requiresUpdate()

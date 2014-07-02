@@ -60,6 +60,21 @@ void SceneNode::updateChildren(sf::Time dt)
         [&dt] (SceneNode::Ptr& child) { child->update(dt); });
 }
 
+void SceneNode::handleEvent(const sf::Event& event)
+{
+    handleEventCurrent(event);
+    passEvent(event);
+}
+
+void SceneNode::handleEventCurrent(const sf::Event& event)
+{}
+
+void SceneNode::passEvent(const sf::Event& event)
+{
+    std::for_each(children.begin(), children.end(),
+        [&event] (const SceneNode::Ptr& child) { child->handleEvent(event); });
+}
+
 sf::Transform SceneNode::getWorldTransform() const
 {
     sf::Transform transform = sf::Transform::Identity;
