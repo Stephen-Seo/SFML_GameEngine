@@ -1,17 +1,18 @@
 
-#include "componentHolder.hpp"
-
-ComponentHolder::ComponentHolder() :
+template <class CT>
+ComponentHolder<CT>::ComponentHolder() :
 components(),
 mqueue(),
 mhead(0),
 mtail(0)
 {}
 
-ComponentHolder::~ComponentHolder()
+template <class CT>
+ComponentHolder<CT>::~ComponentHolder()
 {}
 
-void ComponentHolder::distributeMessages()
+template <class CT>
+void ComponentHolder<CT>::distributeMessages()
 {
     if(mhead != mtail)
     {
@@ -29,16 +30,18 @@ void ComponentHolder::distributeMessages()
     }
 }
 
-void ComponentHolder::updateComponents(sf::Time dt)
+template <class CT>
+void ComponentHolder<CT>::updateComponents(sf::Time dt, CT context)
 {
     for(auto iter = components.begin(); iter != components.end(); ++iter)
     {
         if((*iter)->requiresUpdate())
-            (*iter)->update(dt);
+            (*iter)->update(dt, context);
     }
 }
 
-void ComponentHolder::sendEventToComponents(const sf::Event& event)
+template <class CT>
+void ComponentHolder<CT>::sendEventToComponents(const sf::Event& event)
 {
     for(auto iter = components.begin(); iter != components.end(); ++iter)
     {
@@ -47,16 +50,18 @@ void ComponentHolder::sendEventToComponents(const sf::Event& event)
     }
 }
 
-void ComponentHolder::drawComponents()
+template <class CT>
+void ComponentHolder<CT>::drawComponents(sf::RenderWindow window)
 {
     for(auto iter = components.begin(); iter != components.end(); ++iter)
     {
         if((*iter)->requiresDraw())
-            (*iter)->draw();
+            (*iter)->draw(window);
     }
 }
 
-void ComponentHolder::queueMessage(int message)
+template <class CT>
+void ComponentHolder<CT>::queueMessage(int message)
 {
     assert((mtail + 1) % MESSAGES_MAX_SIZE != mhead);
 
@@ -64,7 +69,8 @@ void ComponentHolder::queueMessage(int message)
     mtail = (mtail + 1) % MESSAGES_MAX_SIZE;
 }
 
-void ComponentHolder::addComponent(Component* component)
+template <class CT>
+void ComponentHolder<CT>::addComponent(Component<CT>* component)
 {
-    components.push_back(Component::Ptr(component));
+    components.push_back(typename Component<CT>::Ptr(component));
 }

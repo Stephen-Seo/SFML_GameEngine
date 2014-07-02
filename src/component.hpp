@@ -4,22 +4,25 @@
 
 #include <memory>
 
+#include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 #include <SFML/Window.hpp>
 
+template <class CT>
 class ComponentHolder;
 
+template <class C>
 class Component
 {
 public:
-    typedef std::unique_ptr<Component> Ptr;
+    typedef std::unique_ptr<Component<C>> Ptr;
 
-    Component(ComponentHolder* holder);
+    Component(ComponentHolder<C>* holder);
     virtual ~Component() {}
 
-    virtual void update(sf::Time dt) {}
+    virtual void update(sf::Time dt, C context) {}
     virtual void handleEvent(const sf::Event& event) {}
-    virtual void draw() {}
+    virtual void draw(sf::RenderWindow window) {}
 
     virtual void receiveMessage(int message) {}
 
@@ -37,8 +40,10 @@ protected:
     bool reqMessage;
 
 private:
-    ComponentHolder* holder;
+    ComponentHolder<C>* holder;
 
 };
+
+#include "component.inl"
 
 #endif

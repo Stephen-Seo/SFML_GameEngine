@@ -9,6 +9,7 @@
 
 #include "component.hpp"
 
+template <class CT>
 class ComponentHolder
 {
 public:
@@ -16,20 +17,22 @@ public:
     virtual ~ComponentHolder();
 
     void distributeMessages();
-    void updateComponents(sf::Time dt);
+    void updateComponents(sf::Time dt, CT context);
     void sendEventToComponents(const sf::Event& event);
-    void drawComponents();
+    void drawComponents(sf::RenderWindow window);
 
     void queueMessage(int message);
 protected:
-    void addComponent(Component* component);
+    void addComponent(Component<CT>* component);
 
 private:
-    std::list<Component::Ptr> components;
+    std::list<typename Component<CT>::Ptr> components;
 
     int mqueue[MESSAGES_MAX_SIZE];
     int mhead;
     int mtail;
 };
+
+#include "componentHolder.inl"
 
 #endif
