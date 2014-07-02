@@ -27,16 +27,18 @@ public:
     bool requiresEvents();
     bool requiresDraw();
     bool requiresMessage();
+
 protected:
     void broadcastMessage(int message);
-
-private:
-    ComponentHolder* holder;
 
     bool reqUpdate;
     bool reqEvents;
     bool reqDraw;
     bool reqMessage;
+
+private:
+    ComponentHolder* holder;
+
 };
 
 #endif
