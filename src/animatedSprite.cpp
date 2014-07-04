@@ -126,7 +126,7 @@ void AnimatedSprite::draw(sf::RenderTarget& target, sf::RenderStates states)
 {
     assert(isInitialized());
 
-    states.transform *= getTransform()
+    states.transform *= getTransform();
 
     if(rectDirty)
     {
