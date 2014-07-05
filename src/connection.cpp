@@ -94,6 +94,9 @@ void Connection::update(sf::Time dt)
             {
                 if(IDMap.find(address.toInteger()) == IDMap.end())
                 {
+#ifndef NDEBUG
+                    std::cout << "SERVER: Establishing new connection with " << address.toString() << '\n';
+#endif
                     // Establish connection
                     registerConnection(address.toInteger());
                     sf::Packet newPacket;
@@ -342,6 +345,9 @@ void Connection::update(sf::Time dt)
 
 void Connection::connectToServer(sf::IpAddress address)
 {
+#ifndef NDEBUG
+    std::cout << "CLIENT: sending connection request to server at " << address.toString() << '\n';
+#endif
     sf::Packet packet;
     packet << (sf::Uint32) GAME_PROTOCOL_ID << (sf::Uint32) network::CONNECT << (sf::Uint32) 0 << (sf::Uint32) 0 << (sf::Uint32) 0xFFFFFFFF;
     socket.send(packet, address, GAME_PORT);
