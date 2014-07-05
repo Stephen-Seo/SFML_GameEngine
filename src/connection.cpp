@@ -96,6 +96,7 @@ void Connection::update(sf::Time dt)
                 {
 #ifndef NDEBUG
                     std::cout << "SERVER: Establishing new connection with " << address.toString() << '\n';
+                    std::cout << "\taddress->int = " << address.toInteger() << '\n';
 #endif
                     // Establish connection
                     registerConnection(address.toInteger());
@@ -359,7 +360,7 @@ void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::I
     sf::Uint32 intAddress = address.toInteger();
 
     auto iter = IDMap.find(intAddress);
-    assert(iter == IDMap.end());
+    assert(iter != IDMap.end());
 
     sf::Uint32 ID = iter->second;
 
