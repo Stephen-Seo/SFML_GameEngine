@@ -194,6 +194,9 @@ void Connection::update(sf::Time dt)
             sf::Time elapsedTime = elapsedTimeMap[serverAddress].getElapsedTime();
             if(elapsedTime.asMilliseconds() > CONNECTION_TIMEOUT_MILLISECONDS)
             {
+#ifndef NDEBUG
+                std::cout << "Disconnected from server " << clientSentAddress.toString() << '\n';
+#endif
                 unregisterConnection(serverAddress);
                 return;
             }
@@ -491,7 +494,7 @@ void Connection::lookupRtt(sf::Uint32 address, sf::Uint32 ack)
             }
             else
             {
-                rttMap[address] += (rttMap[address] - time) * 0.1f;
+                rttMap[address] -= (rttMap[address] - time) * 0.1f;
             }
 #ifndef NDEBUG
             std::cout << "RTT of " << sf::IpAddress(address).toString() << " = " << rttMap[address].asMilliseconds() << '\n';
