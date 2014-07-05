@@ -2,7 +2,7 @@
 template <class Resource, class Identifier>
 void ResourceHolder<Resource, Identifier>::registerResource(Identifier id, const std::string& filename)
 {
-    if(pathMap.find(id) != pathMap.end())
+    if(pathMap.find(id) == pathMap.end())
         pathMap[id] = filename;
     else
         std::cout << "WARNING: Failed to register resource as ID is already registered!\n";
