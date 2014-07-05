@@ -450,7 +450,7 @@ void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint3
 #ifndef NDEBUG
                     std::cout << "Packet " << std::hex << std::showbase << ack << std::dec;
                     std::cout << " timed out\n";
-#define
+#endif
                     sf::Packet packetCopy = iter->packet;
                     sf::Uint32 sequenceID;
                     packetCopy >> sequenceID; // protocol ID
