@@ -107,6 +107,13 @@ void Connection::update(sf::Time dt)
                 }
                 return;
             }
+            else if(ID == network::PING)
+            {
+                sf::Packet newPacket;
+                sf::Uint32 sequenceID;
+                preparePacket(newPacket, sequenceID, address);
+                sendPacket(newPacket, sequenceID, address);
+            }
             else if(IDMap.find(address.toInteger()) == IDMap.end())
             {
                 // Unknown client not attemping to connect, ignoring
@@ -248,7 +255,14 @@ void Connection::update(sf::Time dt)
                 if(!(packet >> ID) || !(packet >> sequence) || !(packet >> ack) || !(packet >> bitfield))
                     return;
 
-                if(ID != IDMap[serverAddress])
+                if(ID == network::PING)
+                {
+                    sf::Packet newPacket;
+                    sf::Uint32 sequenceID;
+                    preparePacket(newPacket, sequenceID, address);
+                    sendPacket(newPacket, sequenceID, address);
+                }
+                else if(ID != IDMap[serverAddress])
                     return;
 
                 // packet is valid
@@ -360,7 +374,7 @@ void Connection::connectToServer(sf::IpAddress address)
     clientSentAddress = address;
 }
 
-void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address)
+void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing)
 {
     sf::Uint32 intAddress = address.toInteger();
 
@@ -375,7 +389,14 @@ void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::I
 
     sf::Uint32 ackBitfield = ackBitfieldMap[intAddress];
 
-    packet << (sf::Uint32) GAME_PROTOCOL_ID << ID << sequenceID << ack << ackBitfield;
+    if(isPing)
+    {
+        packet << (sf::Uint32) GAME_PROTOCOL_ID << (sf::Uint32) network::PING << sequenceID << ack << ackBitfield;
+    }
+    else
+    {
+        packet << (sf::Uint32) GAME_PROTOCOL_ID << ID << sequenceID << ack << ackBitfield;
+    }
 }
 
 void Connection::sendPacket(sf::Packet& packet, sf::Uint32 sequenceID, sf::IpAddress address)
@@ -479,7 +500,7 @@ void Connection::heartbeat(sf::Uint32 addressInteger)
 
     sf::Packet packet;
     sf::Uint32 sequenceID;
-    preparePacket(packet, sequenceID, address);
+    preparePacket(packet, sequenceID, address, true);
     sendPacket(packet, sequenceID, address);
 }
 

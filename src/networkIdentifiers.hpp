@@ -31,7 +31,8 @@ namespace network
 {
     enum SpecialIDs
     {
-        CONNECT = 0xFFFFFFFF
+        CONNECT = 0xFFFFFFFF,
+        PING = 0xFFFFFFFE
     };
 
     bool moreRecent(sf::Uint32 current, sf::Uint32 previous);

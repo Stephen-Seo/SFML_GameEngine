@@ -30,5 +30,5 @@ bool network::moreRecent(sf::Uint32 current, sf::Uint32 previous)
 
 bool network::isSpecialID(sf::Uint32 ID)
 {
-    return ID == CONNECT;
+    return ID == CONNECT || ID == PING;
 }

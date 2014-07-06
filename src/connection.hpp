@@ -33,7 +33,7 @@ public:
     void connectToServer(sf::IpAddress address);
 
 protected:
-    void preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address);
+    void preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing = false);
 
     void sendPacket(sf::Packet& packet, sf::Uint32 sequenceID, sf::IpAddress address);
 
