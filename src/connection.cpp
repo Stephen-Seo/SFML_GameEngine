@@ -47,7 +47,7 @@ void Connection::update(sf::Time dt)
             tIter->second += dt;
             if(tIter->second.asMilliseconds() >= HEARTBEAT_MILLISECONDS)
             {
-                tIter->second = sf::milliseconds(0);
+                tIter->second = sf::Time::Zero;
                 heartbeat(tIter->first);
             }
         }
@@ -58,7 +58,7 @@ void Connection::update(sf::Time dt)
             auto pInfo = sendPacketQueue.back();
             sendPacketQueue.pop_back();
 
-            heartbeatTimeMap[pInfo.address] = sf::milliseconds(0);
+            heartbeatTimeMap[pInfo.address] = sf::Time::Zero;
 
             sentPackets[pInfo.address].push_front(PacketInfo(pInfo.packet, pInfo.ID));
             socket.send(pInfo.packet, sf::IpAddress(pInfo.address), GAME_PORT);
@@ -212,7 +212,7 @@ void Connection::update(sf::Time dt)
             heartbeatTimeMap[serverAddress] += dt;
             if(heartbeatTimeMap[serverAddress].asMilliseconds() >= HEARTBEAT_MILLISECONDS)
             {
-                heartbeatTimeMap[serverAddress] = sf::milliseconds(0);
+                heartbeatTimeMap[serverAddress] = sf::Time::Zero;
                 heartbeat(serverAddress);
             }
 
@@ -222,7 +222,7 @@ void Connection::update(sf::Time dt)
                 PacketInfo pInfo = sendPacketQueue.back();
                 sendPacketQueue.pop_back();
 
-                heartbeatTimeMap[pInfo.address] = sf::milliseconds(0);
+                heartbeatTimeMap[pInfo.address] = sf::Time::Zero;
 
                 sentPackets[serverAddress].push_front(PacketInfo(pInfo.packet, pInfo.ID));
                 socket.send(pInfo.packet, sf::IpAddress(pInfo.address), GAME_PORT);
@@ -500,7 +500,7 @@ void Connection::heartbeat(sf::Uint32 addressInteger)
 
     sf::Packet packet;
     sf::Uint32 sequenceID;
-    preparePacket(packet, sequenceID, address, true);
+    preparePacket(packet, sequenceID, address);
     sendPacket(packet, sequenceID, address);
 }
 
