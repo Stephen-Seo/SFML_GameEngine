@@ -215,6 +215,8 @@ void Connection::update(sf::Time dt)
                 PacketInfo pInfo = sendPacketQueue.back();
                 sendPacketQueue.pop_back();
 
+                heartbeatTimeMap[pInfo.address] = sf::milliseconds(0);
+
                 sentPackets[serverAddress].push_front(PacketInfo(pInfo.packet, pInfo.ID));
                 socket.send(pInfo.packet, sf::IpAddress(pInfo.address), GAME_PORT);
                 checkSentPacketsSize(serverAddress);
