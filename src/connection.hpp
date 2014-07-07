@@ -32,6 +32,8 @@ public:
 
     void connectToServer(sf::IpAddress address);
 
+    void heartbeat();
+
 protected:
     void preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing = false);
 

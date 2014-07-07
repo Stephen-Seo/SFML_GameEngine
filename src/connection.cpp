@@ -494,6 +494,14 @@ void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint3
     }
 }
 
+void Connection::heartbeat()
+{
+    for(auto iter = IDMap.begin(); iter != IDMap.end(); ++iter)
+    {
+        heartbeat(iter->first);
+    }
+}
+
 void Connection::heartbeat(sf::Uint32 addressInteger)
 {
     sf::IpAddress address(addressInteger);
