@@ -29,6 +29,10 @@ GuiCommand::Ptr::Ptr(float* f) :
 f(f)
 {}
 
+GuiCommand::Ptr::Ptr(State_Type s) :
+s(s)
+{}
+
 GuiCommand::Ptr::Ptr() :
 b(NULL)
 {}
@@ -560,22 +564,36 @@ void GuiSystem::update(sf::Time time)
                 {
                     *(state->getContext().isQuitting) = true;
                 }
-                else
+                else if(command->ptr.s == GuiCommand::POP)
+                {
+                    state->requestStackPop();
+                }
+                else if(command->ptr.s == GuiCommand::PUSH)
                 {
                     state->requestStackPush(command->value.id);
                 }
+                else if(command->ptr.s == GuiCommand::POP_THEN_PUSH)
+                {
+                    state->requestStackPop();
+                    state->requestStackPush(command->value.id);
+                }
+                else if(command->ptr.s == GuiCommand::CLEAR_THEN_PUSH)
+                {
+                    state->requestStackClear();
+                    state->requestStackPush(command->value.id);
+                }
             }
-            else if(command->type == GuiCommand::Type::VALUE_BOOL)
+            else if(command->type == GuiCommand::VALUE_BOOL)
             {
                 assert(command->ptr.b);
                 *(command->ptr.b) = command->value.b;
             }
-            else if(command->type == GuiCommand::Type::VALUE_INT)
+            else if(command->type == GuiCommand::VALUE_INT)
             {
                 assert(command->ptr.i);
                 *(command->ptr.i) = command->value.i;
             }
-            else if(command->type == GuiCommand::Type::VALUE_FLOAT)
+            else if(command->type == GuiCommand::VALUE_FLOAT)
             {
                 assert(command->ptr.f);
                 *(command->ptr.f) = command->value.f;

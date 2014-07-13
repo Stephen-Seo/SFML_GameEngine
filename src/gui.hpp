@@ -21,6 +21,13 @@ public:
         STATE
     };
 
+    enum State_Type {
+        POP,
+        PUSH,
+        POP_THEN_PUSH,
+        CLEAR_THEN_PUSH
+    };
+
     union Value {
         Value(bool b);
         Value(int i);
@@ -37,11 +44,13 @@ public:
         Ptr(bool* b);
         Ptr(int* i);
         Ptr(float* f);
+        Ptr(State_Type s);
         Ptr();
 
         bool* b;
         int* i;
         float* f;
+        State_Type s;
     };
 
     GuiCommand(Type type, Value value, Ptr ptr);
