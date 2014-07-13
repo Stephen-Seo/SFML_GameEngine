@@ -32,7 +32,7 @@ void State::requestStackPop()
     stack->popState();
 }
 
-void State::requestStateClear()
+void State::requestStackClear()
 {
     stack->clearStates();
 }
