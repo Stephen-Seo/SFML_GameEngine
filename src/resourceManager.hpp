@@ -2,8 +2,13 @@
 #ifndef RESOURCE_MANAGER_HPP
 #define RESOURCE_MANAGER_HPP
 
+#include <map>
+#include <memory>
+
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
+
+#include <ResourcePacker.hpp>
 
 #include "stateStack.hpp"
 #include "resourceIdentifiers.hpp"
@@ -11,7 +16,7 @@
 class ResourceManager
 {
 public:
-    ResourceManager(StateStack* sstack);
+    ResourceManager(StateStack* sstack, GameResources::LoadingMode mode, std::string packfile = "");
 
     sf::Texture& getTexture(Textures::ID id);
     sf::Font& getFont(Fonts::ID id);
@@ -29,6 +34,10 @@ private:
     TextureHolder textureHolder;
     FontHolder fontHolder;
     SoundBufferHolder soundBufferHolder;
+
+    GameResources::LoadingMode mode;
+
+    std::map<std::string, std::unique_ptr<char[]> > fontDataMap;
 
     StateStack* sstack;
 };

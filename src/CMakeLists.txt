@@ -1,8 +1,20 @@
 cmake_minimum_required(VERSION 2.6)
 project(Game_Project)
 
-file(GLOB_RECURSE Game_Project_SOURCES "*.cpp")
-add_executable(Game_Project ${Game_Project_SOURCES})
+add_executable(Game_Project
+    animatedSprite.cpp
+    connection.cpp
+    game.cpp
+    gui.cpp
+    musicPlayer.cpp
+    networkIdentifiers.cpp
+    resourceIdentifiers.cpp
+    resourceManager.cpp
+    sceneNode.cpp
+    soundPlayer.cpp
+    state.cpp
+    stateStack.cpp
+    main.cpp)
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cmake_modules" ${CMAKE_MODULE_PATH})
 
@@ -10,6 +22,13 @@ find_package(SFML 2 REQUIRED system window graphics network audio)
 if(SFML_FOUND)
     include_directories(${SFML_INCLUDE_DIR})
     target_link_libraries(Game_Project ${SFML_LIBRARIES})
+endif()
+
+find_package(ResourcePacker 1 CONFIG REQUIRED)
+if(ResourcePacker_FOUND)
+    message(STATUS "Found ResourcePacker in ${ResourcePacker_INCLUDE_DIR}")
+    include_directories(${ResourcePacker_INCLUDE_DIR})
+    target_link_libraries(Game_Project ${ResourcePacker_LIBRARIES})
 endif()
 
 if(NOT MSVC)

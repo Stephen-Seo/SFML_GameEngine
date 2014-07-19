@@ -40,6 +40,15 @@ namespace Sound
     };
 }
 
+namespace GameResources
+{
+    enum LoadingMode
+    {
+        DEFAULT,
+        PACKFILE
+    };
+}
+
 template<class Resource, class Identifier>
 class ResourceHolder;
 

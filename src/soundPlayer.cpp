@@ -11,22 +11,18 @@ namespace
 }
 
 SoundPlayer::SoundPlayer()
-: mSoundBuffers(), mSounds()
+{}
+
+void SoundPlayer::play(sf::SoundBuffer soundBuffer)
 {
-//load sounds here
+    play(soundBuffer, getListenerPosition());
 }
 
-void SoundPlayer::play(Sound::ID effect)
+void SoundPlayer::play(sf::SoundBuffer soundBuffer, sf::Vector2f position)
 {
-    play(effect, getListenerPosition());
-}
-
-void SoundPlayer::play(Sound::ID effect, sf::Vector2f position)
-{
-    mSounds.push_back(sf::Sound(mSoundBuffers.get(effect)));
+    mSounds.push_back(sf::Sound(soundBuffer));
     sf::Sound& sound = mSounds.back();
 
-    sound.setBuffer(mSoundBuffers.get(effect));
     sound.setPosition(position.x, -position.y, 0.0f);
     sound.setAttenuation(Attenuation);
     sound.setMinDistance(MinDistance3D);

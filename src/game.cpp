@@ -1,9 +1,21 @@
 
 #include "game.hpp"
 
+// set packfile name if one is being used
+#define PACKFILE_NAME ""
+
+// set to true if a packfile is being used
+#define IS_USING_PACKFILE false
+
+#if IS_USING_PACKFILE == true
+#  define RESOURCE_MANAGER_MODE GameResources::PACKFILE
+#else
+#  define RESOURCE_MANAGER_MODE GameResources::DEFAULT
+#endif
+
 Game::Game()
 : window(sf::VideoMode(720,480), "SFML App"),
-resourceManager(&stateStack),
+resourceManager(&stateStack, RESOURCE_MANAGER_MODE, PACKFILE_NAME),
 mPlayer(),
 sPlayer(),
 stateStack(State::Context(window, resourceManager, mPlayer, sPlayer, isQuitting)),
