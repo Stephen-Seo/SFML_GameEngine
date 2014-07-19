@@ -26,7 +26,6 @@ endif()
 
 find_package(ResourcePacker 1 CONFIG QUIET)
 if(ResourcePacker_FOUND)
-    message(STATUS "Found ResourcePacker in ${ResourcePacker_INCLUDE_DIR}")
     include_directories(${ResourcePacker_INCLUDE_DIR})
     target_link_libraries(Game_Project ${ResourcePacker_LIBRARIES})
     add_definitions(-DResourcePacker_FOUND)
