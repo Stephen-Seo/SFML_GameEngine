@@ -30,6 +30,7 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id)
         if (!resource->loadFromFile(pathIter->second))
             throw std::runtime_error("ResourceHolder::load - Failed to load " + pathIter->second);
     }
+#if defined(ResourcePacker_FOUND)
     else if(mode == GameResources::PACKFILE)
     {
         std::unique_ptr<char[]> data;
@@ -45,6 +46,7 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id)
             dataMap.insert(std::make_pair(id, std::move(data)));
         }
     }
+#endif
 
     auto inserted = resourceMap.insert(std::make_pair(id, std::move(resource)));
     assert(inserted.second);
@@ -65,6 +67,7 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id, const Parameter& 
         if (!resource->loadFromFile(pathIter->second, secondParam))
             throw std::runtime_error("ResourceHolder::load - Failed to load " + pathIter->second);
     }
+#if defined(ResourcePacker_FOUND)
     else if(mode == GameResources::PACKFILE)
     {
         std::unique_ptr<char[]> data;
@@ -80,6 +83,7 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id, const Parameter& 
             dataMap.insert(std::make_pair(id, std::move(data)));
         }
     }
+#endif
 
     auto inserted = resourceMap.insert(std::make_pair(id, std::move(resource)));
     assert(inserted.second);

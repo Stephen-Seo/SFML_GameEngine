@@ -1,11 +1,20 @@
 
 #include "game.hpp"
 
-// set packfile name if one is being used
+// set packfile name/filepath if one is being used
 #define PACKFILE_NAME ""
 
 // set to true if a packfile is being used
 #define IS_USING_PACKFILE false
+
+// if not using cmake to build and using the ResourcePacker lib,
+// define ResourcePacker_FOUND
+
+
+#if defined(ResourcePacker_FOUND)
+#else
+#  define IS_USING_PACKFILE false
+#endif
 
 #if IS_USING_PACKFILE == true
 #  define RESOURCE_MANAGER_MODE GameResources::PACKFILE

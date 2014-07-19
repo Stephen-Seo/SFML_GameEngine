@@ -8,8 +8,6 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 
-#include <ResourcePacker.hpp>
-
 #include "stateStack.hpp"
 #include "resourceIdentifiers.hpp"
 

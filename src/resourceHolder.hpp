@@ -11,7 +11,9 @@
 #include <stdexcept>
 #include <iostream>
 
+#if defined(ResourcePacker_FOUND)
 #include <ResourcePacker.hpp>
+#endif
 
 template <class Resource, class Identifier>
 class ResourceHolder
