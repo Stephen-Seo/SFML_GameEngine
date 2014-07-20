@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(Game_Project)
 
-add_executable(Game_Project
+set(Game_Project_SOURCES
     animatedSprite.cpp
     connection.cpp
     game.cpp
@@ -15,6 +15,14 @@ add_executable(Game_Project
     state.cpp
     stateStack.cpp
     main.cpp)
+
+if(WIN32)
+add_executable(Game_Project WIN32
+    ${Game_Project_SOURCES})
+else()
+add_executable(Game_Project
+    ${Game_Project_SOURCES})
+endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cmake_modules" ${CMAKE_MODULE_PATH})
 
