@@ -4,6 +4,7 @@ project(Game_Project)
 set(Game_Project_SOURCES
     animatedSprite.cpp
     connection.cpp
+    context.cpp
     game.cpp
     gui.cpp
     musicPlayer.cpp
@@ -14,6 +15,10 @@ set(Game_Project_SOURCES
     soundPlayer.cpp
     state.cpp
     stateStack.cpp
+    ec/engine.cpp
+    ec/entity.cpp
+    ec/nodeMove.cpp
+    ec/system.cpp
     main.cpp)
 
 if(WIN32)

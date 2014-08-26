@@ -1,0 +1,28 @@
+
+#ifndef ENGINE_HPP
+#define ENGINE_HPP
+
+#include <vector>
+#include <queue>
+#include <memory>
+
+#include "system.hpp"
+
+struct Context;
+
+class Engine
+{
+public:
+    Engine();
+    void addSystem(std::unique_ptr<Node> type);
+    void addEntity(std::unique_ptr<Entity> entity);
+    void removeEntity(int eID);
+
+    void update(sf::Time dt, Context context);
+private:
+    std::vector<std::unique_ptr<System> > systems;
+    std::map<int, std::unique_ptr<Entity> > entityMap;
+    std::queue<int> deadQueue;
+};
+
+#endif

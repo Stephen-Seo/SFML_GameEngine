@@ -2,14 +2,6 @@
 #include "state.hpp"
 #include "stateStack.hpp"
 
-State::Context::Context(sf::RenderWindow& window, ResourceManager& resourceManager, MusicPlayer& mPlayer, SoundPlayer& sPlayer, bool& isQuitting) :
-window(&window),
-resourceManager(&resourceManager),
-mPlayer(&mPlayer),
-sPlayer(&sPlayer),
-isQuitting(&isQuitting)
-{}
-
 State::State(StateStack& stack, Context context)
 : stack(&stack), context(context)
 {}
@@ -37,7 +29,7 @@ void State::requestStackClear()
     stack->clearStates();
 }
 
-State::Context State::getContext() const
+Context State::getContext() const
 {
     return context;
 }

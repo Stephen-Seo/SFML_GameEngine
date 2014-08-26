@@ -10,6 +10,7 @@
 
 #include "stateStack.hpp"
 #include "resourceIdentifiers.hpp"
+#include "resourceHolder.hpp"
 
 class ResourceManager
 {

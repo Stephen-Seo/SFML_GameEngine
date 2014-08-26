@@ -6,7 +6,7 @@ StateStack::PendingChange::PendingChange(Action action, States::ID stateID)
 {
 }
 
-StateStack::StateStack(State::Context context)
+StateStack::StateStack(Context context)
 : stack(), pendingList(), context(context), factories()
 {
 }

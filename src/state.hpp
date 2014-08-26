@@ -2,13 +2,13 @@
 #ifndef STATE_HPP
 #define STATE_HPP
 
+#include <memory>
+
 #include <SFML/Graphics.hpp>
 
-#include "resourceHolder.hpp"
+#include "context.hpp"
 #include "resourceIdentifiers.hpp"
 #include "stateIdentifiers.hpp"
-#include "musicPlayer.hpp"
-#include "soundPlayer.hpp"
 
 class ResourceManager;
 
@@ -19,26 +19,15 @@ class State
 public:
     typedef std::unique_ptr<State> Ptr;
 
-    struct Context
-    {
-        Context(sf::RenderWindow& window,
-                ResourceManager& resourceManager,
-                MusicPlayer& mPlayer,
-                SoundPlayer& sPlayer,
-                bool& isQuitting);
-
-        sf::RenderWindow* window;
-        ResourceManager* resourceManager;
-        MusicPlayer* mPlayer;
-        SoundPlayer* sPlayer;
-        bool* isQuitting;
-    };
-
     State(StateStack& stack, Context context);
     virtual ~State();
 
     virtual void draw() = 0;
+
+    // Return true to continue update down the StateStack
     virtual bool update(sf::Time dt) = 0;
+
+    // Return true to continue handleEvent down the StateStack
     virtual bool handleEvent(const sf::Event& event) = 0;
 
     ResourcesSet getNeededResources();

@@ -5,9 +5,12 @@
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
+#include "ec/engine.hpp"
 #include "resourceHolder.hpp"
 #include "resourceIdentifiers.hpp"
 #include "resourceManager.hpp"
+#include "musicPlayer.hpp"
+#include "soundPlayer.hpp"
 #include "state.hpp"
 #include "stateStack.hpp"
 
@@ -35,6 +38,8 @@ private:
     StateStack stateStack;
 
     bool isQuitting;
+
+    Engine ecEngine;
 };
 
 #endif

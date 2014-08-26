@@ -27,11 +27,11 @@ Game::Game()
 resourceManager(&stateStack, RESOURCE_MANAGER_MODE, PACKFILE_NAME),
 mPlayer(),
 sPlayer(),
-stateStack(State::Context(window, resourceManager, mPlayer, sPlayer, isQuitting)),
+stateStack(Context(window, resourceManager, mPlayer, sPlayer, ecEngine, isQuitting)),
 isQuitting(false)
 {
     registerResources();
-	registerStates();
+    registerStates();
 
     frameTime = sf::seconds(1.f / 60.f);
 }
