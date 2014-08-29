@@ -13,9 +13,11 @@ class SoundPlayer : private sf::NonCopyable
 {
 public:
     SoundPlayer();
-    void play(sf::SoundBuffer& soundBuffer);
-    void play(sf::SoundBuffer& soundBuffer, sf::Vector2f position);
+    void play(sf::SoundBuffer& soundBuffer, bool looping=false);
+    void play(sf::SoundBuffer& soundBuffer, sf::Vector2f position, bool looping=false);
     void removeStoppedSounds();
+    void stopAllSounds();
+    void stopLoopingSounds();
     void setListenerPosition(sf::Vector2f position);
     sf::Vector2f getListenerPosition() const;
 private:
