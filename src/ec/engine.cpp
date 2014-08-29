@@ -15,11 +15,21 @@ void Engine::addSystem(std::unique_ptr<Node> type)
     systems.push_back(std::unique_ptr<System>(newSystem));
 }
 
+void Engine::addDrawSystem(std::unique_ptr<Node> type)
+{
+    System* newSystem = new System(std::move(type));
+    drawSystems.push_back(std::unique_ptr<System>(newSystem));
+}
+
 void Engine::addEntity(std::unique_ptr<Entity> entity)
 {
     entity->removed = false;
     bool nodeAdded = false;
     for(auto iter = systems.begin(); iter != systems.end(); ++iter)
+    {
+        nodeAdded |= (*iter)->checkEntity(*entity.get());
+    }
+    for(auto iter = drawSystems.begin(); iter != drawSystems.end(); ++iter)
     {
         nodeAdded |= (*iter)->checkEntity(*entity.get());
     }
@@ -49,6 +59,10 @@ void Engine::update(sf::Time dt, Context context)
         {
             (*iter)->removeEntity(eID);
         }
+        for(auto iter = drawSystems.begin(); iter != drawSystems.end(); ++iter)
+        {
+            (*iter)->removeEntity(eID);
+        }
 
         entityMap.erase(eID);
     }
@@ -56,5 +70,13 @@ void Engine::update(sf::Time dt, Context context)
     for(auto iter = systems.begin(); iter != systems.end(); ++iter)
     {
         (*iter)->update(dt, context);
+    }
+}
+
+void Engine::draw(Context context)
+{
+    for(auto iter = drawSystems.begin(); iter != drawSystems.end(); ++iter)
+    {
+        (*iter)->update(sf::Time::Zero, context);
     }
 }

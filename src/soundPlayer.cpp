@@ -13,12 +13,12 @@ namespace
 SoundPlayer::SoundPlayer()
 {}
 
-void SoundPlayer::play(sf::SoundBuffer soundBuffer)
+void SoundPlayer::play(sf::SoundBuffer& soundBuffer)
 {
     play(soundBuffer, getListenerPosition());
 }
 
-void SoundPlayer::play(sf::SoundBuffer soundBuffer, sf::Vector2f position)
+void SoundPlayer::play(sf::SoundBuffer& soundBuffer, sf::Vector2f position)
 {
     mSounds.push_back(sf::Sound(soundBuffer));
     sf::Sound& sound = mSounds.back();
