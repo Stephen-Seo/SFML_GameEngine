@@ -3,9 +3,9 @@
 #define NODE_MOVE_HPP
 
 #include "node.hpp"
-#include "componentPosition.hpp"
-#include "componentVelocity.hpp"
-#include "componentAcceleration.hpp"
+#include "cPosition.hpp"
+#include "cVelocity.hpp"
+#include "cAcceleration.hpp"
 #include "entity.hpp"
 
 struct nMove : Node

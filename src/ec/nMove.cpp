@@ -1,5 +1,5 @@
 
-#include "nodeMove.hpp"
+#include "nMove.hpp"
 
 #include <typeindex>
 
@@ -20,8 +20,7 @@ bool nMove::checkEntity(Entity& entity)
 
 std::unique_ptr<Node> nMove::getNewNode()
 {
-    std::unique_ptr<Node> nNode(new nMove());
-    return std::move(nNode);
+    return std::unique_ptr<Node>(new nMove());
 }
 
 void nMove::getCReferencesFromEntity(Entity& entity)

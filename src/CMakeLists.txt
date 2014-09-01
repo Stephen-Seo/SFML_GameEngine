@@ -17,7 +17,7 @@ set(Game_Project_SOURCES
     stateStack.cpp
     ec/engine.cpp
     ec/entity.cpp
-    ec/nodeMove.cpp
+    ec/nMove.cpp
     ec/system.cpp
     main.cpp)
 
