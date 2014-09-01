@@ -4,7 +4,6 @@
 
 #include <memory>
 #include <map>
-#include <set>
 
 #include <SFML/System.hpp>
 

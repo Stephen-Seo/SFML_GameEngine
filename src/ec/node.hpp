@@ -2,14 +2,13 @@
 #ifndef NODE_HPP
 #define NODE_HPP
 
-#include <list>
 #include <memory>
 
 #include <SFML/System.hpp>
 
 #include "entity.hpp"
-#include "../context.hpp"
 
+struct Context;
 
 struct Node
 {

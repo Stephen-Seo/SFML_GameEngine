@@ -3,6 +3,8 @@
 
 #include <typeindex>
 
+#include "../context.hpp"
+
 nMove::nMove() :
 position(nullptr),
 velocity(nullptr),

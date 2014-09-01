@@ -1,6 +1,8 @@
 
 #include "system.hpp"
 
+#include "../context.hpp"
+
 System::System(std::unique_ptr<Node> nodeType) :
 nodeType(std::move(nodeType))
 {}
