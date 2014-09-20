@@ -1,0 +1,17 @@
+include 'linux_x86', 'linux_x86_64', 'windows_x86', 'windows_x86_64'
+
+if(hasProperty('ResourcePacker_DIR')) {
+    include 'ResourcePacker'
+    project(':ResourcePacker').projectDir = new File("$ResourcePacker_DIR")
+}
+
+if(hasProperty('SFML2_DIR')) {
+    include 'sfml_linux_x86'
+    project(':sfml_linux_x86').projectDir = new File("${SFML2_DIR}/sfml_linux_x86")
+    include 'sfml_linux_x86_64'
+    project(':sfml_linux_x86_64').projectDir = new File("${SFML2_DIR}/sfml_linux_x86_64")
+    include 'sfml_windows_x86'
+    project(':sfml_windows_x86').projectDir = new File("${SFML2_DIR}/sfml_windows_x86")
+    include 'sfml_windows_x86_64'
+    project(':sfml_windows_x86_64').projectDir = new File("${SFML2_DIR}/sfml_windows_x86_64")
+}
