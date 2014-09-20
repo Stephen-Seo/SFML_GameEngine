@@ -10,9 +10,9 @@ if(hasProperty('SFML2_DIR'))
         }
 
         platforms {
-            linux_x86_64 {
+            linux_x86 {
                 operatingSystem "linux"
-                architecture "x86_64"
+                architecture "x86"
             }
         }
 
@@ -22,14 +22,21 @@ if(hasProperty('SFML2_DIR'))
                 eachPlatform() {
                     cppCompiler.executable "g++"
                 }
-                target("linux_x86_64")
+                target("linux_x86") {
+                    cppCompiler.withArguments { List<String> args ->
+                        args << "-m32" << "-march=i686" << "-mtune=generic"
+                    }
+                    linker.withArguments { List<String> args ->
+                        args << "-m32"
+                    }
+                }
             }
         }
     }
 
     executables {
         game_project {
-            targetPlatforms "linux_x86_64"
+            targetPlatforms "linux_x86"
 
             binaries.all {
                 cppCompiler.args "-std=c++11", "-Wall", "-Wextra"
@@ -55,11 +62,11 @@ if(hasProperty('SFML2_DIR'))
                 if(hasProperty('ResourcePacker_DIR')) {
                     lib project: ":ResourcePacker", library: "ResourcePacker"
                 }
-                lib project: ":sfml_linux_x86_64", library: "sfml_system"
-                lib project: ":sfml_linux_x86_64", library: "sfml_window"
-                lib project: ":sfml_linux_x86_64", library: "sfml_network"
-                lib project: ":sfml_linux_x86_64", library: "sfml_graphics"
-                lib project: ":sfml_linux_x86_64", library: "sfml_audio"
+                lib project: ":sfml_linux_x86", library: "sfml_system"
+                lib project: ":sfml_linux_x86", library: "sfml_window"
+                lib project: ":sfml_linux_x86", library: "sfml_network"
+                lib project: ":sfml_linux_x86", library: "sfml_graphics"
+                lib project: ":sfml_linux_x86", library: "sfml_audio"
                 source {
                     srcDir "${rootDir}/src"
                     include "*.cpp"
@@ -73,4 +80,14 @@ if(hasProperty('SFML2_DIR'))
         }
     }
 }
+else
+{
+    println "WARNING: SFML game engine builds are unavailable if the"
+    println "SFML2_DIR property is undefined!"
+}
 
+if(!hasProperty('ResourcePacker_DIR'))
+{
+    println "WARNING: ResourcePacker_DIR property not defined, will compile"
+    println "SFML game engine without it!"
+}

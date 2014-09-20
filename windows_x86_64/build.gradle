@@ -1,7 +1,7 @@
 
 apply plugin: 'cpp'
 
-if(hasProperty('SFML2_DIR'))
+if(hasProperty('SFML2_DIR') && hasProperty('EXTLIBS_DIR'))
 {
     model {
         buildTypes {
@@ -10,26 +10,30 @@ if(hasProperty('SFML2_DIR'))
         }
 
         platforms {
-            linux_x86_64 {
-                operatingSystem "linux"
+            windows_x86_64 {
+                operatingSystem "windows"
                 architecture "x86_64"
             }
         }
 
         toolChains {
-            gcc(Gcc) {
+            mingw_x86_64(Gcc) {
                 path "/usr/bin"
                 eachPlatform() {
-                    cppCompiler.executable "g++"
+                    cCompiler.executable "x86_64-w64-mingw32-gcc"
+                    cppCompiler.executable "x86_64-w64-mingw32-g++"
+                    linker.executable "x86_64-w64-mingw32-g++"
+                    assembler.executable "x86_64-w64-mingw32-as"
+                    staticLibArchiver.executable "x86_64-w64-mingw32-ar"
                 }
-                target("linux_x86_64")
+                target("windows_x86_64")
             }
         }
     }
 
     executables {
         game_project {
-            targetPlatforms "linux_x86_64"
+            targetPlatforms "windows_x86_64"
 
             binaries.all {
                 cppCompiler.args "-std=c++11", "-Wall", "-Wextra"
@@ -55,11 +59,11 @@ if(hasProperty('SFML2_DIR'))
                 if(hasProperty('ResourcePacker_DIR')) {
                     lib project: ":ResourcePacker", library: "ResourcePacker"
                 }
-                lib project: ":sfml_linux_x86_64", library: "sfml_system"
-                lib project: ":sfml_linux_x86_64", library: "sfml_window"
-                lib project: ":sfml_linux_x86_64", library: "sfml_network"
-                lib project: ":sfml_linux_x86_64", library: "sfml_graphics"
-                lib project: ":sfml_linux_x86_64", library: "sfml_audio"
+                lib project: ":sfml_windows_x86_64", library: "sfml_system"
+                lib project: ":sfml_windows_x86_64", library: "sfml_window"
+                lib project: ":sfml_windows_x86_64", library: "sfml_network"
+                lib project: ":sfml_windows_x86_64", library: "sfml_graphics"
+                lib project: ":sfml_windows_x86_64", library: "sfml_audio"
                 source {
                     srcDir "${rootDir}/src"
                     include "*.cpp"
