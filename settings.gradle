@@ -1,27 +1,15 @@
-include 'linux_x86', 'linux_x86_64', 'windows_x86', 'windows_x86_64'
 
 if(hasProperty('ResourcePacker_DIR')) {
-    include 'RP_linux_x86'
-    project(':RP_linux_x86').projectDir = new File("${ResourcePacker_DIR}/RP_linux_x86")
-
-    include 'RP_linux_x86_64'
-    project(':RP_linux_x86_64').projectDir = new File("${ResourcePacker_DIR}/RP_linux_x86_64")
-
-    include 'RP_windows_x86'
-    project(':RP_windows_x86').projectDir = new File("${ResourcePacker_DIR}/RP_windows_x86")
-
-    include 'RP_windows_x86_64'
-    project(':RP_windows_x86_64').projectDir = new File("${ResourcePacker_DIR}/RP_windows_x86_64")
-
+    include 'ResourcePacker'
+    project(':ResourcePacker').projectDir = new File("${ResourcePacker_DIR}")
 }
 
 if(hasProperty('SFML2_DIR')) {
-    include 'sfml_linux_x86'
-    project(':sfml_linux_x86').projectDir = new File("${SFML2_DIR}/sfml_linux_x86")
-    include 'sfml_linux_x86_64'
-    project(':sfml_linux_x86_64').projectDir = new File("${SFML2_DIR}/sfml_linux_x86_64")
-    include 'sfml_windows_x86'
-    project(':sfml_windows_x86').projectDir = new File("${SFML2_DIR}/sfml_windows_x86")
-    include 'sfml_windows_x86_64'
-    project(':sfml_windows_x86_64').projectDir = new File("${SFML2_DIR}/sfml_windows_x86_64")
+    include 'SFML'
+    project(':SFML').projectDir = new File("${SFML2_DIR}")
+}
+
+if(hasProperty('GTEST_DIR')) {
+    include 'gtest'
+    project(':gtest').projectDir = new File("${GTEST_DIR}")
 }

@@ -4,22 +4,6 @@ apply plugin: 'cpp'
 if(hasProperty('SFML2_DIR'))
 {
     model {
-        repositories {
-            lib(PrebuiltLibraries) {
-                if(project.hasProperty('GTEST_DIR')) {
-                    gtest {
-                        headers.srcDir "${GTEST_DIR}/include"
-                        binaries.withType(SharedLibraryBinary) {
-                            sharedLibraryFile = file("${GTEST_DIR}/lib/libgtest.so")
-                        }
-                        binaries.withType(StaticLibraryBinary) {
-                            staticLibraryFile = file("${GTEST_DIR}/lib/libgtest.a")
-                        }
-                    }
-                }
-            }
-        }
-
         buildTypes {
             debug
             release
@@ -29,6 +13,19 @@ if(hasProperty('SFML2_DIR'))
             linux_x86 {
                 operatingSystem "linux"
                 architecture "x86"
+            }
+            linux_x86_64 {
+                operatingSystem "linux"
+                architecture "x86_64"
+            }
+
+            windows_x86 {
+                operatingSystem "windows"
+                architecture "x86"
+            }
+            windows_x86_64 {
+                operatingSystem "windows"
+                architecture "x86_64"
             }
         }
 
@@ -46,16 +43,46 @@ if(hasProperty('SFML2_DIR'))
                         args << "-m32"
                     }
                 }
+                target("linux_x86_64")
+            }
+
+            mingw_w64(Gcc) {
+                path "/usr/bin"
+                eachPlatform() {
+                    if(platform == platforms.windows_x86) {
+                        cCompiler.executable "i686-w64-mingw32-gcc"
+                        cppCompiler.executable "i686-w64-mingw32-g++"
+                        linker.executable "i686-w64-mingw32-g++"
+                        assembler.executable "i686-w64-mingw32-as"
+                        staticLibArchiver.executable "i686-w64-mingw32-ar"
+                    }
+                    if(platform == platforms.windows_x86_64) {
+                        cCompiler.executable "x86_64-w64-mingw32-gcc"
+                        cppCompiler.executable "x86_64-w64-mingw32-g++"
+                        linker.executable "x86_64-w64-mingw32-g++"
+                        assembler.executable "x86_64-w64-mingw32-as"
+                        staticLibArchiver.executable "x86_64-w64-mingw32-ar"
+                    }
+                }
+                target("windows_x86")
+                target("windows_x86_64")
             }
         }
     }
 
     executables {
         game_project {
-            targetPlatforms "linux_x86"
+            targetPlatforms "linux_x86", "linux_x86_64"
+            if(project.hasProperty('EXTLIBS_DIR')) {
+                targetPlatforms "windows_x86", "windows_x86_64"
+            }
 
             binaries.all {
                 cppCompiler.args "-std=c++11", "-Wall", "-Wextra"
+                if(project.hasProperty('SET_RPATH'))
+                {
+                    linker.args "-Xlinker", "-rpath=${SET_RPATH}"
+                }
 
                 if(project.hasProperty('ResourcePacker_DIR')) {
                     cppCompiler.define "ResourcePacker_FOUND"
@@ -71,10 +98,12 @@ if(hasProperty('SFML2_DIR'))
             }
         }
 
-        if(project.hasProperty('GTEST_DIR'))
-        {
+        if(project.hasProperty('GTEST_DIR')) {
             unit_tests {
-                targetPlatforms "linux_x86"
+                targetPlatforms "linux_x86", "linux_x86_64"
+                if(project.hasProperty('EXTLIBS_DIR')) {
+                    targetPlatforms "windows_x86", "windows_x86_64"
+                }
 
                 binaries.all {
                     cppCompiler.args "-std=c++11", "-Wall", "-Wextra"
@@ -99,13 +128,13 @@ if(hasProperty('SFML2_DIR'))
         game_project {
             cpp {
                 if(project.hasProperty('ResourcePacker_DIR')) {
-                    lib project: ":RP_linux_x86", library: "ResourcePacker"
+                    lib project: ":ResourcePacker", library: "ResourcePacker"
                 }
-                lib project: ":sfml_linux_x86", library: "sfml_system"
-                lib project: ":sfml_linux_x86", library: "sfml_window"
-                lib project: ":sfml_linux_x86", library: "sfml_network"
-                lib project: ":sfml_linux_x86", library: "sfml_graphics"
-                lib project: ":sfml_linux_x86", library: "sfml_audio"
+                lib project: ":SFML", library: "sfml_system"
+                lib project: ":SFML", library: "sfml_window"
+                lib project: ":SFML", library: "sfml_network"
+                lib project: ":SFML", library: "sfml_graphics"
+                lib project: ":SFML", library: "sfml_audio"
                 source {
                     srcDir "${rootDir}/src"
                     include "**/*.cpp"
@@ -117,19 +146,18 @@ if(hasProperty('SFML2_DIR'))
             }
         }
 
-        if(project.hasProperty('GTEST_DIR'))
-        {
+        if(project.hasProperty('GTEST_DIR')) {
             unit_tests {
-                cpp {
+                cpp(CppSourceSet) {
                     if(project.hasProperty('ResourcePacker_DIR')) {
-                        lib project: ":RP_linux_x86", library: "ResourcePacker"
+                        lib project: ":ResourcePacker", library: "ResourcePacker"
                     }
-                    lib project: ":sfml_linux_x86", library: "sfml_system"
-                    lib project: ":sfml_linux_x86", library: "sfml_window"
-                    lib project: ":sfml_linux_x86", library: "sfml_network"
-                    lib project: ":sfml_linux_x86", library: "sfml_graphics"
-                    lib project: ":sfml_linux_x86", library: "sfml_audio"
-                    lib library: "gtest"
+                    lib project: ":SFML", library: "sfml_system"
+                    lib project: ":SFML", library: "sfml_window"
+                    lib project: ":SFML", library: "sfml_network"
+                    lib project: ":SFML", library: "sfml_graphics"
+                    lib project: ":SFML", library: "sfml_audio"
+                    lib project: ":gtest", library: "gtest"
                     source {
                         srcDir "${rootDir}"
                         include "src/**/*.cpp"
@@ -155,4 +183,8 @@ if(!hasProperty('ResourcePacker_DIR'))
 {
     println "WARNING: ResourcePacker_DIR property not defined, will compile"
     println "SFML game engine without it!"
+}
+
+if(!hasProperty('GTEST_DIR')) {
+    println "WARNING: Unit Tests are disabled since GTEST_DIR is not defined!"
 }
