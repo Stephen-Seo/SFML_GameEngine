@@ -8,15 +8,15 @@
 
 #include "ec/entity.hpp"
 #include "ec/engine.hpp"
-#include "ec/componentPosition.hpp"
-#include "ec/componentVelocity.hpp"
-#include "ec/componentAcceleration.hpp"
-#include "ec/nodeMove.hpp"
+#include "ec/cPosition.hpp"
+#include "ec/cVelocity.hpp"
+#include "ec/cAcceleration.hpp"
+#include "ec/nMove.hpp"
 #include "context.hpp"
 #include "resourceIdentifiers.hpp"
 #include "resourceManager.hpp"
-#include "MusicPlayer.hpp"
-#include "SoundPlayer.hpp"
+#include "musicPlayer.hpp"
+#include "soundPlayer.hpp"
 
 TEST(ECTest, ECUpdate)
 {
