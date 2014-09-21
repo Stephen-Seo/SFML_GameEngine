@@ -1,15 +1,10 @@
-To build project, make directory "build" and cd to it. Then use the commands:
-cmake ../src
-make
+To see what build tasks are available, run ./gradlew tasks
 
-To setup Makefile with SFML-2 in a non-standard directory:
-cmake -D SFML_ROOT=${Directory} ../src
+SFML2_DIR (and optionally ResourcePacker_DIR) must be defined for building.
+defining EXTLIBS_DIR will enable windows builds.
 
-To set install directory, use -D CMAKE_INSTALL_PREFIX=${Directory}
-
-To find ResourcePacker if installed in non standard directory,
-use -D CMAKE_PREFIX_PATH=${pathToResourcePackerRoot}
-
-To add Eclipse project files, add the option:
--G"Eclipse CDT4 - Unix Makefiles"
-
+SFML2_DIR must point to the directory containing a gradle build setup of SFML2.1
+ResourcePacker_DIR must point to the directory containing a gradle build setup
+of ResourcePacker
+EXTLIBS_DIR must point to the extlibs directory in the SFML2.1 sources directory
+(This is found in the SFML2.1 sources zip)

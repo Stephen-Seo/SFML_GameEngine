@@ -38,7 +38,7 @@ if(hasProperty('SFML2_DIR') && hasProperty('EXTLIBS_DIR'))
             binaries.all {
                 cppCompiler.args "-std=c++11", "-Wall", "-Wextra"
 
-                if(hasProperty('ResourcePacker_DIR')) {
+                if(project.hasProperty('ResourcePacker_DIR')) {
                     cppCompiler.define "ResourcePacker_FOUND"
                 }
 
@@ -56,7 +56,7 @@ if(hasProperty('SFML2_DIR') && hasProperty('EXTLIBS_DIR'))
     sources {
         game_project {
             cpp {
-                if(hasProperty('ResourcePacker_DIR')) {
+                if(project.hasProperty('ResourcePacker_DIR')) {
                     lib project: ":ResourcePacker", library: "ResourcePacker"
                 }
                 lib project: ":sfml_windows_x86", library: "sfml_system"
