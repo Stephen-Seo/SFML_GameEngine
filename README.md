@@ -2,7 +2,7 @@
 
 # Compiling
 
-Gradle builds with the expectation that the host platform is Arch Linux 64-bit with multilib-gcc and mingw-w64 installed. If your platform is different, build using cmake instead.
+Gradle builds with the expectation that the host platform is Arch Linux 64-bit with multilib-devel and mingw-w64-toolchain installed. If your platform is different, build using cmake instead.
 The CMakeLists.txt file is located in src/
 
 ## Building with Gradle
