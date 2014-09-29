@@ -26,6 +26,10 @@ namespace Fonts
     };
 }
 
+/*
+  Only use Music identifiers if you intend to use the MusicPlayer, which does not use a ResourcePacker.
+  If you intend to use the ResourcePacker, load music files as SoundBuffers via the Sound enum values.
+*/
 namespace Music
 {
     enum ID
