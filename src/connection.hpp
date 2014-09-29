@@ -35,29 +35,21 @@ public:
     void heartbeat();
 
 protected:
+    bool acceptNewConnections;
+    bool ignoreOutOfSequence;
+    bool resendTimedOutPackets;
+
     void preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing = false);
 
     void sendPacket(sf::Packet& packet, sf::Uint32 sequenceID, sf::IpAddress address);
 
-    virtual void receivedPacket(sf::Packet packet);
+    virtual void receivedPacket(sf::Packet packet, sf::Uint32 address);
+
+    virtual void connectionMade(sf::Uint32 address);
+
+    virtual void connectionLost(sf::Uint32 address);
 
 private:
-    void registerConnection(sf::Uint32 address, sf::Uint32 ID = 0);
-    void unregisterConnection(sf::Uint32 address);
-
-    void shiftBitfield(sf::IpAddress address, sf::Uint32 diff);
-
-    void checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint32 address);
-
-    void heartbeat(sf::Uint32 addressInteger);
-
-    void lookupRtt(sf::Uint32 address, sf::Uint32 ack);
-
-    void checkSentPacketsSize(sf::Uint32 address);
-
-    sf::Uint32 generateID();
-
-
     Mode mode;
 
     sf::UdpSocket socket;
@@ -82,6 +74,24 @@ private:
     std::map<sf::Uint32, sf::Time> rttMap;
 
     sf::IpAddress clientSentAddress;
+
+
+    void registerConnection(sf::Uint32 address, sf::Uint32 ID = 0);
+    void unregisterConnection(sf::Uint32 address);
+
+    void shiftBitfield(sf::IpAddress address, sf::Uint32 diff);
+
+    void checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint32 address);
+
+    void heartbeat(sf::Uint32 addressInteger);
+
+    void lookupRtt(sf::Uint32 address, sf::Uint32 ack);
+
+    void checkSentPacketsSize(sf::Uint32 address);
+
+    sf::Uint32 generateID();
+
+
 };
 
 #endif

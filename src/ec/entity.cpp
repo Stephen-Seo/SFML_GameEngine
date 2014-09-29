@@ -5,9 +5,22 @@
 
 int Entity::gID = 0;
 
+std::set<int> Entity::IDsInUse;
+
 Entity::Entity() :
 removed(false)
-{}
+{
+    ID = Entity::gID++;
+    while(!Entity::IDsInUse.insert(ID).second)
+    {
+        ID = Entity::gID++;
+    }
+}
+
+Entity::~Entity()
+{
+    Entity::IDsInUse.erase(ID);
+}
 
 void Entity::addComponent(std::type_index typeIndex, std::unique_ptr<Component> component)
 {
@@ -50,3 +63,4 @@ int Entity::getID()
 {
     return ID;
 }
+

@@ -95,6 +95,11 @@ if(hasProperty('SFML2_DIR'))
                     cppCompiler.define "NDEBUG"
                     cppCompiler.args "-O3"
                 }
+
+                if(project.hasProperty('EXTLIBS_DIR') && (targetPlatform == platforms.windows_x86 || targetPlatform == platforms.windows_x86_64))
+                {
+                    linker.args "-mwindows"
+                }
             }
         }
 

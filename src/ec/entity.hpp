@@ -6,6 +6,7 @@
 #include <memory>
 #include <map>
 #include <list>
+#include <set>
 
 #include <SFML/System.hpp>
 
@@ -15,6 +16,7 @@ class Entity : private sf::NonCopyable
 {
 public:
     Entity();
+    ~Entity();
 
     bool removed;
 
@@ -26,7 +28,8 @@ public:
     int getID();
 private:
     static int gID;
-    const int ID = gID++;
+    static std::set<int> IDsInUse;
+    int ID;
 
     std::map<std::type_index, std::unique_ptr<Component> > cMap;
 };

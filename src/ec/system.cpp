@@ -24,6 +24,11 @@ void System::removeEntity(int eID)
     nodeMap.erase(eID);
 }
 
+void System::clearEntities()
+{
+    nodeMap.clear();
+}
+
 void System::update(sf::Time dt, Context context)
 {
     for(auto iter = nodeMap.begin(); iter != nodeMap.end(); ++iter)

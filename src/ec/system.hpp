@@ -18,6 +18,7 @@ public:
 
     bool checkEntity(Entity& entity);
     void removeEntity(int eID);
+    void clearEntities();
 
     void update(sf::Time dt, Context context);
 private:

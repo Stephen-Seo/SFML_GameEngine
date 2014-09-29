@@ -2,6 +2,9 @@
 #include "connection.hpp"
 
 Connection::Connection() :
+acceptNewConnections(true),
+ignoreOutOfSequence(false),
+resendTimedOutPackets(true),
 mode(SERVER)
 {
     socket.bind(GAME_PORT);
@@ -9,6 +12,9 @@ mode(SERVER)
 }
 
 Connection::Connection(Mode mode) :
+acceptNewConnections(true),
+ignoreOutOfSequence(false),
+resendTimedOutPackets(true),
 mode(mode)
 {
     socket.bind(GAME_PORT);
@@ -90,7 +96,7 @@ void Connection::update(sf::Time dt)
             if(!(packet >> ID) || !(packet >> sequence) || !(packet >> ack) || !(packet >> ackBitfield))
                 return;
 
-            if(ID == network::CONNECT)
+            if(ID == network::CONNECT && acceptNewConnections)
             {
                 if(IDMap.find(address.toInteger()) == IDMap.end())
                 {
@@ -158,6 +164,9 @@ void Connection::update(sf::Time dt)
                         return;
                     }
                     ackBitfieldMap[clientAddress] |= (0x100000000 >> diff);
+
+                    if(ignoreOutOfSequence)
+                        return;
                 }
             }
             else if(rSequenceMap[clientAddress] > sequence)
@@ -180,6 +189,9 @@ void Connection::update(sf::Time dt)
                         return;
                     }
                     ackBitfieldMap[clientAddress] |= (0x100000000 >> diff);
+
+                    if(ignoreOutOfSequence)
+                        return;
                 }
             }
             else
@@ -188,7 +200,7 @@ void Connection::update(sf::Time dt)
                 return;
             }
 
-            receivedPacket(packet);
+            receivedPacket(packet, clientAddress);
         }
     } // if(mode == SERVER)
     else if(mode == CLIENT)
@@ -296,6 +308,9 @@ void Connection::update(sf::Time dt)
                             return;
                         }
                         ackBitfieldMap[serverAddress] |= (0x100000000 >> diff);
+
+                        if(ignoreOutOfSequence)
+                            return;
                     }
                 }
                 else if(rSequenceMap[serverAddress] > sequence)
@@ -318,6 +333,9 @@ void Connection::update(sf::Time dt)
                             return;
                         }
                         ackBitfieldMap[serverAddress] |= (0x100000000 >> diff);
+
+                        if(ignoreOutOfSequence)
+                            return;
                     }
                 }
                 else
@@ -326,12 +344,11 @@ void Connection::update(sf::Time dt)
                     return;
                 }
 
-                receivedPacket(packet);
-
+                receivedPacket(packet, serverAddress);
             }
         }
         // connection not yet established
-        else
+        else if(acceptNewConnections)
         {
             // receive
             sf::Packet packet;
@@ -365,6 +382,8 @@ void Connection::update(sf::Time dt)
 
 void Connection::connectToServer(sf::IpAddress address)
 {
+    if(mode != CLIENT)
+        return;
 #ifndef NDEBUG
     std::cout << "CLIENT: sending connection request to server at " << address.toString() << '\n';
 #endif
@@ -404,7 +423,13 @@ void Connection::sendPacket(sf::Packet& packet, sf::Uint32 sequenceID, sf::IpAdd
     sendPacketQueue.push_front(PacketInfo(packet, sequenceID, address.toInteger()));
 }
 
-void Connection::receivedPacket(sf::Packet packet)
+void Connection::receivedPacket(sf::Packet packet, sf::Uint32 address)
+{}
+
+void Connection::connectionMade(sf::Uint32 address)
+{}
+
+void Connection::connectionLost(sf::Uint32 address)
 {}
 
 void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
@@ -430,6 +455,8 @@ void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
     sentPackets.insert(std::make_pair(address, std::list<PacketInfo>()));
 
     rttMap.insert(std::make_pair(address, sf::Time()));
+
+    connectionMade(address);
 }
 
 void Connection::unregisterConnection(sf::Uint32 address)
@@ -447,6 +474,8 @@ void Connection::unregisterConnection(sf::Uint32 address)
     sentPackets.erase(address);
 
     rttMap.erase(address);
+
+    connectionLost(address);
 }
 
 void Connection::shiftBitfield(sf::IpAddress address, sf::Uint32 diff)
@@ -456,6 +485,9 @@ void Connection::shiftBitfield(sf::IpAddress address, sf::Uint32 diff)
 
 void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint32 address)
 {
+    if(!resendTimedOutPackets)
+        return;
+
     --ack;
     for(; bitfield != 0x0; bitfield = bitfield << 1)
     {

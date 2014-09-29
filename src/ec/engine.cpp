@@ -1,7 +1,8 @@
 
 #include "engine.hpp"
 
-#include <stdexcept>
+#include <algorithm>
+#include <iostream>
 
 #include "../context.hpp"
 
@@ -34,23 +35,63 @@ void Engine::addEntity(std::unique_ptr<Entity> entity)
         nodeAdded |= (*iter)->checkEntity(*entity.get());
     }
     if(!nodeAdded)
-        throw new std::runtime_error("No new nodes added with entity (entity cannot possibly be updated)!");
+        std::clog << "WARNING: Entity (" << entity->getID() << ") added without any paired nodes!\n";
     entityMap.insert(std::make_pair(entity->getID(), std::move(entity)));
 }
 
 void Engine::removeEntity(int eID)
 {
-    auto iter = entityMap.find(eID);
-    if(iter != entityMap.end())
+    bool removed = false;
     {
-        iter->second->removed = true;
-        deadQueue.push(eID);
+        auto iter = entityMap.find(eID);
+        if(iter != entityMap.end())
+        {
+            iter->second->removed = true;
+            deadQueue.push(eID);
+            removed = true;
+        }
+    }
+    if(removed)
+    {
+        while(!rfMap[eID].empty())
+        {
+            rfMap[eID].front()();
+            rfMap[eID].pop();
+        }
+        rfMap.erase(eID);
     }
 }
 
-std::map<int, std::unique_ptr<Entity> >::iterator Engine::getEntityIterator()
+void Engine::clear()
+{
+    systems.clear();
+    drawSystems.clear();
+    entityMap.clear();
+    rfMap.clear();
+    while(!deadQueue.empty())
+        deadQueue.pop();
+}
+
+void Engine::clearEntities()
+{
+    for(auto iter = systems.begin(); iter != systems.end(); ++iter)
+        (*iter)->clearEntities();
+    for(auto iter = drawSystems.begin(); iter != drawSystems.end(); ++iter)
+        (*iter)->clearEntities();
+    entityMap.clear();
+    rfMap.clear();
+    while(!deadQueue.empty())
+        deadQueue.pop();
+}
+
+std::map<int, std::unique_ptr<Entity> >::iterator Engine::getEntityIterBegin()
 {
     return entityMap.begin();
+}
+
+std::map<int, std::unique_ptr<Entity> >::iterator Engine::getEntityIterEnd()
+{
+    return entityMap.end();
 }
 
 void Engine::update(sf::Time dt, Context context)
@@ -85,3 +126,9 @@ void Engine::draw(Context context)
         (*iter)->update(sf::Time::Zero, context);
     }
 }
+
+void Engine::registerRemoveCall(int eID, std::function<void()> function)
+{
+    rfMap[eID].push(function);
+}
+
