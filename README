@@ -1,3 +1,6 @@
+
+Gradle builds with the expectation that the host platform is Arch Linux 64-bit with multilib-gcc and mingw-w64 installed. If your platform is different, build using cmake instead.
+
 To see what build tasks are available, run ./gradlew tasks
 
 SFML2_DIR (and optionally ResourcePacker_DIR) must be defined for building.
