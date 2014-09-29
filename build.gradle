@@ -72,9 +72,9 @@ if(hasProperty('SFML2_DIR'))
 
     executables {
         game_project {
-            targetPlatforms "linux_x86", "linux_x86_64"
+            targetPlatform "linux_x86", "linux_x86_64"
             if(project.hasProperty('EXTLIBS_DIR')) {
-                targetPlatforms "windows_x86", "windows_x86_64"
+                targetPlatform "windows_x86", "windows_x86_64"
             }
 
             binaries.all {
@@ -105,9 +105,9 @@ if(hasProperty('SFML2_DIR'))
 
         if(project.hasProperty('GTEST_DIR')) {
             unit_tests {
-                targetPlatforms "linux_x86", "linux_x86_64"
+                targetPlatform "linux_x86", "linux_x86_64"
                 if(project.hasProperty('EXTLIBS_DIR')) {
-                    targetPlatforms "windows_x86", "windows_x86_64"
+                    targetPlatform "windows_x86", "windows_x86_64"
                 }
 
                 binaries.all {
