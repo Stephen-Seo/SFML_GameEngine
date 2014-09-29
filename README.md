@@ -20,6 +20,9 @@ EXTLIBS\_DIR must point to the extlibs directory in the SFML2.1 sources director
 
 ## Building with CMake
 
+CMake gui recommended. (point CMake gui to the src directory as the source directory.)
+Otherwise:
+
 To build project, make directory "build" and cd to it. Then use the commands:
 cmake ../src
 make
