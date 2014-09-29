@@ -57,7 +57,7 @@ To start the game with a state, push a state to the state stack during initializ
 - Push a state to the state stack in the end of `Game::registerStates()`
     - For example, `stateStack.pushState(States::NEW_STATE);`
 
-Note that each state has protected functions requeting the stack to push a state, pop a state, or clear the stack.  
+Note that each state has protected functions requesting the stack to push a state, pop a state, or clear the stack.  
 This is how you can switch between states during operation of a state.
 
 Also, `State::update(sf::Time dt)` and `State::handleEvent(const sf::Event& event)` are meant to return booleans.  
