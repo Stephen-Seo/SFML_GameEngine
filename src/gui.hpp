@@ -2,215 +2,75 @@
 #ifndef GAME_GUI_HPP
 #define GAME_GUI_HPP
 
-#include <list>
-#include <memory>
 #include <functional>
-#include <cassert>
-#include <SFML/System.hpp>
+#include <vector>
+
 #include <SFML/Graphics.hpp>
-
-#include "state.hpp"
-
-class GuiCommand
-{
-public:
-    enum Type {
-        VALUE_BOOL,
-        VALUE_INT,
-        VALUE_FLOAT,
-        STATE
-    };
-
-    enum State_Type {
-        POP,
-        PUSH,
-        POP_THEN_PUSH,
-        CLEAR_THEN_PUSH
-    };
-
-    union Value {
-        Value(bool b);
-        Value(int i);
-        Value(float f);
-        Value(States::ID id);
-
-        bool b;
-        int i;
-        float f;
-        States::ID id;
-    };
-
-    union Ptr {
-        Ptr(bool* b);
-        Ptr(int* i);
-        Ptr(float* f);
-        Ptr(State_Type s);
-        Ptr();
-
-        bool* b;
-        int* i;
-        float* f;
-        State_Type s;
-    };
-
-    GuiCommand(Type type, Value value, Ptr ptr);
-
-    Type type;
-    Value value;
-
-private:
-    friend class GuiSystem;
-    Ptr ptr;
-};
 
 class GuiObject : public sf::Drawable, public sf::Transformable
 {
 public:
-    typedef std::unique_ptr<GuiObject> Ptr;
+    virtual void update(sf::Time dt) = 0;
+    virtual void handleEvent(const sf::Event& event) = 0;
 
-    GuiObject(sf::RenderWindow* window, GuiCommand guiCommand);
-    virtual ~GuiObject();
+    void registerCallback(std::function<void(float)> function);
 
-    virtual void processEvent(const sf::Event& event) = 0;
-    virtual GuiCommand* update(sf::Time time) = 0;
 protected:
-    bool passCommand;
-    GuiCommand guiCommand;
-    sf::RenderWindow* window;
+    std::vector<std::function<void(float)> > callbacks;
+
 };
 
 class GuiButton : public GuiObject
 {
 public:
-    typedef std::unique_ptr<GuiButton> Ptr;
+    GuiButton(bool usingTexture = false);
 
-    GuiButton(sf::RenderWindow* window, GuiCommand guiCommand, sf::Color color, sf::Color activeColor, sf::Vector2f size, sf::Text text = sf::Text());
-    GuiButton(sf::RenderWindow* window, GuiCommand guiCommand, const sf::Texture& texture, const sf::Texture& hovering, const sf::Texture& active, sf::Text text = sf::Text());
+    void update(sf::Time dt);
+    void handleEvent(const sf::Event& event);
 
-    virtual void processEvent(const sf::Event& event);
-    virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+    void setSize(sf::Vector2f size);
 
-protected:
-    bool usesTexture;
-    sf::Text text;
-    sf::Sprite normalSprite;
-    sf::Sprite hoveringSprite;
-    sf::Sprite activeSprite;
-    sf::Color color;
-    sf::Color activeColor;
-    sf::RectangleShape rect;
+    void setPassiveFillColor(sf::Color color);
+    void setPassiveOutlineColor(sf::Color color);
+
+    void setHoveringFillColor(sf::Color color);
+    void setHoveringOutlineColor(sf::Color color);
+
+    void setActiveFillColor(sf::Color color);
+    void setActiveOutlineColor(sf::Color color);
+
+    void setPassiveTexture(sf::Texture& texture);
+    void setHoveringTexture(sf::Texture& texture);
+    void setActiveTexture(sf::Texture& texture);
 
 private:
-    bool hovering;
-    bool clickedOn;
-};
+    enum MouseState
+    {
+        PASSIVE,
+        HOVERING,
+        ACTIVE,
+        AWAY_CLICKED_ON
+    };
 
-class GuiSlider : public GuiObject
-{
-public:
-    typedef std::unique_ptr<GuiSlider> Ptr;
+    bool usingTexture;
+    MouseState currentState;
 
-    GuiSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, sf::Color slider, sf::Color bg, sf::Vector2f sliderSize, sf::FloatRect sliderRect);
-    GuiSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, const sf::Texture& slider, const sf::Texture& bg);
+    sf::Color passiveFillColor;
+    sf::Color passiveOutlineColor;
 
-    virtual void processEvent(const sf::Event& event);
-    virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+    sf::Color hoveringFillColor;
+    sf::Color hoveringOutlineColor;
 
-protected:
-    bool usesTexture;
+    sf::Color activeFillColor;
+    sf::Color activeOutlineColor;
 
-    sf::Sprite sliderSprite;
-    sf::Sprite bgSprite;
-    sf::RectangleShape sliderShape;
-    sf::RectangleShape bgShape;
-    sf::FloatRect rect;
-    float currentValue;
-    float llimit;
-    float hlimit;
-    float offset;
-    bool clickedOn;
+    sf::Texture* passiveTexture;
+    sf::Texture* hoveringTexture;
+    sf::Texture* activeTexture;
 
-    virtual GuiCommand* returnValue();
-};
+    sf::RectangleShape rectangleShape;
 
-class GuiIntSlider : public GuiSlider
-{
-public:
-    GuiIntSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, sf::Color slider, sf::Color bg, sf::Vector2f sliderSize, sf::FloatRect sliderRect);
-    GuiIntSlider(sf::RenderWindow* window, GuiCommand guiCommand, float currentValue, float llimit, float hlimit, const sf::Texture& slider, const sf::Texture& bg);
-
-protected:
-    GuiCommand* returnValue();
-
-};
-
-class GuiCheckbox : public GuiObject
-{
-public:
-    typedef std::unique_ptr<GuiCheckbox> Ptr;
-
-    GuiCheckbox(sf::RenderWindow* window, GuiCommand guiCommand, bool initialValue, sf::Color color, sf::Vector2f size);
-    GuiCheckbox(sf::RenderWindow* window, GuiCommand guiCommand, bool initialValue, const sf::Texture& box, const sf::Texture& check);
-
-    virtual void processEvent(const sf::Event& event);
-    virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
-protected:
-    bool usesTexture;
-    bool currentValue;
-    bool clickedOn;
-
-    sf::Sprite boxSprite;
-    sf::Sprite checkSprite;
-    sf::RectangleShape boxShape;
-    sf::VertexArray checkLines;
-};
-
-class GuiText : public GuiObject
-{
-public:
-    typedef std::unique_ptr<GuiText> Ptr;
-
-    GuiText(sf::RenderWindow* window, GuiCommand guiCommand, sf::Text* text);
-
-    virtual void processEvent(const sf::Event& event);
-    virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
-protected:
-    sf::Text* text;
-};
-
-class GuiImage : public GuiObject
-{
-public:
-    typedef std::unique_ptr<GuiImage> Ptr;
-
-    GuiImage(sf::RenderWindow* window, GuiCommand guiCommand, const sf::Texture& texture);
-
-    virtual void processEvent(const sf::Event& event);
-    virtual GuiCommand* update(sf::Time time);
-    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
-protected:
-    sf::Sprite sprite;
-};
-
-class GuiSystem : private sf::NonCopyable
-{
-public:
-    GuiSystem(State* state);
-
-    void processEvent(const sf::Event& event);
-    void update(sf::Time time);
-    void draw(sf::RenderWindow& window);
-
-    void add(GuiObject* guiObject);
-    void add(GuiObject::Ptr& guiObject);
-    void clear();
-private:
-    std::list<GuiObject::Ptr> guiList;
-    State* state;
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 };
 
 #endif
