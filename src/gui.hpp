@@ -7,16 +7,45 @@
 
 #include <SFML/Graphics.hpp>
 
-class GuiObject : public sf::Drawable, public sf::Transformable
+class GuiObject : public sf::Drawable
 {
 public:
+    GuiObject();
+
     virtual void update(sf::Time dt) = 0;
     virtual void handleEvent(const sf::Event& event) = 0;
 
     void registerCallback(std::function<void(float)> function);
+    void clearCallbacks();
+
+    void setPosition(float x, float y);
+    void setPosition(const sf::Vector2f& pos);
+    void setRotation(float angle);
+    void setScale(float factorX, float factorY);
+    void setScale(const sf::Vector2f& factors);
+    void setOrigin(float x, float y);
+    void setOrigin(const sf::Vector2f& origin);
+
+    const sf::Vector2f& getPosition() const;
+    float getRotation() const;
+    const sf::Vector2f& getScale() const;
+    const sf::Vector2f& getOrigin() const;
+
+    void move(float offsetX, float offsetY);
+    void move(const sf::Vector2f& offset);
+    void rotate(float angle);
+    void scale(float factorX, float factorY);
+    void scale(const sf::Vector2f& factor);
+
+    const sf::Transform& getTransform() const;
+    const sf::Transform& getInverseTransform() const;
 
 protected:
     std::vector<std::function<void(float)> > callbacks;
+    bool transformDirty;
+
+private:
+    sf::Transformable transformable;
 
 };
 
@@ -70,7 +99,17 @@ private:
 
     sf::RectangleShape rectangleShape;
 
+    sf::Vector2f coords[4];
+
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+};
+
+class GuiSlider : public GuiObject
+{
+public:
+
+private:
+
 };
 
 #endif
