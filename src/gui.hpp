@@ -57,7 +57,7 @@ public:
     void update(sf::Time dt);
     void handleEvent(const sf::Event& event);
 
-    void setSize(sf::Vector2f size);
+    void setSize(const sf::Vector2f& size);
 
     void setPassiveFillColor(sf::Color color);
     void setPassiveOutlineColor(sf::Color color);
@@ -107,9 +107,41 @@ private:
 class GuiSlider : public GuiObject
 {
 public:
+    GuiSlider(bool usingTexture = false);
+
+    void update(sf::Time dt);
+    void handleEvent(const sf::Event& event);
+
+    void setBgSize(const sf::Vector2f& size);
+    void setKnobSize(const sf::Vector2f& size);
+
+    void setBgFillColor(sf::Color);
+    void setBgOutlineColor(sf::Color);
+
+    void setKnobFillColor(sf::Color);
+    void setKnobOutlineColor(sf::Color);
+
+    void setBgTexture(sf::Texture& texture);
+    void setKnobTexture(sf::Texture& texture);
 
 private:
+    sf::Uint8 status;
+    /*
+        0000 0000 - passive
+        0000 0001 - active
+        1000 0000 - using texture
+    */
 
+    sf::RectangleShape bg;
+    sf::RectangleShape knob;
+
+    float knobLocation;
+
+    sf::Vector2f coords[4];
+
+    void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+
+    void centerKnobOnBg(float location);
 };
 
 #endif
