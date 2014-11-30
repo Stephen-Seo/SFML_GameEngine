@@ -15,6 +15,7 @@ set(Game_Project_SOURCES
     soundPlayer.cpp
     state.cpp
     stateStack.cpp
+    utility.cpp
     ec/engine.cpp
     ec/entity.cpp
     ec/nMove.cpp

@@ -58,6 +58,7 @@ public:
     void handleEvent(const sf::Event& event);
 
     void setSize(const sf::Vector2f& size);
+    const sf::Vector2f& getSize();
 
     void setPassiveFillColor(sf::Color color);
     void setPassiveOutlineColor(sf::Color color);

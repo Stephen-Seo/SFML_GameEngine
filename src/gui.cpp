@@ -305,6 +305,11 @@ void GuiButton::setSize(const sf::Vector2f& size)
     rectangleShape.setSize(size);
 }
 
+const sf::Vector2f& GuiButton::getSize()
+{
+    return rectangleShape.getSize();
+}
+
 void GuiButton::setPassiveFillColor(sf::Color color)
 {
     passiveFillColor = color;
