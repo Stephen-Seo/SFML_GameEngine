@@ -2,22 +2,6 @@
 
 # Compiling
 
-Gradle builds with the expectation that the host platform is Arch Linux 64-bit with multilib-devel and mingw-w64-toolchain installed. If your platform is different, build using cmake instead.
-The CMakeLists.txt file is located in src/
-
-## Building with Gradle
-
-To see what build tasks are available, run ./gradlew tasks
-
-SFML2\_DIR (and optionally ResourcePacker\_DIR) must be defined for building.
-defining EXTLIBS\_DIR will enable windows builds.
-
-SFML2\_DIR must point to the directory containing a gradle build setup of SFML2.1
-ResourcePacker\_DIR must point to the directory containing a gradle build setup
-of ResourcePacker
-EXTLIBS\_DIR must point to the extlibs directory in the SFML2.1 sources directory
-(This is found in the SFML2.1 sources zip)
-
 ## Building with CMake
 
 CMake gui recommended. (point CMake gui to the src directory as the source directory.)
