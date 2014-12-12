@@ -32,7 +32,7 @@ endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cmake_modules" ${CMAKE_MODULE_PATH})
 
-if(BUILD_SHARED_LIBS)
+if(BUILD_SHARED_LIBS OR (UNIX AND NOT CYGWIN))
     find_package(SFML 2 REQUIRED audio network graphics window system)
 else()
     find_package(SFML 2 REQUIRED audio-s network-s graphics-s window-s system-s)
