@@ -6,17 +6,17 @@
 
 #include "gtest/gtest.h"
 
-#include "ec/entity.hpp"
-#include "ec/engine.hpp"
-#include "ec/cPosition.hpp"
-#include "ec/cVelocity.hpp"
-#include "ec/cAcceleration.hpp"
-#include "ec/nMove.hpp"
-#include "context.hpp"
-#include "resourceIdentifiers.hpp"
-#include "resourceManager.hpp"
-#include "musicPlayer.hpp"
-#include "soundPlayer.hpp"
+#include <engine/ec/entity.hpp>
+#include <engine/ec/engine.hpp>
+#include <engine/ec/cPosition.hpp>
+#include <engine/ec/cVelocity.hpp>
+#include <engine/ec/cAcceleration.hpp>
+#include <engine/ec/nMove.hpp>
+#include <engine/context.hpp>
+#include <engine/resourceIdentifiers.hpp>
+#include <engine/resourceManager.hpp>
+#include <engine/musicPlayer.hpp>
+#include <engine/soundPlayer.hpp>
 
 TEST(ECTest, ECUpdate)
 {

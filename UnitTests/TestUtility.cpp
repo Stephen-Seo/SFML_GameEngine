@@ -1,7 +1,7 @@
 
 #include "gtest/gtest.h"
 
-#include "utility.hpp"
+#include <engine/utility.hpp>
 
 TEST(UtilityTest, WithinTransformedRectangle)
 {

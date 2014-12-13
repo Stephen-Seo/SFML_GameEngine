@@ -2,32 +2,34 @@ cmake_minimum_required(VERSION 2.6)
 project(Game_Project)
 
 set(Game_Project_SOURCES
-    animatedSprite.cpp
-    connection.cpp
-    context.cpp
-    game.cpp
-    gui.cpp
-    musicPlayer.cpp
-    networkIdentifiers.cpp
-    resourceIdentifiers.cpp
-    resourceManager.cpp
-    sceneNode.cpp
-    soundPlayer.cpp
-    state.cpp
-    stateStack.cpp
-    utility.cpp
-    ec/engine.cpp
-    ec/entity.cpp
-    ec/nMove.cpp
-    ec/system.cpp
-    main.cpp)
+    engine/animatedSprite.cpp
+    engine/connection.cpp
+    engine/context.cpp
+    engine/game.cpp
+    engine/gui.cpp
+    engine/musicPlayer.cpp
+    engine/networkIdentifiers.cpp
+    engine/resourceIdentifiers.cpp
+    engine/resourceManager.cpp
+    engine/sceneNode.cpp
+    engine/soundPlayer.cpp
+    engine/state.cpp
+    engine/stateStack.cpp
+    engine/utility.cpp
+    engine/ec/engine.cpp
+    engine/ec/entity.cpp
+    engine/ec/nMove.cpp
+    engine/ec/system.cpp
+    )
 
 if(WIN32)
-add_executable(Game_Project WIN32
-    ${Game_Project_SOURCES})
+    add_executable(Game_Project WIN32
+        ${Game_Project_SOURCES}
+        main.cpp)
 else()
-add_executable(Game_Project
-    ${Game_Project_SOURCES})
+    add_executable(Game_Project
+        ${Game_Project_SOURCES}
+        main.cpp)
 endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/../cmake_modules" ${CMAKE_MODULE_PATH})
@@ -38,6 +40,8 @@ else()
     find_package(SFML 2 REQUIRED audio-s network-s graphics-s window-s system-s)
     add_definitions(-DSFML_STATIC)
 endif()
+
+include_directories(${CMAKE_SOURCE_DIR})
 
 if(SFML_FOUND)
     include_directories(${SFML_INCLUDE_DIR})
@@ -96,4 +100,37 @@ if(WIN32)
         install(FILES "${SFML_ROOT}/bin/sfml-system-2.dll" DESTINATION Game_Project)
         install(FILES "${SFML_ROOT}/bin/sfml-window-2.dll" DESTINATION Game_Project)
     endif()
+endif()
+
+
+################################################################################
+#   Begin Unit Test files
+################################################################################
+
+if(SFML_GameEngine_TEST)
+    set(Unit_Tests_SOURCES
+        ../UnitTests/TestEC.cpp
+        ../UnitTests/TestUtility.cpp
+        ../UnitTests/main.cpp)
+
+    if(WIN32)
+        add_executable(Unit_Tests WIN32
+            ${Unit_Tests_SOURCES}
+            ${Game_Project_SOURCES})
+    else()
+        add_executable(Unit_Tests
+            ${Unit_Tests_SOURCES}
+            ${Game_Project_SOURCES})
+    endif()
+
+
+    enable_testing()
+
+    find_package(GTest REQUIRED)
+    include_directories(${GTEST_INCLUDE_DIRS})
+    target_link_libraries(Unit_Tests ${GTEST_BOTH_LIBRARIES})
+    target_link_libraries(Unit_Tests ${SFML_LIBRARIES})
+
+
+    add_test(NAME UnitTests COMMAND Unit_Tests)
 endif()
