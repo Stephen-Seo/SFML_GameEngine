@@ -6,6 +6,7 @@
 #include <SFML/System.hpp>
 
 #include "ec/engine.hpp"
+#include "context.hpp"
 #include "resourceHolder.hpp"
 #include "resourceIdentifiers.hpp"
 #include "resourceManager.hpp"
@@ -36,6 +37,8 @@ private:
     SoundPlayer sPlayer;
 
     StateStack stateStack;
+
+    Context context;
 
     bool isQuitting;
 

@@ -22,14 +22,14 @@ public:
         Clear
     };
 
-    explicit StateStack(Context context);
+    StateStack();
 
     template <class T>
     void registerState(States::ID stateID);
 
-    void update(sf::Time dt);
-    void draw();
-    void handleEvent(const sf::Event& event);
+    void update(sf::Time dt, Context context);
+    void draw(Context context);
+    void handleEvent(const sf::Event& event, Context context);
 
     void pushState(States::ID stateID);
     void popState();
@@ -40,7 +40,7 @@ public:
     ResourcesSet getNeededResources();
 private:
     State::Ptr createState(States::ID stateID);
-    void applyPendingChanges();
+    void applyPendingChanges(Context context);
 
     struct PendingChange
     {
@@ -51,7 +51,6 @@ private:
 
     std::vector<State::Ptr> stack;
     std::vector<PendingChange> pendingList;
-    Context context;
     std::map<States::ID, std::function<State::Ptr()>> factories;
 };
 
@@ -60,7 +59,7 @@ void StateStack::registerState(States::ID stateID)
 {
     factories[stateID] = [this] ()
     {
-        return State::Ptr(new T(*this, context));
+        return State::Ptr(new T(*this));
     };
 }
 

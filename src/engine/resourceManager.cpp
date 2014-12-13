@@ -1,6 +1,10 @@
 
 #include "resourceManager.hpp"
 
+#ifndef N_DEBUG
+    #include <iostream>
+#endif
+
 ResourceManager::ResourceManager(StateStack* sstack, GameResources::LoadingMode mode, std::string packfile) :
 textureHolder(mode, packfile, false),
 fontHolder(mode, packfile, true),
@@ -42,40 +46,38 @@ void ResourceManager::registerSoundBuffer(Sound::ID id, const std::string& filen
 void ResourceManager::loadResources(ResourcesSet rset)
 {
     // load textures if not loaded
-    if(rset.tset != NULL)
+    for(auto iter = rset.tset.begin(); iter != rset.tset.end(); ++iter)
     {
-        for(auto iter = rset.tset->begin(); iter != rset.tset->end(); ++iter)
+        if(!textureHolder.isLoaded(*iter))
         {
-            if(!textureHolder.isLoaded(*iter))
-            {
-                textureHolder.load(*iter);
-            }
+            textureHolder.load(*iter);
         }
     }
 
     // load fonts if not loaded
-    if(rset.fset != NULL)
+    for(auto iter = rset.fset.begin(); iter != rset.fset.end(); ++iter)
     {
-        for(auto iter = rset.fset->begin(); iter != rset.fset->end(); ++iter)
+        if(!fontHolder.isLoaded(*iter))
         {
-            if(!fontHolder.isLoaded(*iter))
-            {
-                fontHolder.load(*iter);
-            }
+            fontHolder.load(*iter);
         }
     }
 
     // load sound buffers if not loaded
-    if(rset.sset != NULL)
+    for(auto iter = rset.sset.begin(); iter != rset.sset.end(); ++iter)
     {
-        for(auto iter = rset.sset->begin(); iter != rset.sset->end(); ++iter)
+        if(!soundBufferHolder.isLoaded(*iter))
         {
-            if(!soundBufferHolder.isLoaded(*iter))
-            {
-                soundBufferHolder.load(*iter);
-            }
+            soundBufferHolder.load(*iter);
         }
     }
+
+#ifndef N_DEBUG
+    std::cout << "On Load:\n";
+    std::cout << "\tTextures Loaded: " << textureHolder.resourceMap.size() << "\n";
+    std::cout << "\tFonts Loaded: " << fontHolder.resourceMap.size() << "\n";
+    std::cout << "\tSoundBuffers Loaded: " << soundBufferHolder.resourceMap.size() << "\n" << std::flush;
+#endif
 }
 
 void ResourceManager::unloadCheckResources()
@@ -83,34 +85,49 @@ void ResourceManager::unloadCheckResources()
     ResourcesSet resourcesSet = sstack->getNeededResources();
 
     // check for unneeded textures
-    for(auto iter = textureHolder.resourceMap.begin(); iter != textureHolder.resourceMap.end(); ++iter)
+    for(auto iter = textureHolder.resourceMap.begin(); iter != textureHolder.resourceMap.end();)
     {
-        if(resourcesSet.tset->find(iter->first) == resourcesSet.tset->end())
+        if(resourcesSet.tset.find(iter->first) == resourcesSet.tset.end())
         {
-            iter = --(textureHolder.resourceMap.erase(iter));
+            iter = textureHolder.resourceMap.erase(iter);
+        }
+        else
+        {
+            ++iter;
         }
     }
 
     // check for unneeded fonts
-    for(auto iter = fontHolder.resourceMap.begin(); iter != fontHolder.resourceMap.end(); ++iter)
+    for(auto iter = fontHolder.resourceMap.begin(); iter != fontHolder.resourceMap.end();)
     {
-        if(resourcesSet.fset->find(iter->first) == resourcesSet.fset->end())
+        if(resourcesSet.fset.find(iter->first) == resourcesSet.fset.end())
         {
-            iter = --(fontHolder.resourceMap.erase(iter));
+            iter = fontHolder.resourceMap.erase(iter);
+        }
+        else
+        {
+            ++iter;
         }
     }
 
     // check for unneeded sound buffers
-    for(auto iter = soundBufferHolder.resourceMap.begin(); iter != soundBufferHolder.resourceMap.end(); ++iter)
+    for(auto iter = soundBufferHolder.resourceMap.begin(); iter != soundBufferHolder.resourceMap.end();)
     {
-        if(resourcesSet.sset->find(iter->first) == resourcesSet.sset->end())
+        if(resourcesSet.sset.find(iter->first) == resourcesSet.sset.end())
         {
-            iter = --(soundBufferHolder.resourceMap.erase(iter));
+            iter = soundBufferHolder.resourceMap.erase(iter);
+        }
+        else
+        {
+            ++iter;
         }
     }
 
-    delete resourcesSet.tset;
-    delete resourcesSet.fset;
-    delete resourcesSet.sset;
+#ifndef N_DEBUG
+    std::cout << "On Unload:\n";
+    std::cout << "\tTextures Loaded: " << textureHolder.resourceMap.size() << "\n";
+    std::cout << "\tFonts Loaded: " << fontHolder.resourceMap.size() << "\n";
+    std::cout << "\tSoundBuffers Loaded: " << soundBufferHolder.resourceMap.size() << "\n" << std::flush;
+#endif
 }
 

@@ -111,6 +111,7 @@ if(SFML_GameEngine_TEST)
     set(Unit_Tests_SOURCES
         ../UnitTests/TestEC.cpp
         ../UnitTests/TestUtility.cpp
+        ../UnitTests/TestStateStack.cpp
         ../UnitTests/main.cpp)
 
     if(WIN32)
@@ -133,4 +134,6 @@ if(SFML_GameEngine_TEST)
 
 
     add_test(NAME UnitTests COMMAND Unit_Tests)
+
+    file(COPY ../UnitTestRes DESTINATION ${CMAKE_BINARY_DIR})
 endif()

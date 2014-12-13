@@ -1,42 +1,44 @@
 
 #include "stateStack.hpp"
 
+#include "resourceManager.hpp"
+
 StateStack::PendingChange::PendingChange(Action action, States::ID stateID)
 : action(action), stateID(stateID)
 {
 }
 
-StateStack::StateStack(Context context)
-: stack(), pendingList(), context(context), factories()
+StateStack::StateStack()
+: stack(), pendingList(), factories()
 {
 }
 
-void StateStack::update(sf::Time dt)
+void StateStack::update(sf::Time dt, Context context)
 {
     for(auto iter = stack.rbegin(); iter != stack.rend(); ++iter)
     {
-        if(!(*iter)->update(dt))
+        if(!(*iter)->update(dt, context))
             break;
     }
-    applyPendingChanges();
+    applyPendingChanges(context);
 }
 
-void StateStack::draw()
+void StateStack::draw(Context context)
 {
-    std::for_each(stack.rbegin(), stack.rend(), [] (State::Ptr& state)
+    std::for_each(stack.begin(), stack.end(), [context] (State::Ptr& state)
     {
-        state->draw();
+        state->draw(context);
     } );
 }
 
-void StateStack::handleEvent(const sf::Event& event)
+void StateStack::handleEvent(const sf::Event& event, Context context)
 {
     for(auto iter = stack.rbegin(); iter != stack.rend(); ++iter)
     {
-        if(!(*iter)->handleEvent(event))
+        if(!(*iter)->handleEvent(event, context))
             break;
     }
-    applyPendingChanges();
+    applyPendingChanges(context);
 }
 
 void StateStack::pushState(States::ID stateID)
@@ -62,35 +64,24 @@ bool StateStack::isEmpty() const
 ResourcesSet StateStack::getNeededResources()
 {
     ResourcesSet resourcesSet;
-    resourcesSet.tset = new TextureSet;
-    resourcesSet.fset = new FontSet;
-    resourcesSet.sset = new SoundSet;
 
     for(auto iter = stack.begin(); iter != stack.end(); ++iter)
     {
         ResourcesSet stateSet = (*iter)->getNeededResources();
-        if(stateSet.tset != NULL)
+
+        for(auto tIter = stateSet.tset.begin(); tIter != stateSet.tset.end(); ++tIter)
         {
-            for(auto siter = stateSet.tset->begin(); siter != stateSet.tset->end(); ++siter)
-            {
-                resourcesSet.tset->insert(*siter);
-            }
+            resourcesSet.tset.insert(*tIter);
         }
 
-        if(stateSet.fset != NULL)
+        for(auto fIter = stateSet.fset.begin(); fIter != stateSet.fset.end(); ++fIter)
         {
-            for(auto siter = stateSet.fset->begin(); siter != stateSet.fset->end(); ++siter)
-            {
-                resourcesSet.fset->insert(*siter);
-            }
+            resourcesSet.fset.insert(*fIter);
         }
 
-        if(stateSet.sset != NULL)
+        for(auto sIter = stateSet.sset.begin(); sIter != stateSet.sset.end(); ++sIter)
         {
-            for(auto siter = stateSet.sset->begin(); siter != stateSet.sset->end(); ++siter)
-            {
-                resourcesSet.sset->insert(*siter);
-            }
+            resourcesSet.sset.insert(*sIter);
         }
     }
 
@@ -104,20 +95,23 @@ State::Ptr StateStack::createState(States::ID stateID)
     return found->second();
 }
 
-void StateStack::applyPendingChanges()
+void StateStack::applyPendingChanges(Context context)
 {
-    std::for_each(pendingList.begin(), pendingList.end(), [this] (PendingChange& change)
+    std::for_each(pendingList.begin(), pendingList.end(), [this, context] (PendingChange& change)
     {
         switch (change.action)
         {
         case Push:
             stack.push_back(createState(change.stateID));
+            context.resourceManager->loadResources(stack.back()->getNeededResources());
             break;
         case Pop:
             stack.pop_back();
+            context.resourceManager->unloadCheckResources();
             break;
         case Clear:
             stack.clear();
+            context.resourceManager->unloadCheckResources();
             break;
         }
     } );

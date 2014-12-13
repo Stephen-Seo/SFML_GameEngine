@@ -68,10 +68,10 @@ struct ResourcesSet
 {
     ResourcesSet();
 
-    ResourcesSet(TextureSet& tset, FontSet& fset, SoundSet& sset);
+    ResourcesSet(const TextureSet& tset, const FontSet& fset, const SoundSet& sset);
 
-    TextureSet* tset;
-    FontSet* fset;
-    SoundSet* sset;
+    TextureSet tset;
+    FontSet fset;
+    SoundSet sset;
 };
 #endif

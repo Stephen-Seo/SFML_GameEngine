@@ -69,17 +69,12 @@ After listing the enum values for each resource needed, the resources must be re
 - Register resources linking resource enum values to filenames via the ResourceManager, this is done in `src/game.cpp` in the function `Game::registerResources()`
     - For example, `resourceManager.registerTexture(Textures::BACKGROUND_0, "background_0.png");`
 
-Finally, a State must list what resources it requires and request these resources from the Resource Manager. A State cannot use a resource if it is not loaded in memory (unless it is a Music resource that is to be streamed from file).
+Finally, a State must list what resources it requires in its constructor. (The StateStack will automatically load and unload resources as States are pushed/popped on the stack.) A State cannot use a resource if it is not loaded in memory (unless it is a Music resource that is to be streamed from file).
 
 A State has protected variables `TextureSet tset`, `FontSet fset`, and `SoundSet sset`. Each of these sets holds the corresponding enum value. TextureSet holds `Textures::ID` values from `src/resourceIdentifiers.hpp`.  
-After setting these resource identifier holders, they will be sent to the resourceManager to load the required resources when requesting that they be loaded.
+After setting these resource identifier holders, they will be sent to the resourceManager to load the required resources.
 
 - Add the required resources by their identifiers to `tset`, `fset`, and `sset`
-- Request these resources to be loaded from the Resource Manager
-    - For example, `getContext().resourceManager->loadResources(getNeededResources());` (from the constructor of a State object)
 
-To unload unnecessary resources, a single call to Resource Manager will cause it to query all states in the state stack to unload anything that it deems unnecessary (based on what each State has placed in their resource identifier sets)
-
-- Unload necesssary resources with `getContext().resourceManager->unloadCheckResources();`
-
+To unload unnecessary resources, simply pop a State off the stack. The StateStack and ResourceManager will work together to find out what resources are still necessary, and unload everything that isn't.
 

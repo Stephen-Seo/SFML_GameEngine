@@ -27,7 +27,8 @@ Game::Game()
 resourceManager(&stateStack, RESOURCE_MANAGER_MODE, PACKFILE_NAME),
 mPlayer(),
 sPlayer(),
-stateStack(Context(window, resourceManager, mPlayer, sPlayer, ecEngine, isQuitting)),
+stateStack(),
+context(window, resourceManager, mPlayer, sPlayer, ecEngine, isQuitting),
 isQuitting(false)
 {
     registerResources();
@@ -61,7 +62,7 @@ void Game::processEvents()
     sf::Event event;
     while (window.pollEvent(event))
     {
-        stateStack.handleEvent(event);
+        stateStack.handleEvent(event, context);
         if(event.type == sf::Event::Closed)
             window.close();
     }
@@ -69,13 +70,13 @@ void Game::processEvents()
 
 void Game::update(sf::Time deltaTime)
 {
-    stateStack.update(deltaTime);
+    stateStack.update(deltaTime, context);
 }
 
 void Game::draw()
 {
     window.clear();
-    stateStack.draw();
+    stateStack.draw(context);
     window.display();
 }
 

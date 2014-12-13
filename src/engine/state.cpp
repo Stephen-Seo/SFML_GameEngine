@@ -2,8 +2,8 @@
 #include "state.hpp"
 #include "stateStack.hpp"
 
-State::State(StateStack& stack, Context context)
-: stack(&stack), context(context)
+State::State(StateStack& stack)
+: stack(&stack)
 {}
 
 State::~State()
@@ -27,10 +27,5 @@ void State::requestStackPop()
 void State::requestStackClear()
 {
     stack->clearStates();
-}
-
-Context State::getContext() const
-{
-    return context;
 }
 
