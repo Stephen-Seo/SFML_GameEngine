@@ -88,3 +88,21 @@ sf::Vector2f SceneNode::getWorldPosition() const
 {
     return getWorldTransform() * sf::Vector2f();
 }
+
+void SceneNode::forEach(std::function<void(SceneNode&)> function, bool includeThis)
+{
+    if(includeThis)
+    {
+        function(*this);
+    }
+
+    for(auto node = children.begin(); node != children.end(); ++node)
+    {
+        (*node)->forEach(function, true);
+    }
+}
+
+bool SceneNode::operator ==(const SceneNode& other) const
+{
+    return this == &other;
+}

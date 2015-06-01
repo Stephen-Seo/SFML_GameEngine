@@ -25,7 +25,7 @@ public:
     StateStack();
 
     template <class T>
-    void registerState(States::ID stateID);
+    void registerState(States::ID stateID, Context context);
 
     void update(sf::Time dt, Context context);
     void draw(Context context);
@@ -55,11 +55,11 @@ private:
 };
 
 template <class T>
-void StateStack::registerState(States::ID stateID)
+void StateStack::registerState(States::ID stateID, Context context)
 {
-    factories[stateID] = [this] ()
+    factories[stateID] = [this, context] ()
     {
-        return State::Ptr(new T(*this));
+        return State::Ptr(new T(*this, context));
     };
 }
 

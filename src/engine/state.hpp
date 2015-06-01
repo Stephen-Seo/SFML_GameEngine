@@ -19,7 +19,7 @@ class State
 public:
     typedef std::unique_ptr<State> Ptr;
 
-    State(StateStack& stack);
+    State(StateStack& stack, Context context);
     virtual ~State();
 
     virtual void draw(Context context) = 0;

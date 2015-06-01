@@ -26,6 +26,10 @@ public:
 
     sf::Transform getWorldTransform() const;
     sf::Vector2f getWorldPosition() const;
+
+    void forEach(std::function<void(SceneNode&)> function, bool includeThis = false);
+
+    bool operator ==(const SceneNode& other) const;
 private:
     virtual void draw(sf::RenderTarget& target,
                       sf::RenderStates states) const;

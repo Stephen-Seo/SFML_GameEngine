@@ -2,7 +2,7 @@
 #include "state.hpp"
 #include "stateStack.hpp"
 
-State::State(StateStack& stack)
+State::State(StateStack& stack, Context context)
 : stack(&stack)
 {}
 
