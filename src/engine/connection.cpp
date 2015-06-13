@@ -82,11 +82,12 @@ void Connection::update(sf::Time dt)
                     auto pInfo = sendPacketMapQueue.at(idMapIter->first).back();
                     sendPacketMapQueue.at(idMapIter->first).pop_back();
 
-                    sentPackets[pInfo.address].push_front(PacketInfo(pInfo.packet, pInfo.ID));
 
                     sf::Packet toSendPacket;
                     sf::Uint32 sequenceID;
-                    preparePacket(toSendPacket, sequenceID, sf::IpAddress(pInfo.address));
+                    preparePacket(toSendPacket, sequenceID, sf::IpAddress(idMapIter->first));
+                    sentPackets[idMapIter->first].push_front(PacketInfo(pInfo.packet, idMapIter->first, sequenceID));
+
                     unsigned char byte;
                     while(!pInfo.packet.endOfPacket())
                     {
@@ -94,8 +95,8 @@ void Connection::update(sf::Time dt)
                         toSendPacket << byte;
                     }
 
-                    socket.send(toSendPacket, sf::IpAddress(pInfo.address), GAME_PORT);
-                    checkSentPacketsSize(pInfo.address);
+                    socket.send(toSendPacket, sf::IpAddress(idMapIter->first), GAME_PORT);
+                    checkSentPacketsSize(idMapIter->first);
                 }
                 else
                 {
@@ -104,6 +105,7 @@ void Connection::update(sf::Time dt)
                     sf::Packet toSendPacket;
                     sf::Uint32 sequenceID;
                     preparePacket(toSendPacket, sequenceID, sf::IpAddress(idMapIter->first));
+                    sentPackets[idMapIter->first].push_front(PacketInfo(toSendPacket, idMapIter->first, sequenceID));
                     socket.send(toSendPacket, sf::IpAddress(idMapIter->first), GAME_PORT);
                     checkSentPacketsSize(idMapIter->first);
                 }
@@ -146,7 +148,7 @@ void Connection::update(sf::Time dt)
                     sf::Packet newPacket;
                     sf::Uint32 sequenceID;
                     //preparePacket(newPacket, sequenceID, address);
-                    sendPacket(newPacket, sequenceID, address);
+                    sendPacket(newPacket, address);
                 }
                 return;
             }
@@ -155,7 +157,7 @@ void Connection::update(sf::Time dt)
                 sf::Packet newPacket;
                 sf::Uint32 sequenceID;
                 //preparePacket(newPacket, sequenceID, address);
-                sendPacket(newPacket, sequenceID, address);
+                sendPacket(newPacket, address);
             }
             else if(IDMap.find(address.toInteger()) == IDMap.end())
             {
@@ -275,11 +277,12 @@ void Connection::update(sf::Time dt)
                     PacketInfo pInfo = sendPacketMapQueue.at(clientSentAddress.toInteger()).back();
                     sendPacketMapQueue.at(clientSentAddress.toInteger()).pop_back();
 
-                    sentPackets[serverAddress].push_front(PacketInfo(pInfo.packet, pInfo.ID));
 
                     sf::Packet toSendPacket;
                     sf::Uint32 sequenceID;
-                    preparePacket(toSendPacket, sequenceID, sf::IpAddress(pInfo.address));
+                    preparePacket(toSendPacket, sequenceID, clientSentAddress);
+                    sentPackets[serverAddress].push_front(PacketInfo(pInfo.packet, clientSentAddress.toInteger(), sequenceID));
+
                     unsigned char byte;
                     while(!pInfo.packet.endOfPacket())
                     {
@@ -287,7 +290,7 @@ void Connection::update(sf::Time dt)
                         toSendPacket << byte;
                     }
 
-                    socket.send(toSendPacket, sf::IpAddress(pInfo.address), GAME_PORT);
+                    socket.send(toSendPacket, clientSentAddress, GAME_PORT);
                     checkSentPacketsSize(serverAddress);
                 }
                 else
@@ -297,6 +300,7 @@ void Connection::update(sf::Time dt)
                     sf::Packet toSendPacket;
                     sf::Uint32 sequenceID;
                     preparePacket(toSendPacket, sequenceID, clientSentAddress);
+                    sentPackets[serverAddress].push_front(PacketInfo(toSendPacket, clientSentAddress.toInteger(), sequenceID));
                     socket.send(toSendPacket, clientSentAddress, GAME_PORT);
                     checkSentPacketsSize(clientSentAddress.toInteger());
                 }
@@ -331,7 +335,7 @@ void Connection::update(sf::Time dt)
                     sf::Packet newPacket;
                     sf::Uint32 sequenceID;
                     //preparePacket(newPacket, sequenceID, address);
-                    sendPacket(newPacket, sequenceID, address);
+                    sendPacket(newPacket, address);
                 }
                 else if(ID != IDMap[serverAddress])
                     return;
@@ -477,9 +481,9 @@ void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::I
     }
 }
 
-void Connection::sendPacket(sf::Packet& packet, sf::Uint32 sequenceID, sf::IpAddress address)
+void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address)
 {
-    sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, sequenceID, address.toInteger()));
+    sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, address.toInteger()));
 }
 
 sf::Time Connection::getRtt()
@@ -588,7 +592,7 @@ void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint3
                     packetCopy >> sequenceID; // sequence ID
                     packetCopy >> temp; // ack
                     packetCopy >> temp; // ack bitfield
-                    sendPacket(iter->packet, sequenceID, sf::IpAddress(address));
+                    sendPacket(iter->packet, sf::IpAddress(address));
                     iter->sentTime.restart();
                 }
                 break;
@@ -614,7 +618,7 @@ void Connection::heartbeat(sf::Uint32 addressInteger)
     sf::Packet packet;
     sf::Uint32 sequenceID;
 //    preparePacket(packet, sequenceID, address);
-    sendPacket(packet, sequenceID, address);
+    sendPacket(packet, address);
 }
 
 void Connection::lookupRtt(sf::Uint32 address, sf::Uint32 ack)

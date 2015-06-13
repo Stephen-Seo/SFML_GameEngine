@@ -41,7 +41,7 @@ protected:
 
     void preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing = false);
 
-    void sendPacket(sf::Packet& packet, sf::Uint32 sequenceID, sf::IpAddress address);
+    void sendPacket(sf::Packet& packet, sf::IpAddress address);
 
     sf::Time getRtt();
     sf::Time getRtt(sf::Uint32 address);

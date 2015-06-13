@@ -19,13 +19,14 @@
 struct PacketInfo
 {
     PacketInfo();
-    PacketInfo(sf::Packet packet, sf::Uint32 ID);
-    PacketInfo(sf::Packet packet, sf::Uint32 ID, sf::Uint32 address);
+    PacketInfo(sf::Packet packet);
+    PacketInfo(sf::Packet packet, sf::Uint32 address);
+    PacketInfo(sf::Packet packet, sf::Uint32 address, sf::Uint32 ID);
 
     sf::Packet packet;
-    sf::Uint32 ID;
     sf::Clock sentTime;
     sf::Uint32 address;
+    sf::Uint32 ID;
 };
 
 namespace network

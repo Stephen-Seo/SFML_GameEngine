@@ -3,22 +3,30 @@
 
 PacketInfo::PacketInfo() :
 packet(),
-ID(0),
-address(0)
+address(0),
+ID(0)
 {
 }
 
-PacketInfo::PacketInfo(sf::Packet packet, sf::Uint32 ID) :
+PacketInfo::PacketInfo(sf::Packet packet) :
 packet(packet),
-ID(ID),
-sentTime()
+sentTime(),
+address(0),
+ID(0)
 {
 }
 
-PacketInfo::PacketInfo(sf::Packet packet, sf::Uint32 ID, sf::Uint32 address) :
+PacketInfo::PacketInfo(sf::Packet packet, sf::Uint32 address) :
 packet(packet),
-ID(ID),
-address(address)
+address(address),
+ID(0)
+{
+}
+
+PacketInfo::PacketInfo(sf::Packet packet, sf::Uint32 address, sf::Uint32 ID) :
+packet(packet),
+address(address),
+ID(ID)
 {
 }
 
