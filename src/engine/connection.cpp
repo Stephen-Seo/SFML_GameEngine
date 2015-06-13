@@ -82,18 +82,20 @@ void Connection::update(sf::Time dt)
                     auto pInfo = sendPacketMapQueue.at(idMapIter->first).back();
                     sendPacketMapQueue.at(idMapIter->first).pop_back();
 
-
                     sf::Packet toSendPacket;
                     sf::Uint32 sequenceID;
-                    preparePacket(toSendPacket, sequenceID, sf::IpAddress(idMapIter->first));
-                    sentPackets[idMapIter->first].push_front(PacketInfo(pInfo.packet, idMapIter->first, sequenceID));
-
-                    unsigned char byte;
-                    while(!pInfo.packet.endOfPacket())
+                    if(pInfo.isResending)
                     {
-                        pInfo.packet >> byte;
-                        toSendPacket << byte;
+                        sequenceID = pInfo.ID;
                     }
+                    else
+                    {
+                        preparePacket(toSendPacket, sequenceID, sf::IpAddress(idMapIter->first));
+                    }
+                    const void* dataPtr = pInfo.packet.getData();
+                    toSendPacket.append(dataPtr, pInfo.packet.getDataSize());
+
+                    sentPackets[idMapIter->first].push_front(PacketInfo(toSendPacket, idMapIter->first, sequenceID));
 
                     socket.send(toSendPacket, sf::IpAddress(idMapIter->first), GAME_PORT);
                     checkSentPacketsSize(idMapIter->first);
@@ -280,15 +282,18 @@ void Connection::update(sf::Time dt)
 
                     sf::Packet toSendPacket;
                     sf::Uint32 sequenceID;
-                    preparePacket(toSendPacket, sequenceID, clientSentAddress);
-                    sentPackets[serverAddress].push_front(PacketInfo(pInfo.packet, clientSentAddress.toInteger(), sequenceID));
-
-                    unsigned char byte;
-                    while(!pInfo.packet.endOfPacket())
+                    if(pInfo.isResending)
                     {
-                        pInfo.packet >> byte;
-                        toSendPacket << byte;
+                        sequenceID = pInfo.ID;
                     }
+                    else
+                    {
+                        preparePacket(toSendPacket, sequenceID, clientSentAddress);
+                    }
+                    const void* dataPtr = pInfo.packet.getData();
+                    toSendPacket.append(dataPtr, pInfo.packet.getDataSize());
+
+                    sentPackets[serverAddress].push_front(PacketInfo(toSendPacket, clientSentAddress.toInteger(), sequenceID));
 
                     socket.send(toSendPacket, clientSentAddress, GAME_PORT);
                     checkSentPacketsSize(serverAddress);
@@ -484,6 +489,11 @@ void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::I
 void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address)
 {
     sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, address.toInteger()));
+}
+
+void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address, sf::Uint32 resendingID)
+{
+    sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, address.toInteger(), resendingID, true));
 }
 
 sf::Time Connection::getRtt()

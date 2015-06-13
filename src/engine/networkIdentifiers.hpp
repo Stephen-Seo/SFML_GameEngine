@@ -22,11 +22,13 @@ struct PacketInfo
     PacketInfo(sf::Packet packet);
     PacketInfo(sf::Packet packet, sf::Uint32 address);
     PacketInfo(sf::Packet packet, sf::Uint32 address, sf::Uint32 ID);
+    PacketInfo(sf::Packet packet, sf::Uint32 address, sf::Uint32 ID, bool isResending);
 
     sf::Packet packet;
     sf::Clock sentTime;
     sf::Uint32 address;
     sf::Uint32 ID;
+    bool isResending;
 };
 
 namespace network
