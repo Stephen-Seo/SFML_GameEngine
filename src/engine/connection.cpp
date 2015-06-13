@@ -109,19 +109,6 @@ void Connection::update(sf::Time dt)
             unregisterConnection(*iter);
         }
 
-        // heartbeat packet
-/*
-        for(auto tIter = heartbeatTimeMap.begin(); tIter != heartbeatTimeMap.end(); ++tIter)
-        {
-            tIter->second += dt;
-            if(tIter->second.asMilliseconds() >= HEARTBEAT_MILLISECONDS)
-            {
-                tIter->second = sf::Time::Zero;
-                heartbeat(tIter->first);
-            }
-        }
-*/
-
         // send packet as server to each client
         for(auto idMapIter = IDMap.begin(); idMapIter != IDMap.end(); ++idMapIter)
         {
@@ -200,7 +187,6 @@ void Connection::update(sf::Time dt)
                     registerConnection(address.toInteger());
                     sf::Packet newPacket;
                     sf::Uint32 sequenceID;
-                    //preparePacket(newPacket, sequenceID, address);
                     sendPacket(newPacket, address);
                 }
                 return;
@@ -209,7 +195,6 @@ void Connection::update(sf::Time dt)
             {
                 sf::Packet newPacket;
                 sf::Uint32 sequenceID;
-                //preparePacket(newPacket, sequenceID, address);
                 sendPacket(newPacket, address);
             }
             else if(IDMap.find(address.toInteger()) == IDMap.end())
@@ -312,16 +297,6 @@ void Connection::update(sf::Time dt)
                 return;
             }
 
-            // heartbeat
-/*
-            heartbeatTimeMap[serverAddress] += dt;
-            if(heartbeatTimeMap[serverAddress].asMilliseconds() >= HEARTBEAT_MILLISECONDS)
-            {
-                heartbeatTimeMap[serverAddress] = sf::Time::Zero;
-                heartbeat(serverAddress);
-            }
-*/
-
             // send packet as client to server
             if(triggerSend.at(clientSentAddress.toInteger()))
             {
@@ -399,7 +374,7 @@ void Connection::update(sf::Time dt)
 
                 // packet is valid
 #ifndef NDEBUG
-                std::cout << "Valid packet received from " << address.toString() << '\n';
+                std::cout << "Valid packet " << sequence << " received from " << address.toString() << '\n';
 #endif
 
                 lookupRtt(serverAddress, ack);
@@ -693,7 +668,6 @@ void Connection::heartbeat(sf::Uint32 addressInteger)
 
     sf::Packet packet;
     sf::Uint32 sequenceID;
-//    preparePacket(packet, sequenceID, address);
     sendPacket(packet, address);
 }
 

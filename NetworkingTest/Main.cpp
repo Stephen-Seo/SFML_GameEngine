@@ -63,6 +63,6 @@ int main(int argc, char** argv)
         connection.connectToServer(address);
     }
 
-    std::cout << "Ctrl+C to exit the program.";
+    std::cout << "Ctrl+C to exit the program.\n";
     MainLoop(connection);
 }
