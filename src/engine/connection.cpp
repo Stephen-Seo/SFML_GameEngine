@@ -593,6 +593,14 @@ void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
 
     rttMap.insert(std::make_pair(address, sf::Time()));
 
+    triggerSend.insert(std::make_pair(address, false));
+    timer.insert(std::make_pair(address, 0.0f));
+    isGood.insert(std::make_pair(address, false));
+    isGoodRtt.insert(std::make_pair(address, false));
+    toggleTime.insert(std::make_pair(address, 30.0f));
+    toggleTimer.insert(std::make_pair(address, 0.0f));
+    toggledTimer.insert(std::make_pair(address, 0.0f));
+
     connectionMade(address);
 }
 
@@ -611,6 +619,14 @@ void Connection::unregisterConnection(sf::Uint32 address)
     sendPacketMapQueue.erase(address);
 
     rttMap.erase(address);
+
+    triggerSend.erase(address);
+    timer.erase(address);
+    isGood.erase(address);
+    isGoodRtt.erase(address);
+    toggleTime.erase(address);
+    toggleTimer.erase(address);
+    toggledTimer.erase(address);
 
     connectionLost(address);
 }
