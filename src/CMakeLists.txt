@@ -101,6 +101,20 @@ if(WIN32)
 endif()
 
 
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    set(NetworkingTest_SOURCES
+        engine/connection.cpp
+        engine/networkIdentifiers.cpp
+        ../NetworkingTest/TesterConnection.cpp
+        ../NetworkingTest/Main.cpp)
+
+    add_executable(NetworkingTest
+        ${NetworkingTest_SOURCES})
+
+    target_link_libraries(NetworkingTest ${SFML_LIBRARIES})
+endif()
+
+
 ################################################################################
 #   Begin Unit Test files
 ################################################################################

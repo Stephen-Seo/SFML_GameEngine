@@ -423,6 +423,17 @@ void Connection::sendPacket(sf::Packet& packet, sf::Uint32 sequenceID, sf::IpAdd
     sendPacketQueue.push_front(PacketInfo(packet, sequenceID, address.toInteger()));
 }
 
+sf::Time Connection::getRtt()
+{
+    auto iter = rttMap.begin();
+    return iter->second;
+}
+
+sf::Time Connection::getRtt(sf::Uint32 address)
+{
+    return rttMap.at(address);
+}
+
 void Connection::receivedPacket(sf::Packet packet, sf::Uint32 address)
 {}
 
