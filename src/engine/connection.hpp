@@ -57,7 +57,6 @@ private:
 
     sf::UdpSocket socket;
 
-    std::map<sf::Uint32, sf::Time> heartbeatTimeMap;
     std::map<sf::Uint32, sf::Clock> elapsedTimeMap;
 
     std::random_device rd;
@@ -72,11 +71,14 @@ private:
 
     std::map<sf::Uint32, std::list<PacketInfo> > sentPackets;
 
-    std::list<PacketInfo> sendPacketQueue;
+    std::map<sf::Uint32, std::list<PacketInfo> > sendPacketMapQueue;
 
     std::map<sf::Uint32, sf::Time> rttMap;
 
     sf::IpAddress clientSentAddress;
+
+    float timer;
+    bool isGood;
 
 
     void registerConnection(sf::Uint32 address, sf::Uint32 ID = 0);

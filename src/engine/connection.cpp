@@ -5,7 +5,9 @@ Connection::Connection() :
 acceptNewConnections(true),
 ignoreOutOfSequence(false),
 resendTimedOutPackets(true),
-mode(SERVER)
+mode(SERVER),
+timer(0.0f),
+isGood(false)
 {
     socket.bind(GAME_PORT);
     socket.setBlocking(false);
@@ -15,7 +17,9 @@ Connection::Connection(Mode mode) :
 acceptNewConnections(true),
 ignoreOutOfSequence(false),
 resendTimedOutPackets(true),
-mode(mode)
+mode(mode),
+timer(0.0f),
+isGood(false)
 {
     socket.bind(GAME_PORT);
     socket.setBlocking(false);
@@ -27,6 +31,14 @@ Connection::~Connection()
 
 void Connection::update(sf::Time dt)
 {
+    bool triggerSend = false;
+    timer += dt.asSeconds();
+    if(timer >= (isGood ? NETWORK_GOOD_MODE_SEND_INTERVAL : NETWORK_BAD_MODE_SEND_INTERVAL))
+    {
+        timer = 0.0f;
+        triggerSend = true;
+    }
+
     if(mode == SERVER)
     {
         // check if clients have timed out
@@ -48,6 +60,7 @@ void Connection::update(sf::Time dt)
         }
 
         // heartbeat packet
+/*
         for(auto tIter = heartbeatTimeMap.begin(); tIter != heartbeatTimeMap.end(); ++tIter)
         {
             tIter->second += dt;
@@ -57,21 +70,45 @@ void Connection::update(sf::Time dt)
                 heartbeat(tIter->first);
             }
         }
+*/
 
-        // send packet
-        if(!sendPacketQueue.empty())
+        // send packet as server to each client
+        if(triggerSend)
         {
-            auto pInfo = sendPacketQueue.back();
-            sendPacketQueue.pop_back();
+            for(auto idMapIter = IDMap.begin(); idMapIter != IDMap.end(); ++idMapIter)
+            {
+                if(!sendPacketMapQueue.at(idMapIter->first).empty())
+                {
+                    auto pInfo = sendPacketMapQueue.at(idMapIter->first).back();
+                    sendPacketMapQueue.at(idMapIter->first).pop_back();
 
-            heartbeatTimeMap[pInfo.address] = sf::Time::Zero;
+                    sentPackets[pInfo.address].push_front(PacketInfo(pInfo.packet, pInfo.ID));
 
-            sentPackets[pInfo.address].push_front(PacketInfo(pInfo.packet, pInfo.ID));
-            socket.send(pInfo.packet, sf::IpAddress(pInfo.address), GAME_PORT);
-            checkSentPacketsSize(pInfo.address);
+                    sf::Packet toSendPacket;
+                    sf::Uint32 sequenceID;
+                    preparePacket(toSendPacket, sequenceID, sf::IpAddress(pInfo.address));
+                    unsigned char byte;
+                    while(!pInfo.packet.endOfPacket())
+                    {
+                        pInfo.packet >> byte;
+                        toSendPacket << byte;
+                    }
+
+                    socket.send(toSendPacket, sf::IpAddress(pInfo.address), GAME_PORT);
+                    checkSentPacketsSize(pInfo.address);
+                }
+                else
+                {
+                    // send a heartbeat(empty) packet because the queue is empty
+
+                    sf::Packet toSendPacket;
+                    sf::Uint32 sequenceID;
+                    preparePacket(toSendPacket, sequenceID, sf::IpAddress(idMapIter->first));
+                    socket.send(toSendPacket, sf::IpAddress(idMapIter->first), GAME_PORT);
+                    checkSentPacketsSize(idMapIter->first);
+                }
+            }
         }
-        //TODO flow control
-
 
         // receive packet
         sf::Packet packet;
@@ -108,7 +145,7 @@ void Connection::update(sf::Time dt)
                     registerConnection(address.toInteger());
                     sf::Packet newPacket;
                     sf::Uint32 sequenceID;
-                    preparePacket(newPacket, sequenceID, address);
+                    //preparePacket(newPacket, sequenceID, address);
                     sendPacket(newPacket, sequenceID, address);
                 }
                 return;
@@ -117,7 +154,7 @@ void Connection::update(sf::Time dt)
             {
                 sf::Packet newPacket;
                 sf::Uint32 sequenceID;
-                preparePacket(newPacket, sequenceID, address);
+                //preparePacket(newPacket, sequenceID, address);
                 sendPacket(newPacket, sequenceID, address);
             }
             else if(IDMap.find(address.toInteger()) == IDMap.end())
@@ -221,27 +258,49 @@ void Connection::update(sf::Time dt)
             }
 
             // heartbeat
+/*
             heartbeatTimeMap[serverAddress] += dt;
             if(heartbeatTimeMap[serverAddress].asMilliseconds() >= HEARTBEAT_MILLISECONDS)
             {
                 heartbeatTimeMap[serverAddress] = sf::Time::Zero;
                 heartbeat(serverAddress);
             }
+*/
 
-            // send
-            if(!sendPacketQueue.empty())
+            // send packet as client to server
+            if(triggerSend)
             {
-                PacketInfo pInfo = sendPacketQueue.back();
-                sendPacketQueue.pop_back();
+                if(!sendPacketMapQueue.at(clientSentAddress.toInteger()).empty())
+                {
+                    PacketInfo pInfo = sendPacketMapQueue.at(clientSentAddress.toInteger()).back();
+                    sendPacketMapQueue.at(clientSentAddress.toInteger()).pop_back();
 
-                heartbeatTimeMap[pInfo.address] = sf::Time::Zero;
+                    sentPackets[serverAddress].push_front(PacketInfo(pInfo.packet, pInfo.ID));
 
-                sentPackets[serverAddress].push_front(PacketInfo(pInfo.packet, pInfo.ID));
-                socket.send(pInfo.packet, sf::IpAddress(pInfo.address), GAME_PORT);
-                checkSentPacketsSize(serverAddress);
+                    sf::Packet toSendPacket;
+                    sf::Uint32 sequenceID;
+                    preparePacket(toSendPacket, sequenceID, sf::IpAddress(pInfo.address));
+                    unsigned char byte;
+                    while(!pInfo.packet.endOfPacket())
+                    {
+                        pInfo.packet >> byte;
+                        toSendPacket << byte;
+                    }
+
+                    socket.send(toSendPacket, sf::IpAddress(pInfo.address), GAME_PORT);
+                    checkSentPacketsSize(serverAddress);
+                }
+                else
+                {
+                    // send a heartbeat(empty) packet because the queue is empty
+
+                    sf::Packet toSendPacket;
+                    sf::Uint32 sequenceID;
+                    preparePacket(toSendPacket, sequenceID, clientSentAddress);
+                    socket.send(toSendPacket, clientSentAddress, GAME_PORT);
+                    checkSentPacketsSize(clientSentAddress.toInteger());
+                }
             }
-
-            //TODO flow control
 
             // receive
             sf::Packet packet;
@@ -271,7 +330,7 @@ void Connection::update(sf::Time dt)
                 {
                     sf::Packet newPacket;
                     sf::Uint32 sequenceID;
-                    preparePacket(newPacket, sequenceID, address);
+                    //preparePacket(newPacket, sequenceID, address);
                     sendPacket(newPacket, sequenceID, address);
                 }
                 else if(ID != IDMap[serverAddress])
@@ -420,7 +479,7 @@ void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::I
 
 void Connection::sendPacket(sf::Packet& packet, sf::Uint32 sequenceID, sf::IpAddress address)
 {
-    sendPacketQueue.push_front(PacketInfo(packet, sequenceID, address.toInteger()));
+    sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, sequenceID, address.toInteger()));
 }
 
 sf::Time Connection::getRtt()
@@ -445,7 +504,6 @@ void Connection::connectionLost(sf::Uint32 address)
 
 void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
 {
-    heartbeatTimeMap.insert(std::make_pair(address, sf::Time()));
     elapsedTimeMap.insert(std::make_pair(address, sf::Clock()));
 
     if(mode == SERVER)
@@ -465,6 +523,8 @@ void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
 
     sentPackets.insert(std::make_pair(address, std::list<PacketInfo>()));
 
+    sendPacketMapQueue.insert(std::make_pair(address, std::list<PacketInfo>()));
+
     rttMap.insert(std::make_pair(address, sf::Time()));
 
     connectionMade(address);
@@ -472,7 +532,6 @@ void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
 
 void Connection::unregisterConnection(sf::Uint32 address)
 {
-    heartbeatTimeMap.erase(address);
     elapsedTimeMap.erase(address);
 
     IDMap.erase(address);
@@ -483,6 +542,7 @@ void Connection::unregisterConnection(sf::Uint32 address)
     ackBitfieldMap.erase(address);
 
     sentPackets.erase(address);
+    sendPacketMapQueue.erase(address);
 
     rttMap.erase(address);
 
@@ -522,10 +582,12 @@ void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint3
                     std::cout << " timed out\n";
 #endif
                     sf::Packet packetCopy = iter->packet;
-                    sf::Uint32 sequenceID;
+                    sf::Uint32 sequenceID, temp;
                     packetCopy >> sequenceID; // protocol ID
                     packetCopy >> sequenceID; // ID of client
                     packetCopy >> sequenceID; // sequence ID
+                    packetCopy >> temp; // ack
+                    packetCopy >> temp; // ack bitfield
                     sendPacket(iter->packet, sequenceID, sf::IpAddress(address));
                     iter->sentTime.restart();
                 }
@@ -551,7 +613,7 @@ void Connection::heartbeat(sf::Uint32 addressInteger)
 
     sf::Packet packet;
     sf::Uint32 sequenceID;
-    preparePacket(packet, sequenceID, address);
+//    preparePacket(packet, sequenceID, address);
     sendPacket(packet, sequenceID, address);
 }
 

@@ -9,6 +9,9 @@
 #define SENT_PACKET_LIST_MAX_SIZE 33
 #define CONNECTION_TIMEOUT_MILLISECONDS 10000
 
+#define NETWORK_GOOD_MODE_SEND_INTERVAL 1.0f/30.0f
+#define NETWORK_BAD_MODE_SEND_INTERVAL 1.0f/10.0f
+
 #include <SFML/Config.hpp>
 #include <SFML/Network.hpp>
 #include <SFML/System.hpp>
@@ -21,10 +24,8 @@ struct PacketInfo
 
     sf::Packet packet;
     sf::Uint32 ID;
-    union {
-        sf::Clock sentTime;
-        sf::Uint32 address;
-    };
+    sf::Clock sentTime;
+    sf::Uint32 address;
 };
 
 namespace network
