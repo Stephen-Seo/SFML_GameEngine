@@ -592,17 +592,15 @@ void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint3
                 if(iter->sentTime.getElapsedTime() >= sf::milliseconds(PACKET_LOST_TIMEOUT_MILLISECONDS))
                 {
 #ifndef NDEBUG
-                    std::cout << "Packet " << std::hex << std::showbase << ack << std::dec;
-                    std::cout << " timed out\n";
+                    std::cout << "Packet " << ack << "(" << std::hex << std::showbase << ack << std::dec;
+                    std::cout << ") timed out\n";
 #endif
                     sf::Packet packetCopy = iter->packet;
-                    sf::Uint32 sequenceID, temp;
+                    sf::Uint32 sequenceID;
                     packetCopy >> sequenceID; // protocol ID
                     packetCopy >> sequenceID; // ID of client
                     packetCopy >> sequenceID; // sequence ID
-                    packetCopy >> temp; // ack
-                    packetCopy >> temp; // ack bitfield
-                    sendPacket(iter->packet, sf::IpAddress(address));
+                    sendPacket(iter->packet, sf::IpAddress(address), sequenceID);
                     iter->sentTime.restart();
                 }
                 break;
