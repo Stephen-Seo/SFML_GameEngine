@@ -105,7 +105,6 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
     set(NetworkingTest_SOURCES
         engine/connection.cpp
         engine/networkIdentifiers.cpp
-        ../NetworkingTest/TesterConnection.cpp
         ../NetworkingTest/Main.cpp)
 
     add_executable(NetworkingTest

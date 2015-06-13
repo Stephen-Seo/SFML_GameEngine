@@ -6,7 +6,7 @@
 #include <SFML/Network.hpp>
 #include <SFML/System.hpp>
 
-#include "TesterConnection.hpp"
+#include "../src/engine/connection.hpp"
 
 void printUsage()
 {
@@ -15,7 +15,7 @@ void printUsage()
     std::cout << "\t-c <ip-address>\n";
 }
 
-void MainLoop(TesterConnection& connection)
+void MainLoop(Connection& connection)
 {
     sf::Clock clock;
     sf::Time lastUpdateTime = sf::Time::Zero;
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
         return 0;
     }
 
-    TesterConnection connection(isServer ? Connection::SERVER : Connection::CLIENT);
+    Connection connection(isServer ? Connection::SERVER : Connection::CLIENT);
     if(!isServer)
     {
         connection.connectToServer(address);

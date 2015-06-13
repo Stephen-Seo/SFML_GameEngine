@@ -133,7 +133,7 @@ void Connection::update(sf::Time dt)
 
             // packet is valid
 #ifndef NDEBUG
-            std::cout << "Valid packet received from " << address.toString() << '\n';
+            std::cout << "Valid packet " << sequence << " received from " << address.toString() << '\n';
 #endif
 
             sf::Uint32 clientAddress = address.toInteger();
