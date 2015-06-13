@@ -5,9 +5,7 @@ Connection::Connection() :
 acceptNewConnections(true),
 ignoreOutOfSequence(false),
 resendTimedOutPackets(true),
-mode(SERVER),
-timer(0.0f),
-isGood(false)
+mode(SERVER)
 {
     socket.bind(GAME_PORT);
     socket.setBlocking(false);
@@ -17,9 +15,7 @@ Connection::Connection(Mode mode) :
 acceptNewConnections(true),
 ignoreOutOfSequence(false),
 resendTimedOutPackets(true),
-mode(mode),
-timer(0.0f),
-isGood(false)
+mode(mode)
 {
     socket.bind(GAME_PORT);
     socket.setBlocking(false);
@@ -31,12 +27,66 @@ Connection::~Connection()
 
 void Connection::update(sf::Time dt)
 {
-    bool triggerSend = false;
-    timer += dt.asSeconds();
-    if(timer >= (isGood ? NETWORK_GOOD_MODE_SEND_INTERVAL : NETWORK_BAD_MODE_SEND_INTERVAL))
+    for(auto iter = IDMap.begin(); iter != IDMap.end(); ++iter)
     {
-        timer = 0.0f;
-        triggerSend = true;
+        toggleTimer.at(iter->first) += dt.asSeconds();
+        toggledTimer.at(iter->first) += dt.asSeconds();
+
+        if(isGood.at(iter->first) && !isGoodRtt.at(iter->first))
+        {
+            // good status, rtt is bad
+#ifndef NDEBUG
+            std::cout << "Switching to bad network mode for " << sf::IpAddress(iter->first).toString() << '\n';
+#endif
+            isGood.at(iter->first) = false;
+            if(toggledTimer.at(iter->first) <= 10.0f)
+            {
+                toggleTime.at(iter->first) *= 2.0f;
+                if(toggleTime.at(iter->first) > 60.0f)
+                {
+                    toggleTime.at(iter->first) = 60.0f;
+                }
+            }
+            toggledTimer.at(iter->first) = 0.0f;
+        }
+        else if(isGood.at(iter->first))
+        {
+            // good status, rtt is good
+            if(toggleTimer.at(iter->first) >= 10.0f)
+            {
+                toggleTimer.at(iter->first) = 0.0f;
+                toggleTime.at(iter->first) /= 2.0f;
+                if(toggleTime.at(iter->first) < 1.0f)
+                {
+                    toggleTime.at(iter->first) = 1.0f;
+                }
+            }
+        }
+        else if(!isGood.at(iter->first) && isGoodRtt.at(iter->first))
+        {
+            // bad status, rtt is good
+            if(toggledTimer.at(iter->first) >= toggleTime.at(iter->first))
+            {
+                toggleTimer.at(iter->first) = 0.0f;
+                toggledTimer.at(iter->first) = 0.0f;
+#ifndef NDEBUG
+                std::cout << "Switching to good network mode for " << sf::IpAddress(iter->first).toString() << '\n';
+#endif
+                isGood.at(iter->first) = true;
+            }
+        }
+        else
+        {
+            // bad status, rtt is bad
+            toggledTimer.at(iter->first) = 0.0f;
+        }
+
+        timer.at(iter->first) += dt.asSeconds();
+        if(timer.at(iter->first) >= (isGood.at(iter->first) ? NETWORK_GOOD_MODE_SEND_INTERVAL : NETWORK_BAD_MODE_SEND_INTERVAL))
+        {
+            timer.at(iter->first) = 0.0f;
+            triggerSend.at(iter->first) = true;
+        }
     }
 
     if(mode == SERVER)
@@ -73,10 +123,11 @@ void Connection::update(sf::Time dt)
 */
 
         // send packet as server to each client
-        if(triggerSend)
+        for(auto idMapIter = IDMap.begin(); idMapIter != IDMap.end(); ++idMapIter)
         {
-            for(auto idMapIter = IDMap.begin(); idMapIter != IDMap.end(); ++idMapIter)
+            if(triggerSend.at(idMapIter->first))
             {
+                triggerSend.at(idMapIter->first) = false;
                 if(!sendPacketMapQueue.at(idMapIter->first).empty())
                 {
                     auto pInfo = sendPacketMapQueue.at(idMapIter->first).back();
@@ -272,8 +323,9 @@ void Connection::update(sf::Time dt)
 */
 
             // send packet as client to server
-            if(triggerSend)
+            if(triggerSend.at(clientSentAddress.toInteger()))
             {
+                triggerSend.at(clientSentAddress.toInteger()) = false;
                 if(!sendPacketMapQueue.at(clientSentAddress.toInteger()).empty())
                 {
                     PacketInfo pInfo = sendPacketMapQueue.at(clientSentAddress.toInteger()).back();
@@ -647,6 +699,7 @@ void Connection::lookupRtt(sf::Uint32 address, sf::Uint32 ack)
 #ifndef NDEBUG
             std::cout << "RTT of " << sf::IpAddress(address).toString() << " = " << rttMap[address].asMilliseconds() << '\n';
 #endif
+            isGoodRtt.at(address) = rttMap.at(address).asMilliseconds() <= 250;
             break;
         }
     }

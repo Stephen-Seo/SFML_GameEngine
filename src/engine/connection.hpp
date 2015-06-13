@@ -78,8 +78,13 @@ private:
 
     sf::IpAddress clientSentAddress;
 
-    float timer;
-    bool isGood;
+    std::map<sf::Uint32, bool> triggerSend;
+    std::map<sf::Uint32, float> timer;
+    std::map<sf::Uint32, bool> isGood;
+    std::map<sf::Uint32, bool> isGoodRtt;
+    std::map<sf::Uint32, float> toggleTime;
+    std::map<sf::Uint32, float> toggleTimer;
+    std::map<sf::Uint32, float> toggledTimer;
 
 
     void registerConnection(sf::Uint32 address, sf::Uint32 ID = 0);
