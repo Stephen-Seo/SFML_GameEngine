@@ -492,11 +492,6 @@ void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address)
     sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, address.toInteger()));
 }
 
-void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address, sf::Uint32 resendingID)
-{
-    sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, address.toInteger(), resendingID, true));
-}
-
 sf::Time Connection::getRtt()
 {
     auto iter = rttMap.begin();
@@ -711,4 +706,9 @@ void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::I
     {
         packet << (sf::Uint32) GAME_PROTOCOL_ID << ID << sequenceID << ack << ackBitfield;
     }
+}
+
+void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address, sf::Uint32 resendingID)
+{
+    sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, address.toInteger(), resendingID, true));
 }
