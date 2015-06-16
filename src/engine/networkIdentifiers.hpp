@@ -12,6 +12,8 @@
 #define NETWORK_GOOD_MODE_SEND_INTERVAL 1.0f/30.0f
 #define NETWORK_BAD_MODE_SEND_INTERVAL 1.0f/10.0f
 
+#include <list>
+
 #include <SFML/Config.hpp>
 #include <SFML/Network.hpp>
 #include <SFML/System.hpp>
@@ -30,6 +32,39 @@ struct PacketInfo
     sf::Uint32 ID;
     bool isResending;
 };
+
+struct ConnectionData
+{
+    ConnectionData();
+    ConnectionData(sf::Uint32 ID, sf::Uint32 lSequence);
+
+    sf::Clock elapsedTime;
+    sf::Uint32 ID;
+    sf::Uint32 lSequence;
+    sf::Uint32 rSequence;
+    sf::Uint32 ackBitfield;
+    std::list<PacketInfo> sentPackets;
+    std::list<PacketInfo> sendPacketQueue;
+    sf::Time rtt;
+    bool triggerSend;
+    float timer;
+    bool isGood;
+    bool isGoodRtt;
+    float toggleTime;
+    float toggleTimer;
+    float toggledTimer;
+
+    bool operator== (const ConnectionData& other) const;
+};
+
+namespace std
+{
+    template<>
+    struct hash<ConnectionData>
+    {
+        std::size_t operator() (const ConnectionData& connectionData) const;
+    };
+}
 
 namespace network
 {

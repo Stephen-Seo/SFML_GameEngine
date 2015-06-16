@@ -42,6 +42,42 @@ isResending(isResending)
 {
 }
 
+ConnectionData::ConnectionData() :
+rSequence(0),
+ackBitfield(0xFFFFFFFF),
+triggerSend(false),
+timer(0.0f),
+isGood(false),
+isGoodRtt(false),
+toggleTime(30.0f),
+toggleTimer(0.0f),
+toggledTimer(0.0f)
+{}
+
+ConnectionData::ConnectionData(sf::Uint32 ID, sf::Uint32 lSequence) :
+ID(ID),
+lSequence(lSequence),
+rSequence(0),
+ackBitfield(0xFFFFFFFF),
+triggerSend(false),
+timer(0.0f),
+isGood(false),
+isGoodRtt(false),
+toggleTime(30.0f),
+toggleTimer(0.0f),
+toggledTimer(0.0f)
+{}
+
+bool ConnectionData::operator== (const ConnectionData& other) const
+{
+    return ID == other.ID;
+}
+
+std::size_t std::hash<ConnectionData>::operator() (const ConnectionData& connectionData) const
+{
+    return connectionData.ID;
+}
+
 bool network::moreRecent(sf::Uint32 current, sf::Uint32 previous)
 {
     return (((current > previous) && (current - previous <= 0x7FFFFFFF)) ||

@@ -27,65 +27,65 @@ Connection::~Connection()
 
 void Connection::update(sf::Time dt)
 {
-    for(auto iter = IDMap.begin(); iter != IDMap.end(); ++iter)
+    for(auto iter = connectionData.begin(); iter != connectionData.end(); ++iter)
     {
-        toggleTimer.at(iter->first) += dt.asSeconds();
-        toggledTimer.at(iter->first) += dt.asSeconds();
+        iter->second.toggleTimer += dt.asSeconds();
+        iter->second.toggledTimer += dt.asSeconds();
 
-        if(isGood.at(iter->first) && !isGoodRtt.at(iter->first))
+        if(iter->second.isGood && !iter->second.isGoodRtt)
         {
             // good status, rtt is bad
 #ifndef NDEBUG
             std::cout << "Switching to bad network mode for " << sf::IpAddress(iter->first).toString() << '\n';
 #endif
-            isGood.at(iter->first) = false;
-            if(toggledTimer.at(iter->first) <= 10.0f)
+            iter->second.isGood = false;
+            if(iter->second.toggledTimer <= 10.0f)
             {
-                toggleTime.at(iter->first) *= 2.0f;
-                if(toggleTime.at(iter->first) > 60.0f)
+                iter->second.toggleTime *= 2.0f;
+                if(iter->second.toggleTime > 60.0f)
                 {
-                    toggleTime.at(iter->first) = 60.0f;
+                    iter->second.toggleTime = 60.0f;
                 }
             }
-            toggledTimer.at(iter->first) = 0.0f;
+            iter->second.toggledTimer = 0.0f;
         }
-        else if(isGood.at(iter->first))
+        else if(iter->second.isGood)
         {
             // good status, rtt is good
-            if(toggleTimer.at(iter->first) >= 10.0f)
+            if(iter->second.toggleTimer >= 10.0f)
             {
-                toggleTimer.at(iter->first) = 0.0f;
-                toggleTime.at(iter->first) /= 2.0f;
-                if(toggleTime.at(iter->first) < 1.0f)
+                iter->second.toggleTimer = 0.0f;
+                iter->second.toggleTime /= 2.0f;
+                if(iter->second.toggleTime < 1.0f)
                 {
-                    toggleTime.at(iter->first) = 1.0f;
+                    iter->second.toggleTime = 1.0f;
                 }
             }
         }
-        else if(!isGood.at(iter->first) && isGoodRtt.at(iter->first))
+        else if(!iter->second.isGood && iter->second.isGoodRtt)
         {
             // bad status, rtt is good
-            if(toggledTimer.at(iter->first) >= toggleTime.at(iter->first))
+            if(iter->second.toggledTimer >= iter->second.toggleTime)
             {
-                toggleTimer.at(iter->first) = 0.0f;
-                toggledTimer.at(iter->first) = 0.0f;
+                iter->second.toggleTimer = 0.0f;
+                iter->second.toggledTimer = 0.0f;
 #ifndef NDEBUG
                 std::cout << "Switching to good network mode for " << sf::IpAddress(iter->first).toString() << '\n';
 #endif
-                isGood.at(iter->first) = true;
+                iter->second.isGood = true;
             }
         }
         else
         {
             // bad status, rtt is bad
-            toggledTimer.at(iter->first) = 0.0f;
+            iter->second.toggledTimer = 0.0f;
         }
 
-        timer.at(iter->first) += dt.asSeconds();
-        if(timer.at(iter->first) >= (isGood.at(iter->first) ? NETWORK_GOOD_MODE_SEND_INTERVAL : NETWORK_BAD_MODE_SEND_INTERVAL))
+        iter->second.timer += dt.asSeconds();
+        if(iter->second.timer >= (iter->second.isGood ? NETWORK_GOOD_MODE_SEND_INTERVAL : NETWORK_BAD_MODE_SEND_INTERVAL))
         {
-            timer.at(iter->first) = 0.0f;
-            triggerSend.at(iter->first) = true;
+            iter->second.timer = 0.0f;
+            iter->second.triggerSend = true;
         }
     }
 
@@ -93,9 +93,9 @@ void Connection::update(sf::Time dt)
     {
         // check if clients have timed out
         std::list<sf::Uint32> disconnectQueue;
-        for(auto iter = elapsedTimeMap.begin(); iter != elapsedTimeMap.end(); ++iter)
+        for(auto iter = connectionData.begin(); iter != connectionData.end(); ++iter)
         {
-            if(iter->second.getElapsedTime().asMilliseconds() >= CONNECTION_TIMEOUT_MILLISECONDS)
+            if(iter->second.elapsedTime.getElapsedTime().asMilliseconds() >= CONNECTION_TIMEOUT_MILLISECONDS)
             {
                 disconnectQueue.push_front(iter->first);
             }
@@ -110,15 +110,15 @@ void Connection::update(sf::Time dt)
         }
 
         // send packet as server to each client
-        for(auto idMapIter = IDMap.begin(); idMapIter != IDMap.end(); ++idMapIter)
+        for(auto iter = connectionData.begin(); iter != connectionData.end(); ++iter)
         {
-            if(triggerSend.at(idMapIter->first))
+            if(iter->second.triggerSend)
             {
-                triggerSend.at(idMapIter->first) = false;
-                if(!sendPacketMapQueue.at(idMapIter->first).empty())
+                iter->second.triggerSend = false;
+                if(!iter->second.sendPacketQueue.empty())
                 {
-                    auto pInfo = sendPacketMapQueue.at(idMapIter->first).back();
-                    sendPacketMapQueue.at(idMapIter->first).pop_back();
+                    auto pInfo = iter->second.sendPacketQueue.back();
+                    iter->second.sendPacketQueue.pop_back();
 
                     sf::Packet toSendPacket;
                     sf::Uint32 sequenceID;
@@ -128,15 +128,15 @@ void Connection::update(sf::Time dt)
                     }
                     else
                     {
-                        preparePacket(toSendPacket, sequenceID, sf::IpAddress(idMapIter->first));
+                        preparePacket(toSendPacket, sequenceID, sf::IpAddress(iter->first));
                     }
                     const void* dataPtr = pInfo.packet.getData();
                     toSendPacket.append(dataPtr, pInfo.packet.getDataSize());
 
-                    sentPackets[idMapIter->first].push_front(PacketInfo(toSendPacket, idMapIter->first, sequenceID));
+                    iter->second.sentPackets.push_front(PacketInfo(toSendPacket, iter->first, sequenceID));
 
-                    socket.send(toSendPacket, sf::IpAddress(idMapIter->first), GAME_PORT);
-                    checkSentPacketsSize(idMapIter->first);
+                    socket.send(toSendPacket, sf::IpAddress(iter->first), GAME_PORT);
+                    checkSentPacketsSize(iter->first);
                 }
                 else
                 {
@@ -144,10 +144,10 @@ void Connection::update(sf::Time dt)
 
                     sf::Packet toSendPacket;
                     sf::Uint32 sequenceID;
-                    preparePacket(toSendPacket, sequenceID, sf::IpAddress(idMapIter->first));
-                    sentPackets[idMapIter->first].push_front(PacketInfo(toSendPacket, idMapIter->first, sequenceID));
-                    socket.send(toSendPacket, sf::IpAddress(idMapIter->first), GAME_PORT);
-                    checkSentPacketsSize(idMapIter->first);
+                    preparePacket(toSendPacket, sequenceID, sf::IpAddress(iter->first));
+                    iter->second.sentPackets.push_front(PacketInfo(toSendPacket, iter->first, sequenceID));
+                    socket.send(toSendPacket, sf::IpAddress(iter->first), GAME_PORT);
+                    checkSentPacketsSize(iter->first);
                 }
             }
         }
@@ -177,16 +177,14 @@ void Connection::update(sf::Time dt)
 
             if(ID == network::CONNECT && acceptNewConnections)
             {
-                if(IDMap.find(address.toInteger()) == IDMap.end())
+                if(connectionData.find(address.toInteger()) == connectionData.end())
                 {
 #ifndef NDEBUG
                     std::cout << "SERVER: Establishing new connection with " << address.toString() << '\n';
-                    std::cout << "\taddress->int = " << address.toInteger() << '\n';
 #endif
                     // Establish connection
                     registerConnection(address.toInteger());
                     sf::Packet newPacket;
-                    sf::Uint32 sequenceID;
                     sendPacket(newPacket, address);
                 }
                 return;
@@ -194,15 +192,14 @@ void Connection::update(sf::Time dt)
             else if(ID == network::PING)
             {
                 sf::Packet newPacket;
-                sf::Uint32 sequenceID;
                 sendPacket(newPacket, address);
             }
-            else if(IDMap.find(address.toInteger()) == IDMap.end())
+            else if(connectionData.find(address.toInteger()) == connectionData.end())
             {
                 // Unknown client not attemping to connect, ignoring
                 return;
             }
-            else if(ID != IDMap[address.toInteger()])
+            else if(ID != connectionData.at(address.toInteger()).ID)
             {
                 // ID and address doesn't match, ignoring
                 return;
@@ -217,55 +214,55 @@ void Connection::update(sf::Time dt)
 
             lookupRtt(clientAddress, ack);
 
-            elapsedTimeMap[clientAddress].restart();
+            connectionData.at(clientAddress).elapsedTime.restart();
             checkSentPackets(ack, ackBitfield, clientAddress);
 
             sf::Uint32 diff = 0;
-            if(sequence > rSequenceMap[clientAddress])
+            if(sequence > connectionData.at(clientAddress).rSequence)
             {
-                diff = sequence - rSequenceMap[clientAddress];
+                diff = sequence - connectionData.at(clientAddress).rSequence;
                 if(diff <= 0x7FFFFFFF)
                 {
                     // sequence is more recent
-                    rSequenceMap[clientAddress] = sequence;
+                    connectionData.at(clientAddress).rSequence = sequence;
                     shiftBitfield(address, diff);
                 }
                 else
                 {
                     // sequence is older packet id, diff requires recalc
-                    diff = sequence + (0xFFFFFFFF - rSequenceMap[clientAddress]) + 1;
+                    diff = sequence + (0xFFFFFFFF - connectionData.at(clientAddress).rSequence) + 1;
 
-                    if((ackBitfieldMap[clientAddress] & (0x100000000 >> diff)) != 0x0)
+                    if((connectionData.at(clientAddress).ackBitfield & (0x100000000 >> diff)) != 0x0)
                     {
                         // already received packet
                         return;
                     }
-                    ackBitfieldMap[clientAddress] |= (0x100000000 >> diff);
+                    connectionData.at(clientAddress).ackBitfield |= (0x100000000 >> diff);
 
                     if(ignoreOutOfSequence)
                         return;
                 }
             }
-            else if(rSequenceMap[clientAddress] > sequence)
+            else if(connectionData.at(clientAddress).rSequence > sequence)
             {
-                diff = rSequenceMap[clientAddress] - sequence;
+                diff = connectionData.at(clientAddress).rSequence - sequence;
                 if(diff > 0x7FFFFFFF)
                 {
                     // sequence is more recent, diff requires recalc
-                    diff = sequence + (0xFFFFFFFF - rSequenceMap[clientAddress]) + 1;
+                    diff = sequence + (0xFFFFFFFF - connectionData.at(clientAddress).rSequence) + 1;
 
-                    rSequenceMap[clientAddress] = sequence;
+                    connectionData.at(clientAddress).rSequence = sequence;
                     shiftBitfield(address, diff);
                 }
                 else
                 {
                     // sequence is older packet id
-                    if((ackBitfieldMap[clientAddress] & (0x100000000 >> diff)) != 0x0)
+                    if((connectionData.at(clientAddress).ackBitfield & (0x100000000 >> diff)) != 0x0)
                     {
                         // already received packet
                         return;
                     }
-                    ackBitfieldMap[clientAddress] |= (0x100000000 >> diff);
+                    connectionData.at(clientAddress).ackBitfield |= (0x100000000 >> diff);
 
                     if(ignoreOutOfSequence)
                         return;
@@ -283,12 +280,11 @@ void Connection::update(sf::Time dt)
     else if(mode == CLIENT)
     {
         // connection established
-        if(IDMap.size() > 0)
+        if(connectionData.size() > 0)
         {
             sf::Uint32 serverAddress = clientSentAddress.toInteger();
             // check if timed out
-            sf::Time elapsedTime = elapsedTimeMap[serverAddress].getElapsedTime();
-            if(elapsedTime.asMilliseconds() > CONNECTION_TIMEOUT_MILLISECONDS)
+            if(connectionData.at(serverAddress).elapsedTime.getElapsedTime().asMilliseconds() > CONNECTION_TIMEOUT_MILLISECONDS)
             {
 #ifndef NDEBUG
                 std::cout << "Disconnected from server " << clientSentAddress.toString() << '\n';
@@ -298,13 +294,13 @@ void Connection::update(sf::Time dt)
             }
 
             // send packet as client to server
-            if(triggerSend.at(clientSentAddress.toInteger()))
+            if(connectionData.at(serverAddress).triggerSend)
             {
-                triggerSend.at(clientSentAddress.toInteger()) = false;
-                if(!sendPacketMapQueue.at(clientSentAddress.toInteger()).empty())
+                connectionData.at(serverAddress).triggerSend = false;
+                if(!connectionData.at(serverAddress).sendPacketQueue.empty())
                 {
-                    PacketInfo pInfo = sendPacketMapQueue.at(clientSentAddress.toInteger()).back();
-                    sendPacketMapQueue.at(clientSentAddress.toInteger()).pop_back();
+                    PacketInfo pInfo = connectionData.at(serverAddress).sendPacketQueue.back();
+                    connectionData.at(serverAddress).sendPacketQueue.pop_back();
 
 
                     sf::Packet toSendPacket;
@@ -320,7 +316,7 @@ void Connection::update(sf::Time dt)
                     const void* dataPtr = pInfo.packet.getData();
                     toSendPacket.append(dataPtr, pInfo.packet.getDataSize());
 
-                    sentPackets[serverAddress].push_front(PacketInfo(toSendPacket, clientSentAddress.toInteger(), sequenceID));
+                    connectionData.at(serverAddress).sentPackets.push_front(PacketInfo(toSendPacket, serverAddress, sequenceID));
 
                     socket.send(toSendPacket, clientSentAddress, GAME_PORT);
                     checkSentPacketsSize(serverAddress);
@@ -332,7 +328,7 @@ void Connection::update(sf::Time dt)
                     sf::Packet toSendPacket;
                     sf::Uint32 sequenceID;
                     preparePacket(toSendPacket, sequenceID, clientSentAddress);
-                    sentPackets[serverAddress].push_front(PacketInfo(toSendPacket, clientSentAddress.toInteger(), sequenceID));
+                    connectionData.at(serverAddress).sentPackets.push_front(PacketInfo(toSendPacket, serverAddress, sequenceID));
                     socket.send(toSendPacket, clientSentAddress, GAME_PORT);
                     checkSentPacketsSize(clientSentAddress.toInteger());
                 }
@@ -365,10 +361,9 @@ void Connection::update(sf::Time dt)
                 if(ID == network::PING)
                 {
                     sf::Packet newPacket;
-                    sf::Uint32 sequenceID;
                     sendPacket(newPacket, address);
                 }
-                else if(ID != IDMap[serverAddress])
+                else if(ID != connectionData.at(serverAddress).ID)
                     return;
 
                 // packet is valid
@@ -378,55 +373,55 @@ void Connection::update(sf::Time dt)
 
                 lookupRtt(serverAddress, ack);
 
-                elapsedTimeMap[serverAddress].restart();
+                connectionData.at(serverAddress).elapsedTime.restart();
                 checkSentPackets(ack, bitfield, serverAddress);
 
                 sf::Uint32 diff = 0;
-                if(sequence > rSequenceMap[serverAddress])
+                if(sequence > connectionData.at(serverAddress).rSequence)
                 {
-                    diff = sequence - rSequenceMap[serverAddress];
+                    diff = sequence - connectionData.at(serverAddress).rSequence;
                     if(diff <= 0x7FFFFFFF)
                     {
                         // sequence is more recent
-                        rSequenceMap[serverAddress] = sequence;
+                        connectionData.at(serverAddress).rSequence = sequence;
                         shiftBitfield(address, diff);
                     }
                     else
                     {
                         // sequence is older packet id, diff requires recalc
-                        diff = sequence + (0xFFFFFFFF - rSequenceMap[serverAddress]) + 1;
+                        diff = sequence + (0xFFFFFFFF - connectionData.at(serverAddress).rSequence) + 1;
 
-                        if((ackBitfieldMap[serverAddress] & (0x100000000 >> diff)) != 0x0)
+                        if((connectionData.at(serverAddress).ackBitfield & (0x100000000 >> diff)) != 0x0)
                         {
                             // already received packet
                             return;
                         }
-                        ackBitfieldMap[serverAddress] |= (0x100000000 >> diff);
+                        connectionData.at(serverAddress).ackBitfield |= (0x100000000 >> diff);
 
                         if(ignoreOutOfSequence)
                             return;
                     }
                 }
-                else if(rSequenceMap[serverAddress] > sequence)
+                else if(connectionData.at(serverAddress).rSequence > sequence)
                 {
-                    diff = rSequenceMap[serverAddress] - sequence;
+                    diff = connectionData.at(serverAddress).rSequence - sequence;
                     if(diff > 0x7FFFFFFF)
                     {
                         // sequence is more recent, diff requires recalc
-                        diff = sequence + (0xFFFFFFFF - rSequenceMap[serverAddress]) + 1;
+                        diff = sequence + (0xFFFFFFFF - connectionData.at(serverAddress).rSequence) + 1;
 
-                        rSequenceMap[serverAddress] = sequence;
+                        connectionData.at(serverAddress).rSequence = sequence;
                         shiftBitfield(address, diff);
                     }
                     else
                     {
                         // sequence is older packet id
-                        if((ackBitfieldMap[serverAddress] & (0x100000000 >> diff)) != 0x0)
+                        if((connectionData.at(serverAddress).ackBitfield & (0x100000000 >> diff)) != 0x0)
                         {
                             // already received packet
                             return;
                         }
-                        ackBitfieldMap[serverAddress] |= (0x100000000 >> diff);
+                        connectionData.at(serverAddress).ackBitfield |= (0x100000000 >> diff);
 
                         if(ignoreOutOfSequence)
                             return;
@@ -489,18 +484,17 @@ void Connection::connectToServer(sf::IpAddress address)
 
 void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address)
 {
-    sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, address.toInteger()));
+    connectionData.at(address.toInteger()).sendPacketQueue.push_front(PacketInfo(packet, address.toInteger()));
 }
 
 sf::Time Connection::getRtt()
 {
-    auto iter = rttMap.begin();
-    return iter->second;
+    return connectionData.begin()->second.rtt;
 }
 
 sf::Time Connection::getRtt(sf::Uint32 address)
 {
-    return rttMap.at(address);
+    return connectionData.at(address).rtt;
 }
 
 void Connection::receivedPacket(sf::Packet packet, sf::Uint32 address)
@@ -514,70 +508,28 @@ void Connection::connectionLost(sf::Uint32 address)
 
 void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
 {
-    elapsedTimeMap.insert(std::make_pair(address, sf::Clock()));
-
     if(mode == SERVER)
     {
-        IDMap.insert(std::make_pair(address, generateID()));
-        lSequenceMap.insert(std::make_pair(address, (sf::Uint32) 0));
+        connectionData.insert(std::make_pair(address, ConnectionData(generateID(), 0)));
     }
     else if(mode == CLIENT)
     {
-        IDMap.insert(std::make_pair(address, ID));
-        lSequenceMap.insert(std::make_pair(address, (sf::Uint32) 1));
+        connectionData.insert(std::make_pair(address, ConnectionData(ID, 1)));
     }
-
-    rSequenceMap.insert(std::make_pair(address, (sf::Uint32) 0));
-
-    ackBitfieldMap.insert(std::make_pair(address, (sf::Uint32) 0xFFFFFFFF));
-
-    sentPackets.insert(std::make_pair(address, std::list<PacketInfo>()));
-
-    sendPacketMapQueue.insert(std::make_pair(address, std::list<PacketInfo>()));
-
-    rttMap.insert(std::make_pair(address, sf::Time()));
-
-    triggerSend.insert(std::make_pair(address, false));
-    timer.insert(std::make_pair(address, 0.0f));
-    isGood.insert(std::make_pair(address, false));
-    isGoodRtt.insert(std::make_pair(address, false));
-    toggleTime.insert(std::make_pair(address, 30.0f));
-    toggleTimer.insert(std::make_pair(address, 0.0f));
-    toggledTimer.insert(std::make_pair(address, 0.0f));
 
     connectionMade(address);
 }
 
 void Connection::unregisterConnection(sf::Uint32 address)
 {
-    elapsedTimeMap.erase(address);
-
-    IDMap.erase(address);
-
-    lSequenceMap.erase(address);
-    rSequenceMap.erase(address);
-
-    ackBitfieldMap.erase(address);
-
-    sentPackets.erase(address);
-    sendPacketMapQueue.erase(address);
-
-    rttMap.erase(address);
-
-    triggerSend.erase(address);
-    timer.erase(address);
-    isGood.erase(address);
-    isGoodRtt.erase(address);
-    toggleTime.erase(address);
-    toggleTimer.erase(address);
-    toggledTimer.erase(address);
+    connectionData.erase(address);
 
     connectionLost(address);
 }
 
 void Connection::shiftBitfield(sf::IpAddress address, sf::Uint32 diff)
 {
-    ackBitfieldMap[address.toInteger()] = (ackBitfieldMap[address.toInteger()] >> diff) | (0x100000000 >> diff);
+    connectionData.at(address.toInteger()).ackBitfield = (connectionData.at(address.toInteger()).ackBitfield >> diff) | (0x100000000 >> diff);
 }
 
 void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint32 address)
@@ -596,7 +548,7 @@ void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint3
         }
 
         // not received by client yet, checking if packet timed out
-        for(auto iter = sentPackets[address].begin(); iter != sentPackets[address].end(); ++iter)
+        for(auto iter = connectionData.at(address).sentPackets.begin(); iter != connectionData.at(address).sentPackets.end(); ++iter)
         {
             if(iter->ID == ack)
             {
@@ -625,7 +577,7 @@ void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint3
 
 void Connection::heartbeat()
 {
-    for(auto iter = IDMap.begin(); iter != IDMap.end(); ++iter)
+    for(auto iter = connectionData.begin(); iter != connectionData.end(); ++iter)
     {
         heartbeat(iter->first);
     }
@@ -636,29 +588,28 @@ void Connection::heartbeat(sf::Uint32 addressInteger)
     sf::IpAddress address(addressInteger);
 
     sf::Packet packet;
-    sf::Uint32 sequenceID;
     sendPacket(packet, address);
 }
 
 void Connection::lookupRtt(sf::Uint32 address, sf::Uint32 ack)
 {
-    for(auto iter = sentPackets[address].begin(); iter != sentPackets[address].end(); ++iter)
+    for(auto iter = connectionData.at(address).sentPackets.begin(); iter != connectionData.at(address).sentPackets.end(); ++iter)
     {
         if(iter->ID == ack)
         {
             sf::Time time = iter->sentTime.getElapsedTime();
-            if(time > rttMap[address])
+            if(time > connectionData.at(address).rtt)
             {
-                rttMap[address] += (time - rttMap[address]) * 0.1f;
+                connectionData.at(address).rtt += (time - connectionData.at(address).rtt) * 0.1f;
             }
             else
             {
-                rttMap[address] -= (rttMap[address] - time) * 0.1f;
+                connectionData.at(address).rtt -= (connectionData.at(address).rtt - time) * 0.1f;
             }
 #ifndef NDEBUG
-            std::cout << "RTT of " << sf::IpAddress(address).toString() << " = " << rttMap[address].asMilliseconds() << '\n';
+            std::cout << "RTT of " << sf::IpAddress(address).toString() << " = " << connectionData.at(address).rtt.asMilliseconds() << '\n';
 #endif
-            isGoodRtt.at(address) = rttMap.at(address).asMilliseconds() <= 250;
+            connectionData.at(address).isGoodRtt = connectionData.at(address).rtt.asMilliseconds() <= 250;
             break;
         }
     }
@@ -666,9 +617,9 @@ void Connection::lookupRtt(sf::Uint32 address, sf::Uint32 ack)
 
 void Connection::checkSentPacketsSize(sf::Uint32 address)
 {
-    while(sentPackets[address].size() > SENT_PACKET_LIST_MAX_SIZE)
+    while(connectionData.at(address).sentPackets.size() > SENT_PACKET_LIST_MAX_SIZE)
     {
-        sentPackets[address].pop_back();
+        connectionData.at(address).sentPackets.pop_back();
     }
 }
 
@@ -687,16 +638,16 @@ void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::I
 {
     sf::Uint32 intAddress = address.toInteger();
 
-    auto iter = IDMap.find(intAddress);
-    assert(iter != IDMap.end());
+    auto iter = connectionData.find(intAddress);
+    assert(iter != connectionData.end());
 
-    sf::Uint32 ID = iter->second;
+    sf::Uint32 ID = iter->second.ID;
 
-    sequenceID = lSequenceMap[intAddress]++;
+    sequenceID = (iter->second.lSequence)++;
 
-    sf::Uint32 ack = rSequenceMap[intAddress];
+    sf::Uint32 ack = iter->second.rSequence;
 
-    sf::Uint32 ackBitfield = ackBitfieldMap[intAddress];
+    sf::Uint32 ackBitfield = iter->second.ackBitfield;
 
     if(isPing)
     {
@@ -710,5 +661,5 @@ void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::I
 
 void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address, sf::Uint32 resendingID)
 {
-    sendPacketMapQueue.at(address.toInteger()).push_front(PacketInfo(packet, address.toInteger(), resendingID, true));
+    connectionData.at(address.toInteger()).sendPacketQueue.push_front(PacketInfo(packet, address.toInteger(), resendingID, true));
 }
