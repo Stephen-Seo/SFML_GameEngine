@@ -366,7 +366,6 @@ void Connection::update(sf::Time dt)
                 {
                     sf::Packet newPacket;
                     sf::Uint32 sequenceID;
-                    //preparePacket(newPacket, sequenceID, address);
                     sendPacket(newPacket, address);
                 }
                 else if(ID != IDMap[serverAddress])
@@ -486,31 +485,6 @@ void Connection::connectToServer(sf::IpAddress address)
     packet << (sf::Uint32) GAME_PROTOCOL_ID << (sf::Uint32) network::CONNECT << (sf::Uint32) 0 << (sf::Uint32) 0 << (sf::Uint32) 0xFFFFFFFF;
     socket.send(packet, address, GAME_PORT);
     clientSentAddress = address;
-}
-
-void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing)
-{
-    sf::Uint32 intAddress = address.toInteger();
-
-    auto iter = IDMap.find(intAddress);
-    assert(iter != IDMap.end());
-
-    sf::Uint32 ID = iter->second;
-
-    sequenceID = lSequenceMap[intAddress]++;
-
-    sf::Uint32 ack = rSequenceMap[intAddress];
-
-    sf::Uint32 ackBitfield = ackBitfieldMap[intAddress];
-
-    if(isPing)
-    {
-        packet << (sf::Uint32) GAME_PROTOCOL_ID << (sf::Uint32) network::PING << sequenceID << ack << ackBitfield;
-    }
-    else
-    {
-        packet << (sf::Uint32) GAME_PROTOCOL_ID << ID << sequenceID << ack << ackBitfield;
-    }
 }
 
 void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address)
@@ -712,4 +686,29 @@ sf::Uint32 Connection::generateID()
     } while (network::isSpecialID(id));
 
     return id;
+}
+
+void Connection::preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing)
+{
+    sf::Uint32 intAddress = address.toInteger();
+
+    auto iter = IDMap.find(intAddress);
+    assert(iter != IDMap.end());
+
+    sf::Uint32 ID = iter->second;
+
+    sequenceID = lSequenceMap[intAddress]++;
+
+    sf::Uint32 ack = rSequenceMap[intAddress];
+
+    sf::Uint32 ackBitfield = ackBitfieldMap[intAddress];
+
+    if(isPing)
+    {
+        packet << (sf::Uint32) GAME_PROTOCOL_ID << (sf::Uint32) network::PING << sequenceID << ack << ackBitfield;
+    }
+    else
+    {
+        packet << (sf::Uint32) GAME_PROTOCOL_ID << ID << sequenceID << ack << ackBitfield;
+    }
 }

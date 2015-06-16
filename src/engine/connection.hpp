@@ -39,8 +39,6 @@ protected:
     bool ignoreOutOfSequence;
     bool resendTimedOutPackets;
 
-    void preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing = false);
-
     void sendPacket(sf::Packet& packet, sf::IpAddress address);
     void sendPacket(sf::Packet& packet, sf::IpAddress address, sf::Uint32 resendingID);
 
@@ -101,6 +99,8 @@ private:
     void checkSentPacketsSize(sf::Uint32 address);
 
     sf::Uint32 generateID();
+
+    void preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing = false);
 
 
 };
