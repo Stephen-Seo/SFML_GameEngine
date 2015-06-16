@@ -13,6 +13,7 @@
 #define NETWORK_BAD_MODE_SEND_INTERVAL 1.0f/10.0f
 
 #include <list>
+#include <cstdlib>
 
 #include <SFML/Config.hpp>
 #include <SFML/Network.hpp>
