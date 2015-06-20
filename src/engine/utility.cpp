@@ -94,8 +94,8 @@ bool Utility::lineIntersect(int x_0, int y_0, int x_1, int y_1, int x_2, int y_2
     Rational slope1(y_3 - y_2, x_3 - x_2);
 
     // get intersept
-    Rational inter0(y_0 - slope0 * x_0);
-    Rational inter1(y_2 - slope1 * x_2);
+    Rational inter0(slope0 * -x_0 + y_0);
+    Rational inter1(slope1 * -x_2 + y_2);
 
     // check if line is on top of other
     Rational interDiff(inter1 - inter0);
@@ -125,10 +125,10 @@ bool Utility::lineIntersect(int x_0, int y_0, int x_1, int y_1, int x_2, int y_2
     const int& maxY_1 = y_2 > y_3 ? y_2 : y_3;
     const int& minY_1 = y_3 == maxY_1 ? y_2 : y_3;
 
-    return (minX_0 < intersect_x && maxX_0 > intersect_x &&
-            minX_1 < intersect_x && maxX_1 > intersect_x &&
-            minY_0 < intersect_y && maxY_0 > intersect_y &&
-            minY_1 < intersect_y && maxY_1 > intersect_y);
+    return (intersect_x > minX_0 && intersect_x < maxX_0 &&
+            intersect_x > minX_1 && intersect_x < maxX_1 &&
+            intersect_y > minY_0 && intersect_y < maxY_0 &&
+            intersect_y > minY_1 && intersect_y < maxY_1);
 #else
     return lineIntersect((float) x_0, (float) y_0, (float) x_1, (float) y_1, (float) x_2, (float) y_2, (float) x_3, (float) y_3);
 #endif
