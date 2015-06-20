@@ -1,6 +1,10 @@
 
 #include "utility.hpp"
 
+#ifdef Rational_FOUND
+  #include <Rational.hpp>
+#endif
+
 bool Utility::isWithinTransformedRectangle(const sf::Vector2f* coords, sf::Vector2f point)
 {
     int j;
@@ -24,3 +28,109 @@ bool Utility::isWithinTransformedRectangle(const sf::Vector2f* coords, sf::Vecto
 
     return true;
 }
+
+bool Utility::lineIntersect(const sf::Vector2f& point0, const sf::Vector2f& point1, const sf::Vector2f& point2, const sf::Vector2f& point3)
+{
+    return lineIntersect(point0.x, point0.y, point1.x, point1.y, point2.x, point2.y, point3.x, point3.y);
+}
+
+bool Utility::lineIntersect(float x_0, float y_0, float x_1, float y_1, float x_2, float y_2, float x_3, float y_3)
+{
+    // get slope of both lines
+    float slope0 = (y_1 - y_0) / (x_1 - x_0);
+    float slope1 = (y_3 - y_2) / (x_3 - x_2);
+
+    // get the intersept of both lines
+    float inter0 = y_0 - slope0 * x_0;
+    float inter1 = y_2 - slope1 * x_2;
+
+    // check if line zero is on top of line one
+    float interDiff = inter0 - inter1;
+    float slopeDiff = slope1 - slope0;
+
+    if(interDiff > -0.001 && interDiff < 0.001 &&
+       slopeDiff > -0.001 && slopeDiff < 0.001)
+    {
+        return true;
+    }
+    // check if line never intersects the other
+    else if(slopeDiff > -0.001 && slopeDiff < 0.001)
+    {
+        return false;
+    }
+
+    // find intersection
+    float intersect_x = interDiff / slopeDiff;
+    float intersect_y = slope0 * intersect_x + inter0;
+
+    // check if intersection is within bounds
+    const float& maxX_0 = x_0 > x_1 ? x_0 : x_1;
+    const float& minX_0 = x_1 == maxX_0 ? x_0 : x_1;
+    const float& maxX_1 = x_2 > x_3 ? x_2 : x_3;
+    const float& minX_1 = x_3 == maxX_1 ? x_2 : x_3;
+
+    const float& maxY_0 = y_0 > y_1 ? y_0 : y_1;
+    const float& minY_0 = y_1 == maxY_0 ? y_0 : y_1;
+    const float& maxY_1 = y_2 > y_3 ? y_2 : y_3;
+    const float& minY_1 = y_3 == maxY_1 ? y_2 : y_3;
+
+    return (minX_0 < intersect_x && maxX_0 > intersect_x &&
+            minX_1 < intersect_x && maxX_1 > intersect_x &&
+            minY_0 < intersect_y && maxY_0 > intersect_y &&
+            minY_1 < intersect_y && maxY_1 > intersect_y);
+}
+
+
+bool Utility::lineIntersect(const sf::Vector2i& point0, const sf::Vector2i& point1, const sf::Vector2i& point2, const sf::Vector2i& point3)
+{
+    return lineIntersect(point0.x, point0.y, point1.x, point1.y, point2.x, point2.y, point3.x, point3.y);
+}
+
+bool Utility::lineIntersect(int x_0, int y_0, int x_1, int y_1, int x_2, int y_2, int x_3, int y_3)
+{
+#ifdef Rational_FOUND
+    // get slope
+    Rational slope0(y_1 - y_0, x_1 - x_0);
+    Rational slope1(y_3 - y_2, x_3 - x_2);
+
+    // get intersept
+    Rational inter0(y_0 - slope0 * x_0);
+    Rational inter1(y_2 - slope1 * x_2);
+
+    // check if line is on top of other
+    Rational interDiff(inter1 - inter0);
+    Rational slopeDiff(slope1 - slope0);
+    if(interDiff.toFloat() == 0.0f && slopeDiff.toFloat() == 0.0f)
+    {
+        return true;
+    }
+    // check if line never intersects other
+    else if(slopeDiff.toFloat() == 0.0f)
+    {
+        return false;
+    }
+
+    // find intersection
+    Rational intersect_x(interDiff / slopeDiff);
+    Rational intersect_y(slope0 * intersect_x + inter0);
+
+    // check if intersection is within bounds
+    const int& maxX_0 = x_0 > x_1 ? x_0 : x_1;
+    const int& minX_0 = x_1 == maxX_0 ? x_0 : x_1;
+    const int& maxX_1 = x_2 > x_3 ? x_2 : x_3;
+    const int& minX_1 = x_3 == maxX_1 ? x_2 : x_3;
+
+    const int& maxY_0 = y_0 > y_1 ? y_0 : y_1;
+    const int& minY_0 = y_1 == maxY_0 ? y_0 : y_1;
+    const int& maxY_1 = y_2 > y_3 ? y_2 : y_3;
+    const int& minY_1 = y_3 == maxY_1 ? y_2 : y_3;
+
+    return (minX_0 < intersect_x && maxX_0 > intersect_x &&
+            minX_1 < intersect_x && maxX_1 > intersect_x &&
+            minY_0 < intersect_y && maxY_0 > intersect_y &&
+            minY_1 < intersect_y && maxY_1 > intersect_y);
+#else
+    return lineIntersect((float) x_0, (float) y_0, (float) x_1, (float) y_1, (float) x_2, (float) y_2, (float) x_3, (float) y_3);
+#endif
+}
+
