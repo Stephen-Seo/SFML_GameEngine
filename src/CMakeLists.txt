@@ -58,7 +58,6 @@ endif()
 find_package(Rational 1 CONFIG QUIET)
 if(Rational_FOUND)
     include_directories(${Rational_INCLUDE_DIR})
-    message(STATUS ${Rational_INCLUDE_DIR})
     target_link_libraries(Game_Project ${Rational_LIBRARIES})
     add_definitions(-DRational_FOUND)
 else()
@@ -128,33 +127,46 @@ endif()
 #   Begin Unit Test files
 ################################################################################
 
-if(SFML_GameEngine_TEST)
-    set(Unit_Tests_SOURCES
-        ../UnitTests/TestEC.cpp
-        ../UnitTests/TestUtility.cpp
-        ../UnitTests/TestStateStack.cpp
-        ../UnitTests/main.cpp)
-
-    if(WIN32)
-        add_executable(Unit_Tests WIN32
-            ${Unit_Tests_SOURCES}
-            ${Game_Project_SOURCES})
-    else()
-        add_executable(Unit_Tests
-            ${Unit_Tests_SOURCES}
-            ${Game_Project_SOURCES})
-    endif()
-
-
-    enable_testing()
-
+if(CMAKE_BUILD_TYPE MATCHES "Debug")
     find_package(GTest REQUIRED)
-    include_directories(${GTEST_INCLUDE_DIRS})
-    target_link_libraries(Unit_Tests ${GTEST_BOTH_LIBRARIES})
-    target_link_libraries(Unit_Tests ${SFML_LIBRARIES})
+
+    if(GTEST_FOUND)
+        set(Unit_Tests_SOURCES
+            ../UnitTests/TestEC.cpp
+            ../UnitTests/TestUtility.cpp
+            ../UnitTests/TestStateStack.cpp
+            ../UnitTests/main.cpp)
+
+        if(WIN32)
+            add_executable(Unit_Tests WIN32
+                ${Unit_Tests_SOURCES}
+                ${Game_Project_SOURCES})
+        else()
+            add_executable(Unit_Tests
+                ${Unit_Tests_SOURCES}
+                ${Game_Project_SOURCES})
+        endif()
 
 
-    add_test(NAME UnitTests COMMAND Unit_Tests)
+        enable_testing()
 
-    file(COPY ../UnitTestRes DESTINATION ${CMAKE_BINARY_DIR})
+        include_directories(${GTEST_INCLUDE_DIRS})
+        target_link_libraries(Unit_Tests ${GTEST_BOTH_LIBRARIES})
+        target_link_libraries(Unit_Tests ${SFML_LIBRARIES})
+
+        if(ResourcePacker_FOUND)
+            target_link_libraries(Unit_Tests ${ResourcePacker_LIBRARIES})
+            add_definitions(-DResourcePacker_FOUND)
+        endif()
+
+        if(Rational_FOUND)
+            target_link_libraries(Unit_Tests ${Rational_LIBRARIES})
+            add_definitions(-DRational_FOUND)
+        endif()
+
+
+        add_test(NAME UnitTests COMMAND Unit_Tests)
+
+        file(COPY ../UnitTestRes DESTINATION ${CMAKE_BINARY_DIR})
+    endif()
 endif()

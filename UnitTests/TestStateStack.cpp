@@ -13,11 +13,12 @@
 #include <engine/musicPlayer.hpp>
 #include <engine/soundPlayer.hpp>
 #include <engine/ec/engine.hpp>
+#include <engine/context.hpp>
 
 class TestState : public State
 {
 public:
-    TestState(StateStack& stack) : State(stack)
+    TestState(StateStack& stack, Context context) : State(stack, context)
     {
         tset.insert(static_cast<Textures::ID>(0));
         tset.insert(static_cast<Textures::ID>(1));
@@ -35,11 +36,6 @@ TEST(StateStackTest, ResourceLoading)
     StateStack stack;
     ResourceManager rManager(&stack, GameResources::DEFAULT);
 
-    stack.registerState<TestState>(static_cast<States::ID>(5));
-    rManager.registerTexture(static_cast<Textures::ID>(0), "UnitTestRes/Test.png");
-    rManager.registerTexture(static_cast<Textures::ID>(1), "UnitTestRes/Test.png");
-    rManager.registerTexture(static_cast<Textures::ID>(2), "UnitTestRes/Test.png");
-
     sf::RenderWindow window;
     MusicPlayer mPlayer;
     SoundPlayer sPlayer;
@@ -47,6 +43,13 @@ TEST(StateStackTest, ResourceLoading)
     bool derp;
 
     Context context(window, rManager, mPlayer, sPlayer, ecEngine, derp);
+
+
+    stack.registerState<TestState>(static_cast<States::ID>(5), context);
+    rManager.registerTexture(static_cast<Textures::ID>(0), "UnitTestRes/Test.png");
+    rManager.registerTexture(static_cast<Textures::ID>(1), "UnitTestRes/Test.png");
+    rManager.registerTexture(static_cast<Textures::ID>(2), "UnitTestRes/Test.png");
+
 
     bool success = true;
 

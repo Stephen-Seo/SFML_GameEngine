@@ -5,6 +5,10 @@
   #include <Rational.hpp>
 #endif
 
+#ifndef NDEBUG
+  #include <iostream>
+#endif
+
 bool Utility::isWithinTransformedRectangle(const sf::Vector2f* coords, sf::Vector2f point)
 {
     int j;
@@ -48,20 +52,49 @@ bool Utility::lineIntersect(float x_0, float y_0, float x_1, float y_1, float x_
     float interDiff = inter0 - inter1;
     float slopeDiff = slope1 - slope0;
 
-    if(interDiff > -0.001 && interDiff < 0.001 &&
-       slopeDiff > -0.001 && slopeDiff < 0.001)
+    if((interDiff > -0.001 && interDiff < 0.001 &&
+       slopeDiff > -0.001 && slopeDiff < 0.001) ||
+       (std::isinf(slope0) && std::isinf(slope1) &&
+       x_0 - x_2 > -0.001 && x_0 - x_2 < 0.001))
     {
+#ifndef NDEBUG
+        std::cout << "Line is on top of line.\n";
+#endif
         return true;
     }
     // check if line never intersects the other
-    else if(slopeDiff > -0.001 && slopeDiff < 0.001)
+    else if((slopeDiff > -0.001 && slopeDiff < 0.001) ||
+            (std::isinf(slope0) && std::isinf(slope1) &&
+            (x_0 - x_2 > 0.001 || x_0 - x_2 < -0.001)))
     {
+#ifndef NDEBUG
+        std::cout << "Line never intersects line.\n";
+#endif
         return false;
     }
 
     // find intersection
-    float intersect_x = interDiff / slopeDiff;
-    float intersect_y = slope0 * intersect_x + inter0;
+    float intersect_x;
+    float intersect_y;
+    if(std::isinf(slope0))
+    {
+        intersect_x = x_0;
+        intersect_y = slope1 * intersect_x + inter1;
+    }
+    else if(std::isinf(slope1))
+    {
+        intersect_x = x_2;
+        intersect_y = slope0 * intersect_x + inter0;
+    }
+    else
+    {
+        intersect_x = interDiff / slopeDiff;
+        intersect_y = slope0 * intersect_x + inter0;
+    }
+
+#ifndef NDEBUG
+    std::cout << intersect_x << ' ' << intersect_y << '\n';
+#endif
 
     // check if intersection is within bounds
     const float& maxX_0 = x_0 > x_1 ? x_0 : x_1;
@@ -74,10 +107,17 @@ bool Utility::lineIntersect(float x_0, float y_0, float x_1, float y_1, float x_
     const float& maxY_1 = y_2 > y_3 ? y_2 : y_3;
     const float& minY_1 = y_3 == maxY_1 ? y_2 : y_3;
 
-    return (minX_0 < intersect_x && maxX_0 > intersect_x &&
-            minX_1 < intersect_x && maxX_1 > intersect_x &&
-            minY_0 < intersect_y && maxY_0 > intersect_y &&
-            minY_1 < intersect_y && maxY_1 > intersect_y);
+#ifndef NDEBUG
+    std::cout << "Max X " << maxX_0 << ' ' << maxX_1 << '\n';
+    std::cout << "Min X " << minX_0 << ' ' << minX_1 << '\n';
+    std::cout << "Max Y " << maxY_0 << ' ' << maxY_1 << '\n';
+    std::cout << "Min Y " << minY_0 << ' ' << minY_1 << '\n';
+#endif
+
+    return (minX_0 <= intersect_x && maxX_0 >= intersect_x &&
+            minX_1 <= intersect_x && maxX_1 >= intersect_x &&
+            minY_0 <= intersect_y && maxY_0 >= intersect_y &&
+            minY_1 <= intersect_y && maxY_1 >= intersect_y);
 }
 
 
@@ -98,21 +138,51 @@ bool Utility::lineIntersect(int x_0, int y_0, int x_1, int y_1, int x_2, int y_2
     Rational inter1(slope1 * -x_2 + y_2);
 
     // check if line is on top of other
-    Rational interDiff(inter1 - inter0);
+    Rational interDiff(inter0 - inter1);
     Rational slopeDiff(slope1 - slope0);
-    if(interDiff.toFloat() == 0.0f && slopeDiff.toFloat() == 0.0f)
+    if((interDiff.toFloat() == 0.0f && slopeDiff.toFloat() == 0.0f) ||
+       (slope0.isInvalid() && slope1.isInvalid() &&
+        x_0 - x_2 == 0))
     {
+#ifndef NDEBUG
+        std::cout << "Line is on top of line.\n";
+#endif
         return true;
     }
     // check if line never intersects other
-    else if(slopeDiff.toFloat() == 0.0f)
+    else if((slopeDiff.toFloat() == 0.0f) ||
+            (slope0.isInvalid() && slope1.isInvalid() &&
+            x_0 - x_2 != 0))
     {
+#ifndef NDEBUG
+        std::cout << "Line never intersects line.\n";
+#endif
         return false;
     }
 
     // find intersection
-    Rational intersect_x(interDiff / slopeDiff);
-    Rational intersect_y(slope0 * intersect_x + inter0);
+    Rational intersect_x;
+    Rational intersect_y;
+
+    if(slope0.isInvalid())
+    {
+        intersect_x = Rational(x_0);
+        intersect_y = slope1 * intersect_x + inter1;
+    }
+    else if(slope1.isInvalid())
+    {
+        intersect_x = Rational(x_2);
+        intersect_y = slope0 * intersect_x + inter0;
+    }
+    else
+    {
+        intersect_x = interDiff / slopeDiff;
+        intersect_y = slope0 * intersect_x + inter0;
+    }
+
+#ifndef NDEBUG
+    std::cout << intersect_x.toString() << ' ' << intersect_y.toString() << '\n';
+#endif
 
     // check if intersection is within bounds
     const int& maxX_0 = x_0 > x_1 ? x_0 : x_1;
@@ -125,10 +195,17 @@ bool Utility::lineIntersect(int x_0, int y_0, int x_1, int y_1, int x_2, int y_2
     const int& maxY_1 = y_2 > y_3 ? y_2 : y_3;
     const int& minY_1 = y_3 == maxY_1 ? y_2 : y_3;
 
-    return (intersect_x > minX_0 && intersect_x < maxX_0 &&
-            intersect_x > minX_1 && intersect_x < maxX_1 &&
-            intersect_y > minY_0 && intersect_y < maxY_0 &&
-            intersect_y > minY_1 && intersect_y < maxY_1);
+#ifndef NDEBUG
+    std::cout << "Max X " << maxX_0 << ' ' << maxX_1 << '\n';
+    std::cout << "Min X " << minX_0 << ' ' << minX_1 << '\n';
+    std::cout << "Max Y " << maxY_0 << ' ' << maxY_1 << '\n';
+    std::cout << "Min Y " << minY_0 << ' ' << minY_1 << '\n';
+#endif
+
+    return (intersect_x >= minX_0 && intersect_x <= maxX_0 &&
+            intersect_x >= minX_1 && intersect_x <= maxX_1 &&
+            intersect_y >= minY_0 && intersect_y <= maxY_0 &&
+            intersect_y >= minY_1 && intersect_y <= maxY_1);
 #else
     return lineIntersect((float) x_0, (float) y_0, (float) x_1, (float) y_1, (float) x_2, (float) y_2, (float) x_3, (float) y_3);
 #endif
