@@ -19,7 +19,7 @@ namespace Utility
     bool lineCircleIntersect(float x_0, float y_0, float x_1, float y_1, float x_2, float y_2, float radius);
 
     // Coords are expected as if it were drawn with primitive type Triangle-Fan
-    bool isWithinPolygon(const sf::VertexArray coords, float x_0, float y_0);
+    bool isWithinPolygon(const sf::VertexArray& coords, float x_0, float y_0);
 }
 
 #endif

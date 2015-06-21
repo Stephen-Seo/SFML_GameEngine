@@ -303,7 +303,7 @@ bool Utility::lineCircleIntersect(float x_0, float y_0, float x_1, float y_1, fl
     }
 }
 
-bool Utility::isWithinPolygon(const sf::VertexArray coords, float x_0, float y_0)
+bool Utility::isWithinPolygon(const sf::VertexArray& coords, float x_0, float y_0)
 {
     unsigned int j;
     float v0_x, v0_y;
