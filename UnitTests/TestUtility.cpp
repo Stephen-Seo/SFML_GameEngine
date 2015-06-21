@@ -223,3 +223,61 @@ TEST(UtilityTest, lineIntersectRational)
     ASSERT_FALSE(Utility::lineIntersect(x_0, y_0, x_1, y_1, x_2, y_2, x_3, y_3));
 }
 
+TEST(UtilityTest, lineCircleIntersect)
+{
+    float x_0 = 0.0f;
+    float y_0 = 0.0f;
+    float x_1 = 0.0f;
+    float y_1 = 2.0f;
+    float x_2 = 1.0f;
+    float y_2 = 1.0f;
+    float radius = 1.0f;
+
+    ASSERT_TRUE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
+
+    radius = 0.9f;
+
+    ASSERT_FALSE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
+
+    x_1 = 2.0f;
+    y_1 = 0.0f;
+
+    radius = 1.0f;
+
+    ASSERT_TRUE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
+
+    radius = 0.9f;
+
+    ASSERT_FALSE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
+
+    x_1 = 2.0f;
+    y_1 = 2.0f;
+
+    x_2 = 2.0f;
+    y_2 = 0.0f;
+
+    radius = 2.0f;
+
+    ASSERT_TRUE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
+
+    radius = 1.0f;
+
+    ASSERT_FALSE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
+
+    x_2 = 3.0f;
+    y_2 = 3.0f;
+
+    radius = 0.9f;
+
+    ASSERT_FALSE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
+
+    radius = 2.0f;
+
+    ASSERT_TRUE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
+
+    x_2 = -1.0f;
+    y_2 = -1.0f;
+
+    ASSERT_TRUE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
+}
+

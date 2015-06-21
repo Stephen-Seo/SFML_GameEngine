@@ -211,3 +211,95 @@ bool Utility::lineIntersect(int x_0, int y_0, int x_1, int y_1, int x_2, int y_2
 #endif
 }
 
+bool Utility::lineCircleIntersect(const sf::Vector2f& point0, const sf::Vector2f& point1, const sf::Vector2f& center, float radius)
+{
+    return lineCircleIntersect(point0.x, point0.y, point1.x, point1.y, center.x, center.y, radius);
+}
+
+bool Utility::lineCircleIntersect(float x_0, float y_0, float x_1, float y_1, float x_2, float y_2, float radius)
+{
+    // get line 0
+    float slope_0 = (y_1 - y_0) / (x_1 - x_0);
+    float inter_0 = y_0 - x_0 * slope_0;
+
+    // get tangent line (line 1)
+    float slope_1;
+    if(std::isinf(slope_0))
+    {
+        slope_1 = 0.0f;
+    }
+    else if(slope_0 > -0.001f && slope_0 < 0.001f)
+    {
+        slope_1 = INFINITY;
+    }
+    else
+    {
+        slope_1 = -1.0f / slope_0;
+    }
+    float inter_1 = y_2 - x_2 * slope_1;
+
+    // get intersection
+    float intersect_x;
+    float intersect_y;
+    if(slope_1 > -0.001f && slope_1 < 0.001f)
+    {
+        intersect_x = x_0;
+        intersect_y = y_2;
+    }
+    else if(slope_0 > -0.001f && slope_0 < 0.001f)
+    {
+        intersect_x = x_2;
+        intersect_y = y_0;
+    }
+    else
+    {
+        intersect_x = (inter_0 - inter_1) / (slope_1 - slope_0);
+        intersect_y = intersect_x * slope_1 + inter_1;
+    }
+
+    // check if intersection is within bounds
+    float& maxX = x_0 > x_1 ? x_0 : x_1;
+    float& minX = x_1 == maxX ? x_0 : x_1;
+
+    float& maxY = y_0 > y_1 ? y_0 : y_1;
+    float& minY = y_1 == maxY ? y_0 : y_1;
+
+    if(minX <= intersect_x && maxX >= intersect_x &&
+       minY <= intersect_y && maxY >= intersect_y)
+    {
+        // within bounds
+        // need to check if magnitude of intersect to center is <= radius
+        float vector_x = intersect_x - x_2;
+        float vector_y = intersect_y - y_2;
+        if(std::sqrt(vector_x * vector_x + vector_y * vector_y) <= radius)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+    else
+    {
+        // intersection not on line segment
+        // check if magnitude of both ends of segment to center is<= radius
+        float vector_x = x_0 - x_2;
+        float vector_y = y_0 - y_2;
+        if(std::sqrt(vector_x * vector_x + vector_y * vector_y) <= radius)
+        {
+            return true;
+        }
+        vector_x = x_1 - x_2;
+        vector_y = y_1 - y_2;
+        if(std::sqrt(vector_x * vector_x + vector_y * vector_y) <= radius)
+        {
+            return true;
+        }
+        else
+        {
+            return false;
+        }
+    }
+}
+
