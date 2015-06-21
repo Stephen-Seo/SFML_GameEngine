@@ -281,3 +281,69 @@ TEST(UtilityTest, lineCircleIntersect)
     ASSERT_TRUE(Utility::lineCircleIntersect(x_0, y_0, x_1, y_1, x_2, y_2, radius));
 }
 
+TEST(UtilityTest, isWithinPolygon)
+{
+    sf::VertexArray coords;
+    coords.resize(5);
+
+    coords[0].position.x = 0.0f;
+    coords[0].position.y = 0.0f;
+
+    coords[1].position.x = 0.0f;
+    coords[1].position.y = 1.0f;
+
+    coords[2].position.x = 1.0f;
+    coords[2].position.y = 2.0f;
+
+    coords[3].position.x = 2.0f;
+    coords[3].position.y = 1.0f;
+
+    coords[4].position.x = 2.0f;
+    coords[4].position.y = 0.0f;
+
+    float pointX = 0.0f;
+    float pointY = 0.0f;
+
+    ASSERT_TRUE(Utility::isWithinPolygon(coords, pointX, pointY));
+
+    pointX = 1.0f;
+
+    ASSERT_TRUE(Utility::isWithinPolygon(coords, pointX, pointY));
+
+    pointY = 1.0f;
+
+    ASSERT_TRUE(Utility::isWithinPolygon(coords, pointX, pointY));
+
+    pointX = 3.0f;
+
+    ASSERT_FALSE(Utility::isWithinPolygon(coords, pointX, pointY));
+
+    pointX = 1.0f;
+    pointY = -1.0f;
+
+    ASSERT_FALSE(Utility::isWithinPolygon(coords, pointX, pointY));
+
+    pointX = -1.0f;
+    pointY = 1.0f;
+
+    ASSERT_FALSE(Utility::isWithinPolygon(coords, pointX, pointY));
+
+    pointX = 3.0f;
+
+    ASSERT_FALSE(Utility::isWithinPolygon(coords, pointX, pointY));
+
+    pointX = 1.0f;
+    pointY = 3.0f;
+
+    ASSERT_FALSE(Utility::isWithinPolygon(coords, pointX, pointY));
+
+    pointX = 2.0f;
+
+    ASSERT_FALSE(Utility::isWithinPolygon(coords, pointX, pointY));
+
+    pointX = 0.0f;
+    pointY = 0.5f;
+
+    ASSERT_TRUE(Utility::isWithinPolygon(coords, pointX, pointY));
+}
+

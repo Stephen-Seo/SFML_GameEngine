@@ -303,3 +303,32 @@ bool Utility::lineCircleIntersect(float x_0, float y_0, float x_1, float y_1, fl
     }
 }
 
+bool Utility::isWithinPolygon(const sf::VertexArray coords, float x_0, float y_0)
+{
+    unsigned int j;
+    float v0_x, v0_y;
+    float v1_x, v1_y;
+    bool resultPositive;
+    for(unsigned int i = 0; i < coords.getVertexCount(); ++i)
+    {
+        j = (i + 1) % coords.getVertexCount();
+
+        v0_x = coords[j].position.x - coords[i].position.x;
+        v0_y = coords[j].position.y - coords[i].position.y;
+
+        v1_x = x_0 - coords[i].position.x;
+        v1_y = y_0 - coords[j].position.y;
+
+        if(i == 0)
+        {
+            resultPositive = v0_x * v1_y - v1_x * v0_y > 0.0f;
+        }
+        else if(resultPositive != (v0_x * v1_y - v1_x * v0_y > 0.0f))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
