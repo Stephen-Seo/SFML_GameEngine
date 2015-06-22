@@ -43,7 +43,7 @@ public:
     sf::Time getRtt();
     sf::Time getRtt(sf::Uint32 address);
 
-    void setReceivedCallback(std::function<void(sf::Packet, sf::Uint32)> callback);
+    void setReceivedCallback(std::function<void(sf::Packet, sf::Uint32, bool)> callback);
 
     void setConnectedCallback(std::function<void(sf::Uint32)> callback);
 
@@ -63,7 +63,7 @@ private:
 
     sf::IpAddress clientSentAddress;
 
-    std::function<void(sf::Packet, sf::Uint32)> receivedCallback;
+    std::function<void(sf::Packet, sf::Uint32, bool)> receivedCallback;
     std::function<void(sf::Uint32)> connectedCallback;
     std::function<void(sf::Uint32)> disconnectedCallback;
 
@@ -86,7 +86,7 @@ private:
 
     void sendPacket(sf::Packet& packet, sf::IpAddress address, sf::Uint32 resendingID);
 
-    void receivedPacket(sf::Packet packet, sf::Uint32 address);
+    void receivedPacket(sf::Packet packet, sf::Uint32 address, bool outOfOrder);
 
     void connectionMade(sf::Uint32 address);
 

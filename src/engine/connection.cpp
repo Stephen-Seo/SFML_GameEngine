@@ -206,6 +206,8 @@ void Connection::update(sf::Time dt)
             std::cout << "Valid packet " << sequence << " received from " << address.toString() << '\n';
 #endif
 
+            bool outOfOrder = false;
+
             sf::Uint32 clientAddress = address.toInteger();
 
             lookupRtt(clientAddress, ack);
@@ -237,6 +239,8 @@ void Connection::update(sf::Time dt)
 
                     if(ignoreOutOfSequence)
                         return;
+
+                    outOfOrder = true;
                 }
             }
             else if(connectionData.at(clientAddress).rSequence > sequence)
@@ -262,6 +266,8 @@ void Connection::update(sf::Time dt)
 
                     if(ignoreOutOfSequence)
                         return;
+
+                    outOfOrder = true;
                 }
             }
             else
@@ -270,7 +276,7 @@ void Connection::update(sf::Time dt)
                 return;
             }
 
-            receivedPacket(packet, clientAddress);
+            receivedPacket(packet, clientAddress, outOfOrder);
         }
     } // if(mode == SERVER)
     else if(mode == CLIENT)
@@ -367,6 +373,8 @@ void Connection::update(sf::Time dt)
                 std::cout << "Valid packet " << sequence << " received from " << address.toString() << '\n';
 #endif
 
+                bool outOfOrder = false;
+
                 lookupRtt(serverAddress, ack);
 
                 connectionData.at(serverAddress).elapsedTime.restart();
@@ -396,6 +404,8 @@ void Connection::update(sf::Time dt)
 
                         if(ignoreOutOfSequence)
                             return;
+
+                        outOfOrder = true;
                     }
                 }
                 else if(connectionData.at(serverAddress).rSequence > sequence)
@@ -421,6 +431,8 @@ void Connection::update(sf::Time dt)
 
                         if(ignoreOutOfSequence)
                             return;
+
+                        outOfOrder = true;
                     }
                 }
                 else
@@ -429,7 +441,7 @@ void Connection::update(sf::Time dt)
                     return;
                 }
 
-                receivedPacket(packet, serverAddress);
+                receivedPacket(packet, serverAddress, outOfOrder);
             }
         }
         // connection not yet established
@@ -493,7 +505,7 @@ sf::Time Connection::getRtt(sf::Uint32 address)
     return connectionData.at(address).rtt;
 }
 
-void Connection::setReceivedCallback(std::function<void(sf::Packet, sf::Uint32)> callback)
+void Connection::setReceivedCallback(std::function<void(sf::Packet, sf::Uint32, bool)> callback)
 {
     receivedCallback = callback;
 }
@@ -678,11 +690,11 @@ void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address, sf::Uint3
     connectionData.at(address.toInteger()).sendPacketQueue.push_front(PacketInfo(packet, address.toInteger(), resendingID, true));
 }
 
-void Connection::receivedPacket(sf::Packet packet, sf::Uint32 address)
+void Connection::receivedPacket(sf::Packet packet, sf::Uint32 address, bool outOfOrder)
 {
-    if(receivedCallback)
+    if(receivedCallback && !packet.endOfPacket())
     {
-        receivedCallback(packet, address);
+        receivedCallback(packet, address, outOfOrder);
     }
 }
 
