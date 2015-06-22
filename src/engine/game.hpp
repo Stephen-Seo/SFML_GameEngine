@@ -2,11 +2,13 @@
 #ifndef GAME_HPP
 #define GAME_HPP
 
+#include <memory>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
 #include "ec/engine.hpp"
 #include "context.hpp"
+#include "connection.hpp"
 #include "resourceHolder.hpp"
 #include "resourceIdentifiers.hpp"
 #include "resourceManager.hpp"
@@ -43,6 +45,8 @@ private:
     bool isQuitting;
 
     Engine ecEngine;
+
+    std::unique_ptr<Connection> connection;
 };
 
 #endif

@@ -28,8 +28,9 @@ resourceManager(&stateStack, RESOURCE_MANAGER_MODE, PACKFILE_NAME),
 mPlayer(),
 sPlayer(),
 stateStack(),
-context(window, resourceManager, mPlayer, sPlayer, ecEngine, isQuitting),
-isQuitting(false)
+context(window, resourceManager, mPlayer, sPlayer, ecEngine, isQuitting, connection),
+isQuitting(false),
+connection()
 {
     registerResources();
     registerStates();
@@ -71,6 +72,10 @@ void Game::processEvents()
 void Game::update(sf::Time deltaTime)
 {
     stateStack.update(deltaTime, context);
+    if(connection)
+    {
+        connection->update(deltaTime);
+    }
 }
 
 void Game::draw()

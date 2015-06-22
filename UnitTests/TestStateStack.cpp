@@ -3,6 +3,7 @@
 
 #include <exception>
 #include <iostream>
+#include <memory>
 
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
@@ -14,6 +15,7 @@
 #include <engine/soundPlayer.hpp>
 #include <engine/ec/engine.hpp>
 #include <engine/context.hpp>
+#include <engine/connection.hpp>
 
 class TestState : public State
 {
@@ -41,8 +43,9 @@ TEST(StateStackTest, ResourceLoading)
     SoundPlayer sPlayer;
     Engine ecEngine;
     bool derp;
+    std::unique_ptr<Connection> connection;
 
-    Context context(window, rManager, mPlayer, sPlayer, ecEngine, derp);
+    Context context(window, rManager, mPlayer, sPlayer, ecEngine, derp, connection);
 
 
     stack.registerState<TestState>(static_cast<States::ID>(5), context);

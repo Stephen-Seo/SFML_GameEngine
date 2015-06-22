@@ -13,6 +13,7 @@
 #include <engine/ec/cAcceleration.hpp>
 #include <engine/ec/nMove.hpp>
 #include <engine/context.hpp>
+#include <engine/connection.hpp>
 #include <engine/resourceIdentifiers.hpp>
 #include <engine/resourceManager.hpp>
 #include <engine/musicPlayer.hpp>
@@ -52,13 +53,14 @@ TEST(ECTest, ECUpdate)
     MusicPlayer mPlayer;
     SoundPlayer sPlayer;
     bool isQuitting;
+    std::unique_ptr<Connection> connection;
 
-    engine.update(sf::seconds(1.0f), Context(window, rManager, mPlayer, sPlayer, engine, isQuitting));
+    engine.update(sf::seconds(1.0f), Context(window, rManager, mPlayer, sPlayer, engine, isQuitting, connection));
 
     EXPECT_NE(0.0f, pos->x);
     EXPECT_EQ(1.0f, pos->x);
 
-    engine.update(sf::seconds(1.0f), Context(window, rManager, mPlayer, sPlayer, engine, isQuitting));
+    engine.update(sf::seconds(1.0f), Context(window, rManager, mPlayer, sPlayer, engine, isQuitting, connection));
 
     EXPECT_EQ(2.0f, vel->y);
     EXPECT_EQ(3.0f, pos->y);
