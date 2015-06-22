@@ -4,6 +4,7 @@
 
 #include <unordered_map>
 #include <cassert>
+#include <functional>
 
 #ifndef NDEBUG
 #include <iostream>
@@ -25,7 +26,10 @@ public:
 
     Connection();
     Connection(Mode mode);
-    virtual ~Connection();
+
+    bool acceptNewConnections;
+    bool ignoreOutOfSequence;
+    bool resendTimedOutPackets;
 
     void update(sf::Time dt);
 
@@ -33,21 +37,16 @@ public:
 
     void heartbeat();
 
-protected:
-    bool acceptNewConnections;
-    bool ignoreOutOfSequence;
-    bool resendTimedOutPackets;
-
     void sendPacket(sf::Packet& packet, sf::IpAddress address);
 
     sf::Time getRtt();
     sf::Time getRtt(sf::Uint32 address);
 
-    virtual void receivedPacket(sf::Packet packet, sf::Uint32 address);
+    void setReceivedCallback(std::function<void(sf::Packet, sf::Uint32)> callback);
 
-    virtual void connectionMade(sf::Uint32 address);
+    void setConnectedCallback(std::function<void(sf::Uint32)> callback);
 
-    virtual void connectionLost(sf::Uint32 address);
+    void setDisconnectedCallback(std::function<void(sf::Uint32)> callback);
 
 private:
     Mode mode;
@@ -60,6 +59,10 @@ private:
     std::uniform_int_distribution<sf::Uint32> dist;
 
     sf::IpAddress clientSentAddress;
+
+    std::function<void(sf::Packet, sf::Uint32)> receivedCallback;
+    std::function<void(sf::Uint32)> connectedCallback;
+    std::function<void(sf::Uint32)> disconnectedCallback;
 
     void registerConnection(sf::Uint32 address, sf::Uint32 ID = 0);
     void unregisterConnection(sf::Uint32 address);
@@ -79,6 +82,12 @@ private:
     void preparePacket(sf::Packet& packet, sf::Uint32& sequenceID, sf::IpAddress address, bool isPing = false);
 
     void sendPacket(sf::Packet& packet, sf::IpAddress address, sf::Uint32 resendingID);
+
+    void receivedPacket(sf::Packet packet, sf::Uint32 address);
+
+    void connectionMade(sf::Uint32 address);
+
+    void connectionLost(sf::Uint32 address);
 
 };
 

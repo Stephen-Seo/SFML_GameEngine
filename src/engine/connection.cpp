@@ -21,10 +21,6 @@ mode(mode)
     socket.setBlocking(false);
 }
 
-Connection::~Connection()
-{
-}
-
 void Connection::update(sf::Time dt)
 {
     for(auto iter = connectionData.begin(); iter != connectionData.end(); ++iter)
@@ -497,14 +493,20 @@ sf::Time Connection::getRtt(sf::Uint32 address)
     return connectionData.at(address).rtt;
 }
 
-void Connection::receivedPacket(sf::Packet packet, sf::Uint32 address)
-{}
+void Connection::setReceivedCallback(std::function<void(sf::Packet, sf::Uint32)> callback)
+{
+    receivedCallback = callback;
+}
 
-void Connection::connectionMade(sf::Uint32 address)
-{}
+void Connection::setConnectedCallback(std::function<void(sf::Uint32)> callback)
+{
+    connectedCallback = callback;
+}
 
-void Connection::connectionLost(sf::Uint32 address)
-{}
+void Connection::setDisconnectedCallback(std::function<void(sf::Uint32)> callback)
+{
+    disconnectedCallback = callback;
+}
 
 void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
 {
@@ -663,3 +665,28 @@ void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address, sf::Uint3
 {
     connectionData.at(address.toInteger()).sendPacketQueue.push_front(PacketInfo(packet, address.toInteger(), resendingID, true));
 }
+
+void Connection::receivedPacket(sf::Packet packet, sf::Uint32 address)
+{
+    if(receivedCallback)
+    {
+        receivedCallback(packet, address);
+    }
+}
+
+void Connection::connectionMade(sf::Uint32 address)
+{
+    if(connectedCallback)
+    {
+        connectedCallback(address);
+    }
+}
+
+void Connection::connectionLost(sf::Uint32 address)
+{
+    if(disconnectedCallback)
+    {
+        disconnectedCallback(address);
+    }
+}
+
