@@ -508,6 +508,18 @@ void Connection::setDisconnectedCallback(std::function<void(sf::Uint32)> callbac
     disconnectedCallback = callback;
 }
 
+std::list<sf::Uint32> Connection::getConnected()
+{
+    std::list<sf::Uint32> connectedList;
+
+    for(auto iter = connectionData.begin(); iter != connectionData.end(); ++iter)
+    {
+        connectedList.push_back(iter->first);
+    }
+
+    return connectedList;
+}
+
 void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
 {
     if(mode == SERVER)

@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include <cassert>
 #include <functional>
+#include <list>
 
 #ifndef NDEBUG
 #include <iostream>
@@ -47,6 +48,8 @@ public:
     void setConnectedCallback(std::function<void(sf::Uint32)> callback);
 
     void setDisconnectedCallback(std::function<void(sf::Uint32)> callback);
+
+    std::list<sf::Uint32> getConnected();
 
 private:
     Mode mode;
