@@ -8,19 +8,23 @@ CMake gui recommended. (point CMake gui to the src directory as the source direc
 Otherwise:
 
 To build project, make directory "build" and cd to it. Then use the commands:
-cmake ../src
+`cmake ../src`
 make
 
 To setup Makefile with SFML-2 in a non-standard directory:
-cmake -D SFML\_ROOT=${Directory} ../src
+`cmake -D SFML\_ROOT=${Directory} ../src`
 
-To set install directory, use -D CMAKE\_INSTALL\_PREFIX=${Directory}
+To set install directory, use `-D CMAKE\_INSTALL\_PREFIX=${Directory}`
 
 To find ResourcePacker if installed in non standard directory,
-use -D CMAKE\_PREFIX\_PATH=${pathToResourcePackerRoot}
+use `-D CMAKE\_PREFIX\_PATH=${pathToResourcePackerRoot}`
 
 To add Eclipse project files, add the option:
--G"Eclipse CDT4 - Unix Makefiles"
+`-G"Eclipse CDT4 - Unix Makefiles"`
+
+To not use sf::RenderWindow and replace it with sf::Window (for direct calls to
+OpenGL without the overhead of sf::RenderWindow), use
+`-DGAME_NO_RENDER_WINDOW`
 
 # Usage / Notes to be aware of
 
