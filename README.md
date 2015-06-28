@@ -12,12 +12,12 @@ To build project, make directory "build" and cd to it. Then use the commands:
 make
 
 To setup Makefile with SFML-2 in a non-standard directory:
-`cmake -D SFML\_ROOT=${Directory} ../src`
+`cmake -D SFML_ROOT=${Directory} ../src`
 
-To set install directory, use `-D CMAKE\_INSTALL\_PREFIX=${Directory}`
+To set install directory, use `-D CMAKE_INSTALL_PREFIX=${Directory}`
 
 To find ResourcePacker if installed in non standard directory,
-use `-D CMAKE\_PREFIX\_PATH=${pathToResourcePackerRoot}`
+use `-D CMAKE_PREFIX_PATH=${pathToResourcePackerRoot}`
 
 To add Eclipse project files, add the option:
 `-G"Eclipse CDT4 - Unix Makefiles"`
