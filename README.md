@@ -24,7 +24,7 @@ To add Eclipse project files, add the option:
 
 To not use sf::RenderWindow and replace it with sf::Window (for direct calls to
 OpenGL without the overhead of sf::RenderWindow), use
-`-DGAME_NO_RENDER_WINDOW`
+`-DGAME_NO_RENDER_WINDOW=True`
 
 # Usage / Notes to be aware of
 
