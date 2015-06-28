@@ -1,6 +1,10 @@
 
 #include "game.hpp"
 
+#ifdef GAME_NO_RENDER_WINDOW
+#include <GL/glew.h>
+#endif
+
 // set packfile name/filepath if one is being used
 #define PACKFILE_NAME ""
 
@@ -28,7 +32,7 @@ resourceManager(&stateStack, RESOURCE_MANAGER_MODE, PACKFILE_NAME),
 mPlayer(),
 sPlayer(),
 stateStack(),
-context(window, resourceManager, mPlayer, sPlayer, ecEngine, isQuitting, connection),
+context(window, resourceManager, mPlayer, sPlayer, ecEngine, isQuitting, connection, clearColor),
 isQuitting(false),
 connection()
 {
@@ -80,7 +84,16 @@ void Game::update(sf::Time deltaTime)
 
 void Game::draw()
 {
-    window.clear();
+#ifndef GAME_NO_RENDER_WINDOW
+    window.clear(clearColor);
+#else
+    float r = (float) clearColor.r / 255.0f;
+    float g = (float) clearColor.g / 255.0f;
+    float b = (float) clearColor.b / 255.0f;
+    float a = (float) clearColor.a / 255.0f;
+    glClearColor(r, g, b, a);
+    glClear(GL_COLOR_BUFFER_BIT);
+#endif
     stateStack.draw(context);
     window.display();
 }

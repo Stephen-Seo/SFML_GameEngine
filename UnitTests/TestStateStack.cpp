@@ -44,8 +44,9 @@ TEST(StateStackTest, ResourceLoading)
     Engine ecEngine;
     bool derp;
     std::unique_ptr<Connection> connection;
+    sf::Color clearColor;
 
-    Context context(window, rManager, mPlayer, sPlayer, ecEngine, derp, connection);
+    Context context(window, rManager, mPlayer, sPlayer, ecEngine, derp, connection, clearColor);
 
 
     stack.registerState<TestState>(static_cast<States::ID>(5), context);

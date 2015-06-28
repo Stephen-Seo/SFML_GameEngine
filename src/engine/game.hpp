@@ -30,7 +30,11 @@ private:
     void registerResources();
     void registerStates();
 
+#ifndef GAME_NO_RENDER_WINDOW
     sf::RenderWindow window;
+#else
+    sf::Window window;
+#endif
     sf::Time frameTime;
 
     ResourceManager resourceManager;
@@ -47,6 +51,8 @@ private:
     Engine ecEngine;
 
     std::unique_ptr<Connection> connection;
+
+    sf::Color clearColor;
 };
 
 #endif
