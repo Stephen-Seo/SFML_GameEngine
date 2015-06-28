@@ -3,7 +3,6 @@
 
 Context::Context(sf::Window& window, ResourceManager& resourceManager, MusicPlayer& mPlayer, SoundPlayer& sPlayer, Engine& ecEngine, bool& isQuitting, std::unique_ptr<Connection>& connection, sf::Color& clearColor) :
 window(&window),
-renderWindow(dynamic_cast<sf::RenderWindow*>(&window)),
 resourceManager(&resourceManager),
 mPlayer(&mPlayer),
 sPlayer(&sPlayer),

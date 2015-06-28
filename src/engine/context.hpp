@@ -26,7 +26,6 @@ struct Context
             sf::Color& clearColor);
 
     sf::Window* window;
-    sf::RenderWindow* renderWindow;
     ResourceManager* resourceManager;
     MusicPlayer* mPlayer;
     SoundPlayer* sPlayer;
