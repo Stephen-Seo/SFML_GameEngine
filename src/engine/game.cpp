@@ -5,6 +5,10 @@
 #include <GL/glew.h>
 #endif
 
+#ifndef NDEBUG
+  #include <iostream>
+#endif
+
 // set packfile name/filepath if one is being used
 #define PACKFILE_NAME ""
 
@@ -40,6 +44,25 @@ connection()
     registerStates();
 
     frameTime = sf::seconds(1.f / 60.f);
+
+#ifdef GAME_NO_RENDER_WINDOW
+    sf::ContextSettings settings = window.getSettings();
+
+    settings.depthBits = 24;
+    settings.stencilBits = 8;
+    settings.majorVersion = 3;
+    settings.minorVersion = 2;
+
+    window.create(sf::VideoMode(720,480), "SFML App", sf::Style::Default, settings);
+  #ifndef NDEBUG
+    settings = window.getSettings();
+
+    std::cout << "depth bits:" << settings.depthBits << std::endl;
+    std::cout << "stencil bits:" << settings.stencilBits << std::endl;
+    std::cout << "antialiasing level:" << settings.antialiasingLevel << std::endl;
+    std::cout << "version:" << settings.majorVersion << "." << settings.minorVersion << std::endl;
+  #endif
+#endif
 }
 
 void Game::run()
