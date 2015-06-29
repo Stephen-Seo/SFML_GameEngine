@@ -32,12 +32,11 @@ OpenGL without the overhead of sf::RenderWindow), use
 
 This game engine uses a state stack system to switch between different game states.
 
-A new state must inherit from the `State` class located at `src/state.hpp`.
+A new state must inherit from the `State` class located at `src/engine/state.hpp`.
 
 - Create a new state object that derives from `State`
 
 This state must also be registered with the game engine.  
-A new enum value must be added in `src/stateIdentifiers.hpp`, then the new state class must be registered to link it to that enum value.
 
 - Register the state with the game
 
