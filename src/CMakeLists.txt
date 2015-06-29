@@ -23,15 +23,8 @@ set(Game_Project_SOURCES
     engine/ec/system.cpp
     )
 
-if(WIN32)
-    add_executable(Game_Project WIN32
-        ${Game_Project_SOURCES}
-        main.cpp)
-else()
-    add_executable(Game_Project
-        ${Game_Project_SOURCES}
-        main.cpp)
-endif()
+add_library(Game_Project
+    ${Game_Project_SOURCES})
 
 if(BUILD_SHARED_LIBS OR (UNIX AND NOT CYGWIN))
     find_package(SFML 2 REQUIRED audio network graphics window system)
@@ -45,17 +38,19 @@ include_directories(${CMAKE_SOURCE_DIR})
 if(GAME_NO_RENDER_WINDOW)
     message(STATUS "Disabling sf::RenderWindow")
     add_definitions(-DGAME_NO_RENDER_WINDOW)
-    find_package(OpenGL REQUIRED)
-    find_package(GLEW REQUIRED)
-    if(OPENGL_FOUND AND GLEW_FOUND)
-        include_directories(${OpenGL_INCLUDE_DIR})
-        include_directories(${GLEW_INCLUDE_DIRS})
-        target_link_libraries(Game_Project ${OPENGL_LIBRARIES})
-        target_link_libraries(Game_Project ${GLEW_LIBRARIES})
-    endif()
 else()
     message(STATUS "sf::RenderWindow is enabled")
 endif()
+
+find_package(OpenGL REQUIRED)
+find_package(GLEW REQUIRED)
+if(OPENGL_FOUND AND GLEW_FOUND)
+    include_directories(${OpenGL_INCLUDE_DIR})
+    include_directories(${GLEW_INCLUDE_DIRS})
+    target_link_libraries(Game_Project ${OPENGL_LIBRARIES})
+    target_link_libraries(Game_Project ${GLEW_LIBRARIES})
+endif()
+
 
 if(SFML_FOUND)
     include_directories(${SFML_INCLUDE_DIR})
@@ -155,12 +150,10 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
 
         if(WIN32)
             add_executable(Unit_Tests WIN32
-                ${Unit_Tests_SOURCES}
-                ${Game_Project_SOURCES})
+                ${Unit_Tests_SOURCES})
         else()
             add_executable(Unit_Tests
-                ${Unit_Tests_SOURCES}
-                ${Game_Project_SOURCES})
+                ${Unit_Tests_SOURCES})
         endif()
 
 
@@ -169,15 +162,19 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
         include_directories(${GTEST_INCLUDE_DIRS})
         target_link_libraries(Unit_Tests ${GTEST_BOTH_LIBRARIES})
         target_link_libraries(Unit_Tests ${SFML_LIBRARIES})
+        target_link_libraries(Unit_Tests Game_Project)
 
-    if(GAME_NO_RENDER_WINDOW)
-        message(STATUS "Disabling sf::RenderWindow")
-        add_definitions(-DGAME_NO_RENDER_WINDOW)
         if(OPENGL_FOUND AND GLEW_FOUND)
             target_link_libraries(Unit_Tests ${OPENGL_LIBRARIES})
             target_link_libraries(Unit_Tests ${GLEW_LIBRARIES})
+        else()
+            find_package(OpenGL REQUIRED)
+            find_package(GLEW REQUIRED)
+            if(OPENGL_FOUND AND GLEW_FOUND)
+                target_link_libraries(Unit_Tests ${OPENGL_LIBRARIES})
+                target_link_libraries(Unit_Tests ${GLEW_LIBRARIES})
+            endif()
         endif()
-    endif()
 
         if(ResourcePacker_FOUND)
             target_link_libraries(Unit_Tests ${ResourcePacker_LIBRARIES})

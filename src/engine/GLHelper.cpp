@@ -121,7 +121,10 @@ GLHelper::ElementManager::Element::~Element()
 GLuint GLHelper::ElementManager::addVAO()
 {
     Element::Ptr ptr(new Element());
-    elementMap.insert(std::make_pair(ptr->vao, std::move(ptr)));
+    GLuint vao = ptr->vao;
+    elementMap.insert(std::make_pair(vao, std::move(ptr)));
+
+    return vao;
 }
 
 void GLHelper::ElementManager::removeVAO(GLuint vao)
