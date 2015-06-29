@@ -44,7 +44,6 @@ namespace GLHelper
             GLuint vbo;
             GLuint ebo;
             unsigned int drawIndices;
-            bool vertexAdded;
             const sf::Texture* texture;
             bool isReady;
             // otherwise, is polygon

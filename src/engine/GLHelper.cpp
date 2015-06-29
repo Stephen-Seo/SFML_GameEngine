@@ -101,7 +101,6 @@ GLHelper::ElementManager::ElementManager()
 }
 
 GLHelper::ElementManager::Element::Element() :
-vertexAdded(false),
 texture(nullptr),
 isReady(false)
 {
@@ -206,6 +205,11 @@ void GLHelper::ElementManager::draw()
 {
     for(auto elementIter = elementMap.begin(); elementIter != elementMap.end(); ++elementIter)
     {
+        if(!elementIter->second->isReady)
+        {
+            continue;
+        }
+
         if(elementIter->second->texture != nullptr)
         {
             glUseProgram(shaderProgramWithTexture);
