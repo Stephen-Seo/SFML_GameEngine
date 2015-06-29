@@ -8,6 +8,11 @@
 #include <memory>
 #include <GL/glew.h>
 
+namespace sf
+{
+    class Texture;
+}
+
 namespace GLHelper
 {
     /*
@@ -17,13 +22,6 @@ namespace GLHelper
 
         ElementManager assumes coordinates are 3D coordinates.
     */
-
-    enum VerticesHint
-    {
-        AUTOMATIC,
-        COLOR,
-        COLOR_AND_TEX
-    };
 
     class ElementManager
     {
@@ -47,8 +45,8 @@ namespace GLHelper
             GLuint ebo;
             unsigned int drawIndices;
             bool vertexAdded;
-            bool hasTextureCoords;
-            bool finalized;
+            const sf::Texture* texture;
+            bool isReady;
             // otherwise, is polygon
             bool isLine;
         };
@@ -69,7 +67,7 @@ namespace GLHelper
             3D coordinates + 4D color = 7 values per vertex
             3D coordinates + 4D color + 2D texture = 9 values per vertex
         */
-        void finalize(GLuint vao, std::vector<float> vertices, std::vector<GLuint> elements, VerticesHint hint = AUTOMATIC, bool isDynamic = false);
+        void setupVAO(GLuint vao, std::vector<float> vertices, std::vector<GLuint> elements, const sf::Texture* texture = nullptr, bool isDynamic = false);
 
         void draw();
     };

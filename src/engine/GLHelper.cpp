@@ -5,6 +5,8 @@
 
 #include <iostream>
 
+#include <SFML/Graphics.hpp>
+
 GLHelper::ElementManager::~ElementManager()
 {
     glDeleteProgram(shaderProgram);
@@ -100,7 +102,8 @@ GLHelper::ElementManager::ElementManager()
 
 GLHelper::ElementManager::Element::Element() :
 vertexAdded(false),
-finalized(false)
+texture(nullptr),
+isReady(false)
 {
     glGenVertexArrays(1, &vao);
     glGenBuffers(1, &vbo);
@@ -132,54 +135,26 @@ void GLHelper::ElementManager::removeVAO(GLuint vao)
     elementMap.erase(vao);
 }
 
-void GLHelper::ElementManager::finalize(GLuint vao, std::vector<float> vertices, std::vector<GLuint> elements, GLHelper::VerticesHint hint, bool isDynamic)
+void GLHelper::ElementManager::setupVAO(GLuint vao, std::vector<float> vertices, std::vector<GLuint> elements, const sf::Texture* texture, bool isDynamic)
 {
     Element* element = elementMap.at(vao).get();
 
-    assert(!element->finalized &&
-        "ERROR: Element already finalized!");
+    assert(!element->isReady &&
+        "ERROR: Element already isReady!");
 
     unsigned int verticesCount;
-    if(hint == COLOR_AND_TEX)
-    {
-        assert(vertices.size() % 9 == 0 &&
-            "ERROR: Invalid vertices size to have both color and texture coordinates!");
-        verticesCount = vertices.size() / 9;
-
-        element->hasTextureCoords = true;
-    }
-    else if(hint == COLOR)
+    if(texture == nullptr)
     {
         assert(vertices.size() % 7 == 0 &&
             "ERROR: Invalid vertices size to have color coordinates!");
         verticesCount = vertices.size() / 7;
-
-        element->hasTextureCoords = false;
     }
     else
     {
-        bool hasTex = vertices.size() % 9 == 0;
-        bool hasColor = vertices.size() % 7 == 0;
-
-        assert((hasTex || hasColor) &&
-            "ERROR: Invalid vertices size to have color or color and texture coordinates!");
-        if(hasTex && hasColor)
-        {
-            std::cout << "WARNING <GLHelper>: Cannot differentiate between vertices with color or with color and texture coordinates. Assuming color with texture coordinates.";
-            verticesCount = vertices.size() / 9;
-            hasColor = false;
-            element->hasTextureCoords = true;
-        }
-        else if(hasTex)
-        {
-            verticesCount = vertices.size() / 9;
-            element->hasTextureCoords = true;
-        }
-        else
-        {
-            verticesCount = vertices.size() / 7;
-            element->hasTextureCoords = false;
-        }
+        assert(vertices.size() % 9 == 0 &&
+            "ERROR: Invalid vertices size to have color and texture coordinates!");
+        verticesCount = vertices.size() / 9;
+        element->texture = texture;
     }
 
     assert(verticesCount <= 1 &&
@@ -197,7 +172,7 @@ void GLHelper::ElementManager::finalize(GLuint vao, std::vector<float> vertices,
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, element->ebo);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(elements.data()), elements.data(), GL_STATIC_DRAW);
 
-    if(!element->hasTextureCoords)
+    if(element->texture == nullptr)
     {
         GLint posAttrib = glGetAttribLocation(shaderProgram, "position");
         glEnableVertexAttribArray(posAttrib);
@@ -216,18 +191,26 @@ void GLHelper::ElementManager::finalize(GLuint vao, std::vector<float> vertices,
         GLint colAttrib = glGetAttribLocation(shaderProgramWithTexture, "color");
         glEnableVertexAttribArray(colAttrib);
         glVertexAttribPointer(colAttrib, 4, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void*)(3 * sizeof(GLfloat)));
+
+        GLint texAttrib = glGetAttribLocation(shaderProgramWithTexture, "texcoord");
+        glEnableVertexAttribArray(texAttrib);
+        glVertexAttribPointer(texAttrib, 2, GL_FLOAT, GL_FALSE, 9 * sizeof(GLfloat), (void*)(7 * sizeof(GLfloat)));
     }
 
     glBindVertexArray(0);
+
+    element->isReady = true;
 }
 
 void GLHelper::ElementManager::draw()
 {
     for(auto elementIter = elementMap.begin(); elementIter != elementMap.end(); ++elementIter)
     {
-        if(elementIter->second->hasTextureCoords)
+        if(elementIter->second->texture != nullptr)
         {
             glUseProgram(shaderProgramWithTexture);
+
+            sf::Texture::bind(elementIter->second->texture);
         }
         else
         {
@@ -239,6 +222,11 @@ void GLHelper::ElementManager::draw()
         glDrawElements(GL_TRIANGLES, elementIter->second->drawIndices, GL_UNSIGNED_INT, 0);
 
         glBindVertexArray(0);
+
+        if(elementIter->second->texture != nullptr)
+        {
+            sf::Texture::bind(NULL);
+        }
     }
 }
 
