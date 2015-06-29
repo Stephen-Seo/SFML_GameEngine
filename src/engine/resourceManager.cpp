@@ -1,6 +1,10 @@
 
 #include "resourceManager.hpp"
 
+#include <typeinfo>
+#include <vector>
+#include <list>
+
 #ifndef N_DEBUG
     #include <iostream>
 #endif
@@ -13,67 +17,84 @@ mode(mode),
 sstack(sstack)
 {}
 
-sf::Texture& ResourceManager::getTexture(Textures::ID id)
+sf::Texture& ResourceManager::getTexture(const std::string& id)
 {
     return textureHolder.get(id);
 }
 
-sf::Font& ResourceManager::getFont(Fonts::ID id)
+sf::Font& ResourceManager::getFont(const std::string& id)
 {
     return fontHolder.get(id);
 }
 
-sf::SoundBuffer& ResourceManager::getSoundBuffer(Sound::ID id)
+sf::SoundBuffer& ResourceManager::getSoundBuffer(const std::string& id)
 {
     return soundBufferHolder.get(id);
 }
 
-void ResourceManager::registerTexture(Textures::ID id, const std::string& filename)
+void ResourceManager::registerTexture(State* requestor, const std::string& filename)
 {
-    textureHolder.registerResource(id, filename);
+#ifndef NDEBUG
+    std::cout << typeid(requestor).name() << ':' << typeid(requestor).hash_code() << " requested " << filename << '\n';
+#endif
+    requestTextureLog[typeid(requestor).hash_code()].insert(filename);
 }
 
-void ResourceManager::registerFont(Fonts::ID id, const std::string& filename)
+void ResourceManager::registerFont(State* requestor, const std::string& filename)
 {
-    fontHolder.registerResource(id, filename);
+#ifndef NDEBUG
+    std::cout << typeid(requestor).name() << ':' << typeid(requestor).hash_code() << " requested " << filename << '\n';
+#endif
+    requestFontLog[typeid(requestor).hash_code()].insert(filename);
 }
 
-void ResourceManager::registerSoundBuffer(Sound::ID id, const std::string& filename)
+void ResourceManager::registerSoundBuffer(State* requestor, const std::string& filename)
 {
-    soundBufferHolder.registerResource(id, filename);
+#ifndef NDEBUG
+    std::cout << typeid(requestor).name() << ':' << typeid(requestor).hash_code() << " requested " << filename << '\n';
+#endif
+    requestSoundLog[typeid(requestor).hash_code()].insert(filename);
 }
 
-void ResourceManager::loadResources(ResourcesSet rset)
+void ResourceManager::loadResources()
 {
-    // load textures if not loaded
-    for(auto iter = rset.tset.begin(); iter != rset.tset.end(); ++iter)
+    std::vector<std::size_t> hashCodes = sstack->getContentsHashCodes();
+
+#ifndef NDEBUG
+    std::cout << "Loaded states: ";
+#endif
+    for(auto hashIter = hashCodes.begin(); hashIter != hashCodes.end(); ++hashIter)
     {
-        if(!textureHolder.isLoaded(*iter))
+#ifndef NDEBUG
+        std::cout << *hashIter << ' ';
+#endif
+        for(auto textureLogIter = requestTextureLog[*hashIter].begin(); textureLogIter != requestTextureLog[*hashIter].end(); ++textureLogIter)
         {
-            textureHolder.load(*iter);
+            if(!textureHolder.isLoaded(*textureLogIter))
+            {
+                textureHolder.load(*textureLogIter);
+            }
         }
-    }
 
-    // load fonts if not loaded
-    for(auto iter = rset.fset.begin(); iter != rset.fset.end(); ++iter)
-    {
-        if(!fontHolder.isLoaded(*iter))
+        for(auto fontLogIter = requestFontLog[*hashIter].begin(); fontLogIter != requestFontLog[*hashIter].end(); ++fontLogIter)
         {
-            fontHolder.load(*iter);
+            if(!fontHolder.isLoaded(*fontLogIter))
+            {
+                fontHolder.load(*fontLogIter);
+            }
         }
-    }
 
-    // load sound buffers if not loaded
-    for(auto iter = rset.sset.begin(); iter != rset.sset.end(); ++iter)
-    {
-        if(!soundBufferHolder.isLoaded(*iter))
+        for(auto soundLogIter = requestSoundLog[*hashIter].begin(); soundLogIter != requestSoundLog[*hashIter].end(); ++soundLogIter)
         {
-            soundBufferHolder.load(*iter);
+            if(!soundBufferHolder.isLoaded(*soundLogIter))
+            {
+                soundBufferHolder.load(*soundLogIter);
+            }
         }
     }
 
 #ifndef N_DEBUG
-    std::cout << "On Load:\n";
+    std::cout << "\nOn Load:\n";
     std::cout << "\tTextures Loaded: " << textureHolder.resourceMap.size() << "\n";
     std::cout << "\tFonts Loaded: " << fontHolder.resourceMap.size() << "\n";
     std::cout << "\tSoundBuffers Loaded: " << soundBufferHolder.resourceMap.size() << "\n" << std::flush;
@@ -82,44 +103,83 @@ void ResourceManager::loadResources(ResourcesSet rset)
 
 void ResourceManager::unloadCheckResources()
 {
-    ResourcesSet resourcesSet = sstack->getNeededResources();
+    std::vector<std::size_t> hashCodes = sstack->getContentsHashCodes();
+    std::list<std::unordered_set<std::string>*> requiredTextures;
+    std::list<std::unordered_set<std::string>*> requiredFonts;
+    std::list<std::unordered_set<std::string>*> requiredSounds;
 
-    // check for unneeded textures
-    for(auto iter = textureHolder.resourceMap.begin(); iter != textureHolder.resourceMap.end();)
+    for(auto hashIter = hashCodes.begin(); hashIter != hashCodes.end(); ++hashIter)
     {
-        if(resourcesSet.tset.find(iter->first) == resourcesSet.tset.end())
+        requiredTextures.push_back(&(requestTextureLog[*hashIter]));
+        requiredFonts.push_back(&(requestFontLog[*hashIter]));
+        requiredSounds.push_back(&(requestSoundLog[*hashIter]));
+    }
+
+    bool isRequired;
+
+    for(auto textureIter = textureHolder.resourceMap.begin(); textureIter != textureHolder.resourceMap.end();)
+    {
+        isRequired = false;
+        for(auto requiredIter = requiredTextures.begin(); requiredIter != requiredTextures.end(); ++requiredIter)
         {
-            iter = textureHolder.resourceMap.erase(iter);
+            if((*requiredIter)->find(textureIter->first) != (*requiredIter)->end())
+            {
+                isRequired = true;
+                break;
+            }
+        }
+
+        if(isRequired)
+        {
+            ++textureIter;
         }
         else
         {
-            ++iter;
+            textureIter = textureHolder.resourceMap.erase(textureIter);
         }
     }
 
-    // check for unneeded fonts
-    for(auto iter = fontHolder.resourceMap.begin(); iter != fontHolder.resourceMap.end();)
+    for(auto fontIter = fontHolder.resourceMap.begin(); fontIter != fontHolder.resourceMap.end();)
     {
-        if(resourcesSet.fset.find(iter->first) == resourcesSet.fset.end())
+        isRequired = false;
+        for(auto requiredIter = requiredFonts.begin(); requiredIter != requiredFonts.end(); ++requiredIter)
         {
-            iter = fontHolder.resourceMap.erase(iter);
+            if((*requiredIter)->find(fontIter->first) != (*requiredIter)->end())
+            {
+                isRequired = true;
+                break;
+            }
+        }
+
+        if(isRequired)
+        {
+            ++fontIter;
         }
         else
         {
-            ++iter;
+            fontIter = fontHolder.resourceMap.erase(fontIter);
         }
     }
 
-    // check for unneeded sound buffers
-    for(auto iter = soundBufferHolder.resourceMap.begin(); iter != soundBufferHolder.resourceMap.end();)
+    for(auto soundIter = soundBufferHolder.resourceMap.begin(); soundIter != soundBufferHolder.resourceMap.end();)
     {
-        if(resourcesSet.sset.find(iter->first) == resourcesSet.sset.end())
+        isRequired = false;
+        for(auto requiredIter = requiredSounds.begin(); requiredIter != requiredSounds.end(); ++requiredIter)
         {
-            iter = soundBufferHolder.resourceMap.erase(iter);
+            if((*requiredIter)->find(soundIter->first) != (*requiredIter)->end())
+            {
+                isRequired = true;
+                break;
+            }
+        }
+
+        if(isRequired)
+        {
+            ++soundIter;
         }
         else
         {
-            ++iter;
+            soundIter = soundBufferHolder.resourceMap.erase(soundIter);
         }
     }
 

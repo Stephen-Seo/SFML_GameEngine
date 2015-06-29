@@ -39,14 +39,17 @@ A new state must inherit from the `State` class located at `src/state.hpp`.
 This state must also be registered with the game engine.  
 A new enum value must be added in `src/stateIdentifiers.hpp`, then the new state class must be registered to link it to that enum value.
 
-- Add an enum value representing the recently created State in `src/stateIdentifiers.hpp`
-- Register the state to this value in `src/game.cpp` in function `Game::registerStates()`
-    - For example, `stateStack.registerState<NewState>(States::NEW_STATE);` (assuming the created state is called `NewState` and its corresponding enum value is `NEW_STATE`)
+- Register the state with the game
 
-To start the game with a state, push a state to the state stack during initialization.
+Before the game runs, you must register states with the game via `Game`'s `registerState` public function.  
+This can be done in your main function.  
+If you have a `class SuperState : public State`, then in your main function, registering it would look like,  
+`Game game;
+game.registerState<SuperState>("SuperState");`
 
-- Push a state to the state stack in the end of `Game::registerStates()`
-    - For example, `stateStack.pushState(States::NEW_STATE);`
+Note that you can give the state any name for the string parameter, just be sure to remember it by that name.
+
+- Manipulating the state stack
 
 Note that each state has protected functions requesting the stack to push a state, pop a state, or clear the stack.  
 This is how you can switch between states during operation of a state.
@@ -58,13 +61,12 @@ However, please note that every state on the stack will be drawn.
 
 ## Resource Management
 
-Each resource must have a corresponding enum value to be registered with.
+Resource management is simplified.
 
-- The enum values should be added in `src/resourceIdentifiers.hpp`
-    - The `Textures` enum values are for SFML2 supported image files
-    - The `Fonts` enum values are for SFML2 supported font files
-    - The `Music` enum values are for SFML2 supported audio files
-    - The `Sound` enum values are for SFML2 supported audio files
+Simply use the resourceManager's `registerTexture`, `registerFont`, or `registerSound` functions.  
+Note that a reference to resourceManager is available in `Context`.
+
+If you need the resources already loaded in the constructor of your state, you can call the resourceManager's `loadResources` function within your constructor.
 
 Important Note: Use Music if you intend to stream audio from a file, and Sound if you intend on loading the file entirely in memory first. If the ResourcePacker is being used, all audio must be loaded as SoundBuffers via the Sound enum values.
 
@@ -72,13 +74,6 @@ After listing the enum values for each resource needed, the resources must be re
 
 - Register resources linking resource enum values to filenames via the ResourceManager, this is done in `src/game.cpp` in the function `Game::registerResources()`
     - For example, `resourceManager.registerTexture(Textures::BACKGROUND_0, "background_0.png");`
-
-Finally, a State must list what resources it requires in its constructor. (The StateStack will automatically load and unload resources as States are pushed/popped on the stack.) A State cannot use a resource if it is not loaded in memory (unless it is a Music resource that is to be streamed from file).
-
-A State has protected variables `TextureSet tset`, `FontSet fset`, and `SoundSet sset`. Each of these sets holds the corresponding enum value. TextureSet holds `Textures::ID` values from `src/resourceIdentifiers.hpp`.  
-After setting these resource identifier holders, they will be sent to the resourceManager to load the required resources.
-
-- Add the required resources by their identifiers to `tset`, `fset`, and `sset`
 
 To unload unnecessary resources, simply pop a State off the stack. The StateStack and ResourceManager will work together to find out what resources are still necessary, and unload everything that isn't.
 

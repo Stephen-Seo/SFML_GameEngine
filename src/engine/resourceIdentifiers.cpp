@@ -1,14 +1,12 @@
 
 #include "resourceIdentifiers.hpp"
 
-ResourcesSet::ResourcesSet() :
-tset(),
-fset(),
-sset()
+ResourcesSet::ResourcesSet()
 {}
 
-ResourcesSet::ResourcesSet(const TextureSet& tset, const FontSet& fset, const SoundSet& sset) :
-tset(tset),
-fset(fset),
-sset(sset)
+ResourcesSet::ResourcesSet(const ResourceSet& textureSet, const ResourceSet& fontSet, const ResourceSet& soundSet) :
+textureSet(textureSet),
+fontSet(fontSet),
+soundSet(soundSet)
 {}
+

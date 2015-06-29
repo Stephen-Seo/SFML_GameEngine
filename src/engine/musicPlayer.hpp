@@ -4,7 +4,7 @@
 
 #include "resourceIdentifiers.hpp"
 
-#include <map>
+#include <unordered_set>
 #include <string>
 #include <stdexcept>
 #include <SFML/Audio.hpp>
@@ -13,7 +13,7 @@ class MusicPlayer : private sf::NonCopyable
 {
 public:
     MusicPlayer();
-    void play(Music::ID theme);
+    void play(const std::string& filename);
     void stop();
     void setPaused(bool paused);
     void setVolume(float volume);
@@ -21,7 +21,6 @@ public:
     sf::SoundSource::Status getStatus();
 private:
     sf::Music mMusic;
-    std::map<Music::ID, std::string> mFilenames;
     float mVolume;
 };
 

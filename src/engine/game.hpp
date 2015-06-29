@@ -22,13 +22,16 @@ class Game
 public:
     Game();
     void run();
+
+    template<class SubState>
+    void registerState(const std::string& stateName);
+
+    void setStartingState(const std::string& stateName);
+
 private:
     void processEvents();
     void update(sf::Time deltaTime);
     void draw();
-
-    void registerResources();
-    void registerStates();
 
 #ifndef GAME_NO_RENDER_WINDOW
     sf::RenderWindow window;
@@ -53,6 +56,14 @@ private:
     std::unique_ptr<Connection> connection;
 
     sf::Color clearColor;
+
+    std::string startingState;
 };
+
+template<class SubState>
+void Game::registerState(const std::string& stateName)
+{
+    stateStack.registerState<SubState>(stateName, context);
+}
 
 #endif

@@ -22,9 +22,8 @@ class TestState : public State
 public:
     TestState(StateStack& stack, Context context) : State(stack, context)
     {
-        tset.insert(static_cast<Textures::ID>(0));
-        tset.insert(static_cast<Textures::ID>(1));
-        tset.insert(static_cast<Textures::ID>(2));
+        context.resourceManager->registerTexture(this, "UnitTestRes/Test.png");
+        context.resourceManager->registerTexture(this, "UnitTestRes/Test.png");
     }
 
     void draw(Context context) {}
@@ -49,37 +48,27 @@ TEST(StateStackTest, ResourceLoading)
     Context context(window, rManager, mPlayer, sPlayer, ecEngine, derp, connection, clearColor);
 
 
-    stack.registerState<TestState>(static_cast<States::ID>(5), context);
-    rManager.registerTexture(static_cast<Textures::ID>(0), "UnitTestRes/Test.png");
-    rManager.registerTexture(static_cast<Textures::ID>(1), "UnitTestRes/Test.png");
-    rManager.registerTexture(static_cast<Textures::ID>(2), "UnitTestRes/Test.png");
-
+    stack.registerState<TestState>("test", context);
 
     bool success = true;
 
-    try
-    {
     // Load resource
-    stack.pushState(static_cast<States::ID>(5));
+    stack.pushState("test");
     stack.update(sf::Time::Zero, context);
+
+    // Try unload check
+    rManager.unloadCheckResources();
 
     // Remove resource
     stack.popState();
     stack.update(sf::Time::Zero, context);
 
     // Load resource again
-    stack.pushState(static_cast<States::ID>(5));
+    stack.pushState("test");
     stack.update(sf::Time::Zero, context);
 
     // Remove resource again
     stack.popState();
     stack.update(sf::Time::Zero, context);
-    } catch (const std::exception& e)
-    {
-        std::cout << "EXCEPTION WHILE HANDLING RESOURCES:\n\t" << e.what() << "\n" << std::flush;
-        success = false;
-    }
-
-    ASSERT_TRUE(success);
 
 }

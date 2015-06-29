@@ -1,16 +1,14 @@
 
 #include "musicPlayer.hpp"
 
-MusicPlayer::MusicPlayer()
-: mMusic(), mFilenames(), mVolume(100.0f)
+MusicPlayer::MusicPlayer() :
+mMusic(),
+mVolume(100.0f)
 {
-//load music here
 }
 
-void MusicPlayer::play(Music::ID theme)
+void MusicPlayer::play(const std::string& filename)
 {
-    std::string filename = mFilenames[theme];
-
     if(!mMusic.openFromFile(filename))
         throw std::runtime_error("Music " + filename + " could not be loaded.");
 

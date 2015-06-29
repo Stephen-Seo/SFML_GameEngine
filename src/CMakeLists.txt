@@ -76,7 +76,7 @@ else()
 endif()
 
 set(CMAKE_CXX_FLAGS "-std=c++11 -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g -D_GLIBCXX_DEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g")
 set(CMAKE_CXX_FLAGS_RELEASE "-O3 -D NDEBUG")
 
 if("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")

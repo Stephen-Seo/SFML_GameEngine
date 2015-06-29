@@ -8,7 +8,6 @@
 
 #include "context.hpp"
 #include "resourceIdentifiers.hpp"
-#include "stateIdentifiers.hpp"
 
 class ResourceManager;
 
@@ -30,15 +29,11 @@ public:
     // Return true to continue handleEvent down the StateStack
     virtual bool handleEvent(const sf::Event& event, Context context) = 0;
 
-    ResourcesSet getNeededResources();
 protected:
-    void requestStackPush(States::ID stateID);
+    void requestStackPush(const std::string& stateName);
     void requestStackPop();
     void requestStackClear();
 
-    TextureSet tset;
-    FontSet fset;
-    SoundSet sset;
 private:
     StateStack* stack;
 };

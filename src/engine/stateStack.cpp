@@ -1,9 +1,11 @@
 
 #include "stateStack.hpp"
 
+#include <typeinfo>
+
 #include "resourceManager.hpp"
 
-StateStack::PendingChange::PendingChange(Action action, States::ID stateID)
+StateStack::PendingChange::PendingChange(Action action, std::string stateID)
 : action(action), stateID(stateID)
 {
 }
@@ -41,9 +43,9 @@ void StateStack::handleEvent(const sf::Event& event, Context context)
     applyPendingChanges(context);
 }
 
-void StateStack::pushState(States::ID stateID)
+void StateStack::pushState(const std::string& stateName)
 {
-    pendingList.push_back(PendingChange(StateStack::Push, stateID));
+    pendingList.push_back(PendingChange(StateStack::Push, stateName));
 }
 
 void StateStack::popState()
@@ -61,34 +63,19 @@ bool StateStack::isEmpty() const
     return stack.empty();
 }
 
-ResourcesSet StateStack::getNeededResources()
+std::vector<std::size_t> StateStack::getContentsHashCodes()
 {
-    ResourcesSet resourcesSet;
+    std::vector<std::size_t> hashCodes;
 
-    for(auto iter = stack.begin(); iter != stack.end(); ++iter)
+    for(auto stateIter = stack.begin(); stateIter != stack.end(); ++stateIter)
     {
-        ResourcesSet stateSet = (*iter)->getNeededResources();
-
-        for(auto tIter = stateSet.tset.begin(); tIter != stateSet.tset.end(); ++tIter)
-        {
-            resourcesSet.tset.insert(*tIter);
-        }
-
-        for(auto fIter = stateSet.fset.begin(); fIter != stateSet.fset.end(); ++fIter)
-        {
-            resourcesSet.fset.insert(*fIter);
-        }
-
-        for(auto sIter = stateSet.sset.begin(); sIter != stateSet.sset.end(); ++sIter)
-        {
-            resourcesSet.sset.insert(*sIter);
-        }
+        hashCodes.push_back(typeid(stateIter->get()).hash_code());
     }
 
-    return resourcesSet;
+    return hashCodes;
 }
 
-State::Ptr StateStack::createState(States::ID stateID)
+State::Ptr StateStack::createState(const std::string& stateID)
 {
     auto found = factories.find(stateID);
     assert(found != factories.end());
@@ -103,7 +90,7 @@ void StateStack::applyPendingChanges(Context context)
         {
         case Push:
             stack.push_back(createState(change.stateID));
-            context.resourceManager->loadResources(stack.back()->getNeededResources());
+            context.resourceManager->loadResources();
             break;
         case Pop:
             stack.pop_back();

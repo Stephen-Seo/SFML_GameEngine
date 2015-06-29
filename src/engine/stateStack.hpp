@@ -5,11 +5,12 @@
 #include <cassert>
 #include <functional>
 #include <vector>
+#include <unordered_map>
+#include <cstdlib>
 
 #include <SFML/System.hpp>
 
 #include "state.hpp"
-#include "stateIdentifiers.hpp"
 #include "resourceIdentifiers.hpp"
 
 class StateStack : private sf::NonCopyable
@@ -25,39 +26,40 @@ public:
     StateStack();
 
     template <class T>
-    void registerState(States::ID stateID, Context context);
+    void registerState(const std::string& stateName, Context context);
 
     void update(sf::Time dt, Context context);
     void draw(Context context);
     void handleEvent(const sf::Event& event, Context context);
 
-    void pushState(States::ID stateID);
+    void pushState(const std::string& stateID);
     void popState();
     void clearStates();
 
     bool isEmpty() const;
 
-    ResourcesSet getNeededResources();
+    std::vector<std::size_t> getContentsHashCodes();
+
 private:
-    State::Ptr createState(States::ID stateID);
+    State::Ptr createState(const std::string& stateID);
     void applyPendingChanges(Context context);
 
     struct PendingChange
     {
-        explicit PendingChange(Action action, States::ID stateID = States::None);
+        explicit PendingChange(Action action, std::string stateID = std::string());
         Action action;
-        States::ID stateID;
+        std::string stateID;
     };
 
     std::vector<State::Ptr> stack;
     std::vector<PendingChange> pendingList;
-    std::map<States::ID, std::function<State::Ptr()>> factories;
+    std::unordered_map<std::string, std::function<State::Ptr()>> factories;
 };
 
 template <class T>
-void StateStack::registerState(States::ID stateID, Context context)
+void StateStack::registerState(const std::string& stateName, Context context)
 {
-    factories[stateID] = [this, context] ()
+    factories[stateName] = [this, context] ()
     {
         return State::Ptr(new T(*this, context));
     };

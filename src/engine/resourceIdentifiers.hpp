@@ -3,45 +3,13 @@
 #define RESOURCE_IDENTIFIERS_HPP
 
 #include <cstdlib>
-#include <set>
+#include <unordered_set>
 
 namespace sf
 {
     class Texture;
     class Font;
     class SoundBuffer;
-}
-
-namespace Textures
-{
-    enum ID
-    {
-    };
-}
-
-namespace Fonts
-{
-    enum ID
-    {
-    };
-}
-
-/*
-  Only use Music identifiers if you intend to use the MusicPlayer, which does not use a ResourcePacker.
-  If you intend to use the ResourcePacker, load music files as SoundBuffers via the Sound enum values.
-*/
-namespace Music
-{
-    enum ID
-    {
-    };
-}
-
-namespace Sound
-{
-    enum ID
-    {
-    };
 }
 
 namespace GameResources
@@ -53,25 +21,25 @@ namespace GameResources
     };
 }
 
-template<class Resource, class Identifier>
+template<class Resource>
 class ResourceHolder;
 
-typedef ResourceHolder<sf::Texture, Textures::ID> TextureHolder;
-typedef ResourceHolder<sf::Font, Fonts::ID> FontHolder;
-typedef ResourceHolder<sf::SoundBuffer, Sound::ID> SoundBufferHolder;
+typedef ResourceHolder<sf::Texture> TextureHolder;
+typedef ResourceHolder<sf::Font> FontHolder;
+typedef ResourceHolder<sf::SoundBuffer> SoundBufferHolder;
 
-typedef std::set<Textures::ID> TextureSet;
-typedef std::set<Fonts::ID> FontSet;
-typedef std::set<Sound::ID> SoundSet;
+typedef std::unordered_set<std::string> ResourceSet;
 
 struct ResourcesSet
 {
     ResourcesSet();
 
-    ResourcesSet(const TextureSet& tset, const FontSet& fset, const SoundSet& sset);
+    ResourcesSet(const ResourceSet& textureSet, const ResourceSet& fontSet, const ResourceSet& soundSet);
 
-    TextureSet tset;
-    FontSet fset;
-    SoundSet sset;
+    ResourceSet textureSet;
+    ResourceSet fontSet;
+    ResourceSet soundSet;
 };
+
 #endif
+

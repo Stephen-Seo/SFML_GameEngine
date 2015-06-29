@@ -40,9 +40,6 @@ context(window, resourceManager, mPlayer, sPlayer, ecEngine, isQuitting, connect
 isQuitting(false),
 connection()
 {
-    registerResources();
-    registerStates();
-
     frameTime = sf::seconds(1.f / 60.f);
 
 #ifdef GAME_NO_RENDER_WINDOW
@@ -67,6 +64,8 @@ connection()
 
 void Game::run()
 {
+    stateStack.pushState(startingState);
+
     sf::Clock clock;
     sf::Time lastUpdateTime = sf::Time::Zero;
     while (window.isOpen() && !isQuitting)
@@ -83,6 +82,11 @@ void Game::run()
 
     if(window.isOpen())
         window.close();
+}
+
+void Game::setStartingState(const std::string& stateName)
+{
+    startingState = stateName;
 }
 
 void Game::processEvents()
@@ -121,14 +125,3 @@ void Game::draw()
     window.display();
 }
 
-// register resources via resourceManager
-// Resource IDs must be listed in resourceIdentifiers.hpp
-void Game::registerResources()
-{
-}
-
-// register states via stateStack
-// State IDs must be listed in stateIdentifiers.hpp
-void Game::registerStates()
-{
-}

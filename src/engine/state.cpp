@@ -9,14 +9,9 @@ State::State(StateStack& stack, Context context)
 State::~State()
 {}
 
-ResourcesSet State::getNeededResources()
+void State::requestStackPush(const std::string& stateName)
 {
-    return ResourcesSet(tset, fset, sset);
-}
-
-void State::requestStackPush(States::ID stateID)
-{
-    stack->pushState(stateID);
+    stack->pushState(stateName);
 }
 
 void State::requestStackPop()

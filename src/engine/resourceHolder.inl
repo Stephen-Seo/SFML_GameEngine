@@ -1,5 +1,5 @@
-template <class Resource, class Identifier>
-ResourceHolder<Resource, Identifier>::ResourceHolder(GameResources::LoadingMode mode, std::string packfile, bool retainData) :
+template <class Resource>
+ResourceHolder<Resource>::ResourceHolder(GameResources::LoadingMode mode, std::string packfile, bool retainData) :
 mode(mode),
 packfile(packfile),
 retainData(retainData)
@@ -7,39 +7,26 @@ retainData(retainData)
     assert(mode == GameResources::DEFAULT || packfile.size() > 0);
 }
 
-template <class Resource, class Identifier>
-void ResourceHolder<Resource, Identifier>::registerResource(Identifier id, const std::string& filename)
+template <class Resource>
+void ResourceHolder<Resource>::load(const std::string& id)
 {
-    if(pathMap.find(id) == pathMap.end())
-        pathMap[id] = filename;
-    else
-        std::cout << "WARNING: Failed to register resource as ID is already registered!\n";
-}
-
-template <class Resource, class Identifier>
-void ResourceHolder<Resource, Identifier>::load(Identifier id)
-{
-    auto pathIter = pathMap.find(id);
-    if(pathIter == pathMap.end())
-        throw std::runtime_error("ResourceHolder::load - ID is not registered");
-
     std::unique_ptr<Resource> resource(new Resource());
 
     if(mode == GameResources::DEFAULT)
     {
-        if (!resource->loadFromFile(pathIter->second))
-            throw std::runtime_error("ResourceHolder::load - Failed to load " + pathIter->second);
+        if (!resource->loadFromFile(id))
+            throw std::runtime_error("ResourceHolder::load - Failed to load " + id);
     }
 #if defined(ResourcePacker_FOUND)
     else if(mode == GameResources::PACKFILE)
     {
         std::unique_ptr<char[]> data;
         unsigned long long size;
-        if(!RP::getFileData(data, size, packfile, pathIter->second))
-            throw std::runtime_error("ResourceHolder::load - Failed to load " + pathIter->second);
+        if(!RP::getFileData(data, size, packfile, id))
+            throw std::runtime_error("ResourceHolder::load - Failed to load " + id);
 
         if(!resource->loadFromMemory(data.get(), size))
-            throw std::runtime_error("ResourceHolder::load - Failed to load " + pathIter->second);
+            throw std::runtime_error("ResourceHolder::load - Failed to load " + id);
 
         if(retainData)
         {
@@ -52,31 +39,27 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id)
     assert(inserted.second);
 }
 
-template <class Resource, class Identifier>
+template <class Resource>
 template <class Parameter>
-void ResourceHolder<Resource, Identifier>::load(Identifier id, const Parameter& secondParam)
+void ResourceHolder<Resource>::load(const std::string& id, const Parameter& secondParam)
 {
-    auto pathIter = pathMap.find(id);
-    if(pathIter == pathMap.end())
-        throw std::runtime_error("ResourceHolder::load - ID is not registered");
-
     std::unique_ptr<Resource> resource(new Resource());
 
     if(mode == GameResources::DEFAULT)
     {
-        if (!resource->loadFromFile(pathIter->second, secondParam))
-            throw std::runtime_error("ResourceHolder::load - Failed to load " + pathIter->second);
+        if (!resource->loadFromFile(id, secondParam))
+            throw std::runtime_error("ResourceHolder::load - Failed to load " + id);
     }
 #if defined(ResourcePacker_FOUND)
     else if(mode == GameResources::PACKFILE)
     {
         std::unique_ptr<char[]> data;
         unsigned long long size;
-        if(!RP::getFileData(data, size, packfile, pathIter->second))
-            throw std::runtime_error("ResourceHolder::load - Failed to load " + pathIter->second);
+        if(!RP::getFileData(data, size, packfile, id))
+            throw std::runtime_error("ResourceHolder::load - Failed to load " + id);
 
         if(!resource->loadFromMemory(data.get(), size, secondParam))
-            throw std::runtime_error("ResourceHolder::load - Failed to load " + pathIter->second);
+            throw std::runtime_error("ResourceHolder::load - Failed to load " + id);
 
         if(retainData)
         {
@@ -89,8 +72,8 @@ void ResourceHolder<Resource, Identifier>::load(Identifier id, const Parameter& 
     assert(inserted.second);
 }
 
-template <class Resource, class Identifier>
-void ResourceHolder<Resource, Identifier>::unload(Identifier id)
+template <class Resource>
+void ResourceHolder<Resource>::unload(const std::string& id)
 {
     auto found = resourceMap.find(id);
     if(found != resourceMap.end())
@@ -101,8 +84,8 @@ void ResourceHolder<Resource, Identifier>::unload(Identifier id)
     }
 }
 
-template <class Resource, class Identifier>
-bool ResourceHolder<Resource, Identifier>::isLoaded(Identifier id)
+template <class Resource>
+bool ResourceHolder<Resource>::isLoaded(const std::string& id)
 {
     auto found = resourceMap.find(id);
     if(found != resourceMap.end())
@@ -111,16 +94,16 @@ bool ResourceHolder<Resource, Identifier>::isLoaded(Identifier id)
         return false;
 }
 
-template <class Resource, class Identifier>
-Resource& ResourceHolder<Resource, Identifier>::get(Identifier id)
+template <class Resource>
+Resource& ResourceHolder<Resource>::get(const std::string& id)
 {
     auto found = resourceMap.find(id);
     assert(found != resourceMap.end());
     return *found->second;
 }
 
-template <class Resource, class Identifier>
-const Resource& ResourceHolder<Resource, Identifier>::get(Identifier id) const
+template <class Resource>
+const Resource& ResourceHolder<Resource>::get(const std::string& id) const
 {
     auto found = resourceMap.find(id);
     assert(found != resourceMap.end());

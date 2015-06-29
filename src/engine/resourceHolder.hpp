@@ -6,7 +6,7 @@
 
 #include <cassert>
 #include <memory>
-#include <map>
+#include <unordered_map>
 #include <string>
 #include <stdexcept>
 #include <iostream>
@@ -15,36 +15,33 @@
 #include <ResourcePacker.hpp>
 #endif
 
-template <class Resource, class Identifier>
+template <class Resource>
 class ResourceHolder
 {
 public:
     ResourceHolder(GameResources::LoadingMode mode, std::string packfile = "", bool retainData = false);
 
-    void registerResource(Identifier id, const std::string& filename);
-
-    void load(Identifier id);
+    void load(const std::string& id);
     template <class Parameter>
-    void load(Identifier id, const Parameter& secondParam);
+    void load(const std::string& id, const Parameter& secondParam);
 
-    void unload(Identifier id);
+    void unload(const std::string& id);
 
-    bool isLoaded(Identifier id);
+    bool isLoaded(const std::string& id);
 
-    Resource& get(Identifier id);
-    const Resource& get(Identifier id) const;
+    Resource& get(const std::string& id);
+    const Resource& get(const std::string& id) const;
 private:
     friend class ResourceManager;
 
-    std::map<Identifier, std::unique_ptr<Resource> > resourceMap;
-    std::map<Identifier, std::string> pathMap;
+    std::unordered_map<std::string, std::unique_ptr<Resource> > resourceMap;
 
     GameResources::LoadingMode mode;
 
     std::string packfile;
 
     bool retainData;
-    std::map<Identifier, std::unique_ptr<char[]> > dataMap;
+    std::unordered_map<std::string, std::unique_ptr<char[]> > dataMap;
 };
 
 #include "resourceHolder.inl"
