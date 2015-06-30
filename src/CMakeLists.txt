@@ -6,7 +6,6 @@ set(Game_Project_SOURCES
     engine/connection.cpp
     engine/context.cpp
     engine/game.cpp
-    engine/GLHelper.cpp
     engine/gui.cpp
     engine/musicPlayer.cpp
     engine/networkIdentifiers.cpp
@@ -41,16 +40,6 @@ if(GAME_NO_RENDER_WINDOW)
 else()
     message(STATUS "sf::RenderWindow is enabled")
 endif()
-
-find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
-if(OPENGL_FOUND AND GLEW_FOUND)
-    include_directories(${OpenGL_INCLUDE_DIR})
-    include_directories(${GLEW_INCLUDE_DIRS})
-    target_link_libraries(Game_Project ${OPENGL_LIBRARIES})
-    target_link_libraries(Game_Project ${GLEW_LIBRARIES})
-endif()
-
 
 if(SFML_FOUND)
     include_directories(${SFML_INCLUDE_DIR})
@@ -163,18 +152,6 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
         target_link_libraries(Unit_Tests ${GTEST_BOTH_LIBRARIES})
         target_link_libraries(Unit_Tests ${SFML_LIBRARIES})
         target_link_libraries(Unit_Tests Game_Project)
-
-        if(OPENGL_FOUND AND GLEW_FOUND)
-            target_link_libraries(Unit_Tests ${OPENGL_LIBRARIES})
-            target_link_libraries(Unit_Tests ${GLEW_LIBRARIES})
-        else()
-            find_package(OpenGL REQUIRED)
-            find_package(GLEW REQUIRED)
-            if(OPENGL_FOUND AND GLEW_FOUND)
-                target_link_libraries(Unit_Tests ${OPENGL_LIBRARIES})
-                target_link_libraries(Unit_Tests ${GLEW_LIBRARIES})
-            endif()
-        endif()
 
         if(ResourcePacker_FOUND)
             target_link_libraries(Unit_Tests ${ResourcePacker_LIBRARIES})
