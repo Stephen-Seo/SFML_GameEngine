@@ -37,7 +37,6 @@ TEST(StateStackTest, ResourceLoading)
     StateStack stack;
     ResourceManager rManager(&stack, GameResources::DEFAULT);
 
-    sf::RenderWindow window;
     MusicPlayer mPlayer;
     SoundPlayer sPlayer;
     Engine ecEngine;
@@ -45,7 +44,7 @@ TEST(StateStackTest, ResourceLoading)
     std::unique_ptr<Connection> connection;
     sf::Color clearColor;
 
-    Context context(window, rManager, mPlayer, sPlayer, ecEngine, derp, connection, clearColor);
+    Context context(nullptr, rManager, mPlayer, sPlayer, ecEngine, derp, connection, clearColor);
 
 
     stack.registerState<TestState>("test", context);

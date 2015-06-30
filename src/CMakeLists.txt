@@ -34,11 +34,22 @@ endif()
 
 include_directories(${CMAKE_SOURCE_DIR})
 
-if(GAME_NO_RENDER_WINDOW)
-    message(STATUS "Disabling sf::RenderWindow")
-    add_definitions(-DGAME_NO_RENDER_WINDOW)
+if(GAME_USE_GLFW)
+    message(STATUS "Enabling GLFW")
+
+    find_package(PkgConfig REQUIRED)
+    pkg_search_module(GLFW REQUIRED glfw3)
+    include_directories(${GLFW_INCLUDE_DIRS})
+    target_link_libraries(Game_Project ${GLFW_LIBRARIES})
+
+    add_definitions(-DGAME_USE_GLFW)
 else()
-    message(STATUS "sf::RenderWindow is enabled")
+    if(GAME_NO_RENDER_WINDOW)
+        message(STATUS "Disabling sf::RenderWindow")
+        add_definitions(-DGAME_NO_RENDER_WINDOW)
+    else()
+        message(STATUS "sf::RenderWindow is enabled")
+    endif()
 endif()
 
 if(SFML_FOUND)

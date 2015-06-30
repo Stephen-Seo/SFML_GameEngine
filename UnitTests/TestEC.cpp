@@ -48,7 +48,6 @@ TEST(ECTest, ECUpdate)
 
     engine.addEntity(std::unique_ptr<Entity>(entity));
 
-    sf::RenderWindow window;
     ResourceManager rManager(nullptr, GameResources::DEFAULT);
     MusicPlayer mPlayer;
     SoundPlayer sPlayer;
@@ -56,12 +55,12 @@ TEST(ECTest, ECUpdate)
     std::unique_ptr<Connection> connection;
     sf::Color clearColor;
 
-    engine.update(sf::seconds(1.0f), Context(window, rManager, mPlayer, sPlayer, engine, isQuitting, connection, clearColor));
+    engine.update(sf::seconds(1.0f), Context(nullptr, rManager, mPlayer, sPlayer, engine, isQuitting, connection, clearColor));
 
     EXPECT_NE(0.0f, pos->x);
     EXPECT_EQ(1.0f, pos->x);
 
-    engine.update(sf::seconds(1.0f), Context(window, rManager, mPlayer, sPlayer, engine, isQuitting, connection, clearColor));
+    engine.update(sf::seconds(1.0f), Context(nullptr, rManager, mPlayer, sPlayer, engine, isQuitting, connection, clearColor));
 
     EXPECT_EQ(2.0f, vel->y);
     EXPECT_EQ(3.0f, pos->y);
