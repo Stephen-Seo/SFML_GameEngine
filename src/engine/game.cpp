@@ -50,7 +50,7 @@ connection()
     settings.majorVersion = 3;
     settings.minorVersion = 2;
 
-    window.create(sf::VideoMode(720,480), "SFML App", sf::Style::Default, settings);
+    window.create(sf::VideoMode(720,480), "SFML App", sf::Style::Titlebar | sf::Style::Close, settings);
   #ifndef NDEBUG
     settings = window.getSettings();
 
