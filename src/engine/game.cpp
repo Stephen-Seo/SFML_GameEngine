@@ -14,6 +14,14 @@ std::vector<sf::Event>* Game::staticEvents = nullptr;
   #endif
 #endif
 
+#ifdef GAME_THREADED_DRAW
+  #include <thread>
+
+  #ifdef GAME_USE_GLFW
+    #define GAME_CHECK_CLOSE_TIME 1.0f
+  #endif
+#endif
+
 // set packfile name/filepath if one is being used
 #define PACKFILE_NAME ""
 
@@ -54,6 +62,9 @@ window,
 resourceManager, mPlayer, sPlayer, ecEngine, isQuitting, connection, clearColor),
 isQuitting(false),
 connection()
+#ifdef GAME_THREADED_DRAW
+,stopDraw(false)
+#endif
 {
     frameTime = sf::seconds(1.f / 60.f);
 
@@ -134,12 +145,75 @@ void Game::run()
 {
     stateStack.pushState(startingState);
 
-    sf::Time lastUpdateTime = sf::Time::Zero;
+#ifdef GAME_THREADED_DRAW
+  #ifndef GAME_USE_GLFW
+    window.setActive(false);
+  #else
+    glfwMakeContextCurrent(NULL);
+
+    std::thread checkCloseThread([this] () {
+        while(!this->stopDraw)
+        {
+            std::unique_lock<std::mutex> lock(this->closeCheckMutex);
+            this->closeCheckCV.wait(lock);
+            glfwMakeContextCurrent(this->window);
+            std::cout << "CloseThread: got context" << std::endl;
+            if(glfwWindowShouldClose(this->window))
+            {
+                this->isQuitting = true;
+                std::cout << "CLOSE DETECTED!!" << std::endl;
+            }
+            glfwMakeContextCurrent(NULL);
+            std::cout << "CloseThread: released context" << std::endl;
+        }
+    });
+  #endif
+    
+    std::thread drawThread([this] () {
+  #ifndef GAME_USE_GLFW
+        this->window.setActive();
+        this->window.setVerticalSyncEnabled(true);
+  #else
+        glfwMakeContextCurrent(this->window);
+        glfwSwapInterval(1);
+
+        this->needToReaquireContext = false;
+
+        sf::Clock elapsedTime;
+  #endif
+        while(!this->stopDraw)
+        {
+  #ifdef GAME_USE_GLFW
+            this->closeCheckMutex.lock();
+            if(this->needToReaquireContext)
+            {
+                this->needToReaquireContext = false;
+                glfwMakeContextCurrent(this->window);
+                std::cout << "DrawThread: got context" << std::endl;
+            }
+  #endif
+            this->draw();
+  #ifdef GAME_USE_GLFW
+            this->closeCheckMutex.unlock();
+            if(elapsedTime.getElapsedTime().asSeconds() > GAME_CHECK_CLOSE_TIME)
+            {
+                this->needToReaquireContext = true;
+                glfwMakeContextCurrent(NULL);
+                std::cout << "DrawThread: released context" << std::endl;
+                this->closeCheckCV.notify_all();
+                elapsedTime.restart();
+            }
+  #endif
+        }
+    });
+#endif
+
+    sf::Time lastUpdateTime;
 
 #ifdef GAME_USE_GLFW
     glfwSetTime(0.0);
 
-    while(!glfwWindowShouldClose(window) && !isQuitting)
+    while(!isQuitting)
     {
         lastUpdateTime = sf::seconds(glfwGetTime());
         glfwSetTime(0.0);
@@ -149,7 +223,9 @@ void Game::run()
             processEvents();
             update(frameTime);
         }
+  #ifndef GAME_THREADED_DRAW
         draw();
+  #endif
     }
 #else
     sf::Clock clock;
@@ -163,8 +239,17 @@ void Game::run()
             processEvents();
             update(frameTime);
         }
+  #ifndef GAME_THREADED_DRAW
         draw();
+  #endif
     }
+#endif
+
+#ifdef GAME_THREADED_DRAW
+    stopDraw = true;
+    closeCheckCV.notify_all();
+    drawThread.join();
+    checkCloseThread.join();
 #endif
 
 #ifndef GAME_USE_GLFW

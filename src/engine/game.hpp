@@ -10,6 +10,11 @@
   #include <GL/glew.h>
   #include <GLFW/glfw3.h>
   #include <vector>
+
+  #ifdef GAME_THREADED_DRAW
+    #include <mutex>
+    #include <condition_variable>
+  #endif
 #endif
 
 #include "ec/engine.hpp"
@@ -78,6 +83,15 @@ private:
     sf::Color clearColor;
 
     std::string startingState;
+
+#ifdef GAME_THREADED_DRAW
+    bool stopDraw;
+  #ifdef GAME_USE_GLFW
+    std::mutex closeCheckMutex;
+    std::condition_variable closeCheckCV;
+    bool needToReaquireContext;
+  #endif
+#endif
 };
 
 template<class SubState>

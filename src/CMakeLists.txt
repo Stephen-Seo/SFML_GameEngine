@@ -61,6 +61,10 @@ else()
     endif()
 endif()
 
+if(GAME_THREADED_DRAW)
+    add_definitions(-DGAME_THREADED_DRAW)
+endif()
+
 if(SFML_FOUND)
     include_directories(${SFML_INCLUDE_DIR})
     target_link_libraries(Game_Project ${SFML_LIBRARIES})
