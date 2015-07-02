@@ -11,16 +11,16 @@ std::vector<sf::Event>* Game::staticEvents = nullptr;
 #else
   #ifdef GAME_NO_RENDER_WINDOW
     #include <GL/gl.h>
-  #endif
-#endif
+  #endif //GAME_NO_RENDER_WINDOW
+#endif //GAME_USE_GLFW
 
 #ifdef GAME_THREADED_DRAW
   #include <thread>
 
   #ifdef GAME_USE_GLFW
     #define GAME_CHECK_CLOSE_TIME 1.0f
-  #endif
-#endif
+  #endif //GAME_USE_GLFW
+#endif //GAME_THREADED_DRAW
 
 // set packfile name/filepath if one is being used
 #define PACKFILE_NAME ""
@@ -35,20 +35,20 @@ std::vector<sf::Event>* Game::staticEvents = nullptr;
 #if defined(ResourcePacker_FOUND)
 #else
 #  define IS_USING_PACKFILE false
-#endif
+#endif //ResourcePacker_FOUND
 
 #if IS_USING_PACKFILE == true
 #  define RESOURCE_MANAGER_MODE GameResources::PACKFILE
 #else
 #  define RESOURCE_MANAGER_MODE GameResources::DEFAULT
-#endif
+#endif //IS_USING_PACKFILE
 
 Game::Game()
 #ifdef GAME_USE_GLFW
 :
 #else
 : window(sf::VideoMode(960,540), "SFML App", sf::Style::Titlebar | sf::Style::Close),
-#endif
+#endif //GAME_USE_GLFW
 resourceManager(&stateStack, RESOURCE_MANAGER_MODE, PACKFILE_NAME),
 mPlayer(),
 sPlayer(),
@@ -58,13 +58,13 @@ context(
 window,
 #else
 &window,
-#endif
+#endif //GAME_USE_GLFW
 resourceManager, mPlayer, sPlayer, ecEngine, isQuitting, connection, clearColor),
 isQuitting(false),
 connection()
 #ifdef GAME_THREADED_DRAW
 ,stopDraw(false)
-#endif
+#endif //GAME_THREADED_DRAW
 {
     frameTime = sf::seconds(1.f / 60.f);
 
@@ -128,9 +128,9 @@ connection()
     std::cout << "stencil bits:" << settings.stencilBits << std::endl;
     std::cout << "antialiasing level:" << settings.antialiasingLevel << std::endl;
     std::cout << "version:" << settings.majorVersion << "." << settings.minorVersion << std::endl;
-    #endif
-  #endif
-#endif
+    #endif //NDEBUG
+  #endif //GAME_NO_RENDER_WINDOW
+#endif //GAME_USE_GLFW
 }
 
 Game::~Game()
@@ -138,7 +138,7 @@ Game::~Game()
 #ifdef GAME_USE_GLFW
     glfwDestroyWindow(window);
     glfwTerminate();
-#endif
+#endif //GAME_USE_GLFW
 }
 
 void Game::run()
@@ -150,24 +150,7 @@ void Game::run()
     window.setActive(false);
   #else
     glfwMakeContextCurrent(NULL);
-
-    std::thread checkCloseThread([this] () {
-        while(!this->stopDraw)
-        {
-            std::unique_lock<std::mutex> lock(this->closeCheckMutex);
-            this->closeCheckCV.wait(lock);
-            glfwMakeContextCurrent(this->window);
-            std::cout << "CloseThread: got context" << std::endl;
-            if(glfwWindowShouldClose(this->window))
-            {
-                this->isQuitting = true;
-                std::cout << "CLOSE DETECTED!!" << std::endl;
-            }
-            glfwMakeContextCurrent(NULL);
-            std::cout << "CloseThread: released context" << std::endl;
-        }
-    });
-  #endif
+  #endif //GAME_USE_GLFW
     
     std::thread drawThread([this] () {
   #ifndef GAME_USE_GLFW
@@ -176,61 +159,23 @@ void Game::run()
   #else
         glfwMakeContextCurrent(this->window);
         glfwSwapInterval(1);
+  #endif //GAME_USE_GLFW
 
-        this->needToReaquireContext = false;
-
-        sf::Clock elapsedTime;
-  #endif
         while(!this->stopDraw)
         {
-  #ifdef GAME_USE_GLFW
-            this->closeCheckMutex.lock();
-            if(this->needToReaquireContext)
-            {
-                this->needToReaquireContext = false;
-                glfwMakeContextCurrent(this->window);
-                std::cout << "DrawThread: got context" << std::endl;
-            }
-  #endif
             this->draw();
-  #ifdef GAME_USE_GLFW
-            this->closeCheckMutex.unlock();
-            if(elapsedTime.getElapsedTime().asSeconds() > GAME_CHECK_CLOSE_TIME)
-            {
-                this->needToReaquireContext = true;
-                glfwMakeContextCurrent(NULL);
-                std::cout << "DrawThread: released context" << std::endl;
-                this->closeCheckCV.notify_all();
-                elapsedTime.restart();
-            }
-  #endif
         }
     });
-#endif
+#endif //GAME_THREADED_DRAW
 
     sf::Time lastUpdateTime;
 
-#ifdef GAME_USE_GLFW
-    glfwSetTime(0.0);
-
-    while(!isQuitting)
-    {
-        lastUpdateTime = sf::seconds(glfwGetTime());
-        glfwSetTime(0.0);
-        while(lastUpdateTime > frameTime)
-        {
-            lastUpdateTime -= frameTime;
-            processEvents();
-            update(frameTime);
-        }
-  #ifndef GAME_THREADED_DRAW
-        draw();
-  #endif
-    }
-#else
     sf::Clock clock;
-
+#ifdef GAME_USE_GLFW
+    while(!glfwWindowShouldClose(this->window) && !isQuitting)
+#else
     while(window.isOpen() && !isQuitting)
+#endif //GAME_USE_GLFW
     {
         lastUpdateTime += clock.restart();
         while (lastUpdateTime > frameTime)
@@ -239,23 +184,20 @@ void Game::run()
             processEvents();
             update(frameTime);
         }
-  #ifndef GAME_THREADED_DRAW
+#ifndef GAME_THREADED_DRAW
         draw();
-  #endif
+#endif //GAME_THREADED_DRAW
     }
-#endif
 
 #ifdef GAME_THREADED_DRAW
     stopDraw = true;
-    closeCheckCV.notify_all();
     drawThread.join();
-    checkCloseThread.join();
-#endif
+#endif //GAME_THREADED_DRAW
 
 #ifndef GAME_USE_GLFW
     if(window.isOpen())
         window.close();
-#endif
+#endif //GAME_USE_GLFW
 }
 
 void Game::setStartingState(const std::string& stateName)
@@ -284,7 +226,7 @@ void Game::processEvents()
         if(event.type == sf::Event::Closed)
             window.close();
     }
-#endif
+#endif //GAME_USE_GLFW
 }
 
 void Game::update(sf::Time deltaTime)
@@ -319,10 +261,10 @@ void Game::draw()
     float a = (float) clearColor.a / 255.0f;
     glClearColor(r, g, b, a);
     glClear(GL_COLOR_BUFFER_BIT);
-  #endif
+  #endif //GAME_NO_RENDER_WINDOW
     stateStack.draw(context);
     window.display();
-#endif
+#endif //GAME_USE_GLFW
 }
 
 #ifdef GAME_USE_GLFW
@@ -767,5 +709,5 @@ void GameCallbacks::scrollCallback(GLFWwindow* window, double xoffset, double yo
         Game::staticEvents->push_back(event);
     }
 }
-#endif
+#endif //GAME_USE_GLFW
 

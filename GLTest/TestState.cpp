@@ -78,6 +78,9 @@ State(stack, context)
 
 bool TestState::update(sf::Time dt, Context context)
 {
+#ifdef GAME_THREADED_DRAW
+    std::cout << dt.asSeconds() << std::endl;
+#endif //GAME_THREADED_DRAW
     return false;
 }
 
