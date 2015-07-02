@@ -7,6 +7,10 @@
 
 #include <engine/GLHelper.hpp>
 
+#ifdef GAME_THREADED_DRAW
+  #include <thread>
+#endif //GAME_THREADED_DRAW
+
 TestState::TestState(StateStack& stack, Context context) :
 State(stack, context)
 {
@@ -79,17 +83,24 @@ State(stack, context)
 bool TestState::update(sf::Time dt, Context context)
 {
 #ifdef GAME_THREADED_DRAW
-    std::cout << dt.asSeconds() << std::endl;
+    std::cout << "Update on thread " << std::this_thread::get_id() << std::endl;
 #endif //GAME_THREADED_DRAW
     return false;
 }
 
 void TestState::draw(Context context)
 {
+#ifdef GAME_THREADED_DRAW
+    std::cout << "Draw on thread " << std::this_thread::get_id() << std::endl;
+#endif //GAME_THREADED_DRAW
     GLHelper::ElementManager::getInstance().draw();
 }
 
 bool TestState::handleEvent(const sf::Event& event, Context context)
 {
+    if(event.type == sf::Event::KeyPressed && event.key.code == sf::Keyboard::W)
+    {
+        std::cout << "W pressed" << std::endl;
+    }
     return false;
 }
