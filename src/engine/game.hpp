@@ -7,6 +7,7 @@
 #include <SFML/System.hpp>
 
 #ifdef GAME_USE_GLFW
+  #include <GL/glew.h>
   #include <GLFW/glfw3.h>
   #include <vector>
 #endif

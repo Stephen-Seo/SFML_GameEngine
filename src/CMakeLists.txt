@@ -6,6 +6,7 @@ set(Game_Project_SOURCES
     engine/connection.cpp
     engine/context.cpp
     engine/game.cpp
+    engine/GLHelper.cpp
     engine/gui.cpp
     engine/musicPlayer.cpp
     engine/networkIdentifiers.cpp
@@ -43,6 +44,14 @@ if(GAME_USE_GLFW)
     target_link_libraries(Game_Project ${GLFW_LIBRARIES})
 
     add_definitions(-DGAME_USE_GLFW)
+
+    find_package(OpenGL REQUIRED)
+    include_directories(${OPENGL_INCLUDE_DIRS})
+    target_link_libraries(Game_Project ${OPENGL_LIBRARIES})
+
+    find_package(GLEW REQUIRED)
+    include_directories(${GLEW_INCLUDE_DIRS})
+    target_link_libraries(Game_Project ${GLEW_LIBRARIES})
 else()
     if(GAME_NO_RENDER_WINDOW)
         message(STATUS "Disabling sf::RenderWindow")
@@ -131,6 +140,23 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
         ${NetworkingTest_SOURCES})
 
     target_link_libraries(NetworkingTest ${SFML_LIBRARIES})
+
+    if(GAME_USE_GLFW)
+        set(GLTest_SOURCES
+            ../GLTest/Main.cpp
+            ../GLTest/TestState.cpp)
+
+        add_executable(GLTest
+            ${GLTest_SOURCES})
+
+        target_link_libraries(GLTest Game_Project)
+
+        include_directories(${OPENGL_INCLUDE_DIRS})
+        target_link_libraries(Game_Project ${OPENGL_LIBRARIES})
+
+        include_directories(${GLEW_INCLUDE_DIRS})
+        target_link_libraries(Game_Project ${GLEW_LIBRARIES})
+    endif()
 endif()
 
 

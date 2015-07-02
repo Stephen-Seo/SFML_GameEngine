@@ -67,14 +67,26 @@ connection()
     assert(glfwInit());
 
     glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
     window = glfwCreateWindow(960, 540, "GLFW App", NULL, NULL);
     if(!window)
     {
         glfwTerminate();
         exit(EXIT_FAILURE);
     }
+    context.window = window;
 
     glfwMakeContextCurrent(window);
+
+    glewExperimental = GL_TRUE;
+    assert(glewInit() == GLEW_OK);
+
+    glGetError();
+
     glfwSwapInterval(1);
 
     glfwSetKeyCallback(window, GameCallbacks::keyCallback);
