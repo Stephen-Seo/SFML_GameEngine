@@ -22,8 +22,8 @@ class TestState : public State
 public:
     TestState(StateStack& stack, Context context) : State(stack, context)
     {
-        context.resourceManager->registerTexture(this, "UnitTestRes/Test.png");
-        context.resourceManager->registerTexture(this, "UnitTestRes/Test.png");
+        context.resourceManager->registerTexture(*this, "UnitTestRes/Test.png");
+        context.resourceManager->registerTexture(*this, "UnitTestRes/Test.png");
     }
 
     void draw(Context context) {}

@@ -32,7 +32,7 @@ sf::SoundBuffer& ResourceManager::getSoundBuffer(const std::string& id)
     return soundBufferHolder.get(id);
 }
 
-void ResourceManager::registerTexture(State* requestor, const std::string& filename)
+void ResourceManager::registerTexture(State& requestor, const std::string& filename)
 {
 #ifndef NDEBUG
     std::cout << typeid(requestor).name() << ':' << typeid(requestor).hash_code() << " requested " << filename << '\n';
@@ -40,7 +40,7 @@ void ResourceManager::registerTexture(State* requestor, const std::string& filen
     requestTextureLog[typeid(requestor).hash_code()].insert(filename);
 }
 
-void ResourceManager::registerFont(State* requestor, const std::string& filename)
+void ResourceManager::registerFont(State& requestor, const std::string& filename)
 {
 #ifndef NDEBUG
     std::cout << typeid(requestor).name() << ':' << typeid(requestor).hash_code() << " requested " << filename << '\n';
@@ -48,7 +48,7 @@ void ResourceManager::registerFont(State* requestor, const std::string& filename
     requestFontLog[typeid(requestor).hash_code()].insert(filename);
 }
 
-void ResourceManager::registerSoundBuffer(State* requestor, const std::string& filename)
+void ResourceManager::registerSoundBuffer(State& requestor, const std::string& filename)
 {
 #ifndef NDEBUG
     std::cout << typeid(requestor).name() << ':' << typeid(requestor).hash_code() << " requested " << filename << '\n';

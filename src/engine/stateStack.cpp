@@ -1,8 +1,6 @@
 
 #include "stateStack.hpp"
 
-#include <typeinfo>
-
 #include "resourceManager.hpp"
 
 StateStack::PendingChange::PendingChange(Action action, std::string stateID)
@@ -67,9 +65,14 @@ std::vector<std::size_t> StateStack::getContentsHashCodes()
 {
     std::vector<std::size_t> hashCodes;
 
+    if(creatingHashCode)
+    {
+        hashCodes.push_back(*creatingHashCode);
+    }
+
     for(auto stateIter = stack.begin(); stateIter != stack.end(); ++stateIter)
     {
-        hashCodes.push_back(typeid(stateIter->get()).hash_code());
+        hashCodes.push_back(typeid(*(stateIter->get())).hash_code());
     }
 
     return hashCodes;
@@ -79,7 +82,10 @@ State::Ptr StateStack::createState(const std::string& stateID)
 {
     auto found = factories.find(stateID);
     assert(found != factories.end());
-    return found->second();
+    creatingHashCode.reset(new std::size_t(found->second.hashCode));
+    State::Ptr ptr = found->second.factory();
+    creatingHashCode.reset();
+    return std::move(ptr);
 }
 
 void StateStack::applyPendingChanges(Context context)

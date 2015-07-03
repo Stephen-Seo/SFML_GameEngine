@@ -23,9 +23,9 @@ public:
     sf::Font& getFont(const std::string& id);
     sf::SoundBuffer& getSoundBuffer(const std::string& id);
 
-    void registerTexture(State* requestor, const std::string& filename);
-    void registerFont(State* requestor, const std::string& filename);
-    void registerSoundBuffer(State* requestor, const std::string& filename);
+    void registerTexture(State& requestor, const std::string& filename);
+    void registerFont(State& requestor, const std::string& filename);
+    void registerSoundBuffer(State& requestor, const std::string& filename);
 
     void loadResources();
 
