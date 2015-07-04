@@ -6,7 +6,6 @@ set(Game_Project_SOURCES
     engine/connection.cpp
     engine/context.cpp
     engine/game.cpp
-    engine/GLHelper.cpp
     engine/gui.cpp
     engine/musicPlayer.cpp
     engine/networkIdentifiers.cpp
