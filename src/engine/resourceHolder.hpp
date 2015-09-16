@@ -44,5 +44,5 @@ private:
     std::unordered_map<std::string, std::unique_ptr<char[]> > dataMap;
 };
 
-#include "resourceHolder.inl"
+#include <engine/resourceHolder.inl>
 #endif
