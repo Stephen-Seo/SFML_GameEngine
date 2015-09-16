@@ -3,6 +3,7 @@
 #define GAME_HPP
 
 #include <memory>
+#include <random>
 #include <SFML/Graphics.hpp>
 #include <SFML/System.hpp>
 
@@ -78,6 +79,8 @@ private:
     sf::Color clearColor;
 
     std::string startingState;
+
+    std::mt19937 randomEngine;
 };
 
 template<class SubState>

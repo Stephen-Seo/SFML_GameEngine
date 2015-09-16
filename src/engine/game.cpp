@@ -51,9 +51,10 @@ window,
 #else
 &window,
 #endif
-resourceManager, mPlayer, sPlayer, ecEngine, isQuitting, connection, clearColor),
+resourceManager, mPlayer, sPlayer, ecEngine, isQuitting, connection, clearColor, randomEngine),
 isQuitting(false),
-connection()
+connection(),
+randomEngine(std::random_device()())
 {
     frameTime = sf::seconds(1.f / 60.f);
 

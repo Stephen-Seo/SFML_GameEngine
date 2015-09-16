@@ -3,6 +3,7 @@
 #define CONTEXT_HPP
 
 #include <memory>
+#include <random>
 #include <SFML/Window.hpp>
 #include <SFML/Graphics.hpp>
 
@@ -30,7 +31,8 @@ struct Context
             Engine& ecEngine,
             bool& isQuitting,
             std::unique_ptr<Connection>& connection,
-            sf::Color& clearColor);
+            sf::Color& clearColor,
+            std::mt19937& randomEngine);
 
 #ifdef GAME_USE_GLFW
     GLFWwindow* window;
@@ -44,6 +46,7 @@ struct Context
     bool* isQuitting;
     std::unique_ptr<Connection>* connection;
     sf::Color* clearColor;
+    std::mt19937* randomEngine;
 };
 
 #endif
