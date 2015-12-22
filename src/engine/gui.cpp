@@ -160,6 +160,7 @@ activeTexture(nullptr)
     rectangleShape.setSize(sf::Vector2f(16.0f, 16.0f));
     rectangleShape.setFillColor(passiveFillColor);
     rectangleShape.setOutlineColor(passiveOutlineColor);
+    rectangleShape.setOutlineThickness(1.0f);
 }
 
 void GuiButton::update(sf::Time dt)
