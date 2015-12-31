@@ -43,7 +43,7 @@ NetworkingTest_SOURCES = ${SRC_ROOT}/../NetworkingTest/Main.o \
 all:    libSFML_GameEngine.so.1.0 NetworkingTest.exe
 
 libSFML_GameEngine.so.1.0: ${SFML_GameEngine_SOURCES}
-		$(CXX) $(LINKER_FLAGS) -shared -o libSFML_GameEngine.so.1.0 ${LINKER_LIBS} ${SFML_GameEngine_SOURCES}
+		$(CXX) $(LINKER_FLAGS) -shared -Wl,-soname,libSFML_GameEngine.so.1 -o libSFML_GameEngine.so.1.0 ${LINKER_LIBS} ${SFML_GameEngine_SOURCES}
 
 NetworkingTest.exe: ${NetworkingTest_SOURCES}
 		$(CXX) $(LINKER_FLAGS) -o NetworkingTest.exe ${LINKER_LIBS} ${NetworkingTest_SOURCES}
