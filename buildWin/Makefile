@@ -1,5 +1,5 @@
 SRC_ROOT = ../src
-SFML_ROOT = /home/stephen/Downloads/SFML-2.3-Source/buildWindows/install
+SFML_ROOT = /home/stephen/Downloads/SFML-2.3.2-source/build64Win/install
 CXX = x86_64-w64-mingw32-g++
 CXXFLAGS = -c -std=c++11 -Wall -Wextra -O3 -D NDEBUG \
            -I${SFML_ROOT}/include \
@@ -9,14 +9,14 @@ CXXDEBUGFLAGS = -c -std=c++11 -Wall -Wextra -O0 -g -D_GLIBCXX_DEBUG \
            -I${SFML_ROOT}/include \
            -I${SRC_ROOT} \
            -mwindows
-LINKER_FLAGS = -mwindows
+LINKER_FLAGS = -mwindows -Wall
 LINKER_LIBS = ${SFML_ROOT}/bin/sfml-audio-2.dll \
               ${SFML_ROOT}/bin/sfml-network-2.dll \
               ${SFML_ROOT}/bin/sfml-graphics-2.dll \
               ${SFML_ROOT}/bin/sfml-window-2.dll \
               ${SFML_ROOT}/bin/sfml-system-2.dll
 
-Game_Project_SOURCES =  \
+SFML_GameEngine_SOURCES =  \
           ${SRC_ROOT}/engine/animatedSprite.o \
           ${SRC_ROOT}/engine/connection.o \
           ${SRC_ROOT}/engine/context.o \
@@ -40,21 +40,20 @@ NetworkingTest_SOURCES = ${SRC_ROOT}/../NetworkingTest/Main.o \
           ${SRC_ROOT}/engine/connection.o \
           ${SRC_ROOT}/engine/networkIdentifiers.o
 
-all:    Game_Project NetworkingTest
+all:    libSFML_GameEngine.so.1.0 NetworkingTest.exe
 
-Game_Project: ${Game_Project_SOURCES} ${SRC_ROOT}/main.o
-		$(CXX) $(LINKER_FLAGS) -o Game_Project.exe ${LINKER_LIBS} ${Game_Project_SOURCES} ${SRC_ROOT}/main.o
-		touch Game_Project
+libSFML_GameEngine.so.1.0: ${SFML_GameEngine_SOURCES}
+		$(CXX) $(LINKER_FLAGS) -shared -o libSFML_GameEngine.so.1.0 ${LINKER_LIBS} ${SFML_GameEngine_SOURCES}
 
-NetworkingTest: ${NetworkingTest_SOURCES}
+NetworkingTest.exe: ${NetworkingTest_SOURCES}
 		$(CXX) $(LINKER_FLAGS) -o NetworkingTest.exe ${LINKER_LIBS} ${NetworkingTest_SOURCES}
-		touch NetworkingTest
 
 clean:	../src.clean ../src/engine.clean ../src/engine/ec.clean ../NetworkingTest.clean
-		rm -f Game_Project.exe
-		rm -f Game_Project
+		rm -f libSFML_GameEngine.so.1.0
 		rm -f NetworkingTest.exe
-		rm -f NetworkingTest
+
+objectOnlyClean:	../src.clean ../src/engine.clean ../src/engine/ec.clean ../NetworkingTest.clean
+
 
 %.clean:
 		rm -f $*/*.o
