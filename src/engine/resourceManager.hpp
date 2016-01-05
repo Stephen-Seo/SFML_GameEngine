@@ -23,9 +23,9 @@ public:
     sf::Font& getFont(const std::string& id);
     sf::SoundBuffer& getSoundBuffer(const std::string& id);
 
-    void registerTexture(State& requestor, const std::string& filename);
-    void registerFont(State& requestor, const std::string& filename);
-    void registerSoundBuffer(State& requestor, const std::string& filename);
+    void registerTexture(State& requestor, const std::string& filename, const std::string& packfile = "");
+    void registerFont(State& requestor, const std::string& filename, const std::string& packfile = "");
+    void registerSoundBuffer(State& requestor, const std::string& filename, const std::string& packfile = "");
 
     void loadResources();
 
@@ -40,9 +40,9 @@ private:
 
     StateStack* sstack;
 
-    std::unordered_map<std::size_t, std::unordered_set<std::string> > requestTextureLog;
-    std::unordered_map<std::size_t, std::unordered_set<std::string> > requestFontLog;
-    std::unordered_map<std::size_t, std::unordered_set<std::string> > requestSoundLog;
+    std::unordered_map<std::size_t, std::unordered_map<std::string, std::string> > requestTextureLog;
+    std::unordered_map<std::size_t, std::unordered_map<std::string, std::string> > requestFontLog;
+    std::unordered_map<std::size_t, std::unordered_map<std::string, std::string> > requestSoundLog;
 };
 
 #endif

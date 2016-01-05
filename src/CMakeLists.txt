@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(SFML_GameEngine)
 
-set(SFML_GameEngine_VERSION 1.0)
+set(SFML_GameEngine_VERSION 1.1)
 
 set(SFML_GameEngine_SOURCES
     engine/animatedSprite.cpp
@@ -67,14 +67,9 @@ if(SFML_FOUND)
     target_link_libraries(SFML_GameEngine ${SFML_LIBRARIES})
 endif()
 
-find_package(ResourcePacker 1 CONFIG QUIET)
-if(ResourcePacker_FOUND)
-    include_directories(${ResourcePacker_INCLUDE_DIR})
-    target_link_libraries(SFML_GameEngine ${ResourcePacker_LIBRARIES})
-    add_definitions(-DResourcePacker_FOUND)
-else()
-    message(STATUS "ResourcePacker not found, continuing without it.")
-endif()
+find_package(ResourcePacker 1 REQUIRED)
+include_directories(${ResourcePacker_INCLUDE_DIR})
+target_link_libraries(SFML_GameEngine ${ResourcePacker_LIBRARIES})
 
 find_package(Rational 1 CONFIG QUIET)
 if(Rational_FOUND)

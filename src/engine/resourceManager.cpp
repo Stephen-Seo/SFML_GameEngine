@@ -32,28 +32,28 @@ sf::SoundBuffer& ResourceManager::getSoundBuffer(const std::string& id)
     return soundBufferHolder.get(id);
 }
 
-void ResourceManager::registerTexture(State& requestor, const std::string& filename)
+void ResourceManager::registerTexture(State& requestor, const std::string& filename, const std::string& packfile)
 {
 #ifndef NDEBUG
     std::cout << typeid(requestor).name() << ':' << typeid(requestor).hash_code() << " requested " << filename << '\n';
 #endif
-    requestTextureLog[typeid(requestor).hash_code()].insert(filename);
+    requestTextureLog[typeid(requestor).hash_code()].insert(std::make_pair(filename, packfile));
 }
 
-void ResourceManager::registerFont(State& requestor, const std::string& filename)
+void ResourceManager::registerFont(State& requestor, const std::string& filename, const std::string& packfile)
 {
 #ifndef NDEBUG
     std::cout << typeid(requestor).name() << ':' << typeid(requestor).hash_code() << " requested " << filename << '\n';
 #endif
-    requestFontLog[typeid(requestor).hash_code()].insert(filename);
+    requestFontLog[typeid(requestor).hash_code()].insert(std::make_pair(filename, packfile));
 }
 
-void ResourceManager::registerSoundBuffer(State& requestor, const std::string& filename)
+void ResourceManager::registerSoundBuffer(State& requestor, const std::string& filename, const std::string& packfile)
 {
 #ifndef NDEBUG
     std::cout << typeid(requestor).name() << ':' << typeid(requestor).hash_code() << " requested " << filename << '\n';
 #endif
-    requestSoundLog[typeid(requestor).hash_code()].insert(filename);
+    requestSoundLog[typeid(requestor).hash_code()].insert(std::make_pair(filename, packfile));
 }
 
 void ResourceManager::loadResources()
@@ -70,25 +70,46 @@ void ResourceManager::loadResources()
 #endif
         for(auto textureLogIter = requestTextureLog[*hashIter].begin(); textureLogIter != requestTextureLog[*hashIter].end(); ++textureLogIter)
         {
-            if(!textureHolder.isLoaded(*textureLogIter))
+            if(!textureHolder.isLoaded(textureLogIter->first))
             {
-                textureHolder.load(*textureLogIter);
+                if(textureLogIter->second.empty())
+                {
+                    textureHolder.load(textureLogIter->first);
+                }
+                else
+                {
+                    textureHolder.loadFromPackfile(textureLogIter->first, textureLogIter->second);
+                }
             }
         }
 
         for(auto fontLogIter = requestFontLog[*hashIter].begin(); fontLogIter != requestFontLog[*hashIter].end(); ++fontLogIter)
         {
-            if(!fontHolder.isLoaded(*fontLogIter))
+            if(!fontHolder.isLoaded(fontLogIter->first))
             {
-                fontHolder.load(*fontLogIter);
+                if(fontLogIter->second.empty())
+                {
+                    fontHolder.load(fontLogIter->first);
+                }
+                else
+                {
+                    fontHolder.loadFromPackfile(fontLogIter->first, fontLogIter->second);
+                }
             }
         }
 
         for(auto soundLogIter = requestSoundLog[*hashIter].begin(); soundLogIter != requestSoundLog[*hashIter].end(); ++soundLogIter)
         {
-            if(!soundBufferHolder.isLoaded(*soundLogIter))
+            if(!soundBufferHolder.isLoaded(soundLogIter->first))
             {
-                soundBufferHolder.load(*soundLogIter);
+                if(soundLogIter->second.empty())
+                {
+                    soundBufferHolder.load(soundLogIter->first);
+                }
+                else
+                {
+                    soundBufferHolder.loadFromPackfile(soundLogIter->first, soundLogIter->second);
+                }
             }
         }
     }
@@ -104,9 +125,9 @@ void ResourceManager::loadResources()
 void ResourceManager::unloadCheckResources()
 {
     std::vector<std::size_t> hashCodes = sstack->getContentsHashCodes();
-    std::list<std::unordered_set<std::string>*> requiredTextures;
-    std::list<std::unordered_set<std::string>*> requiredFonts;
-    std::list<std::unordered_set<std::string>*> requiredSounds;
+    std::list<std::unordered_map<std::string, std::string>*> requiredTextures;
+    std::list<std::unordered_map<std::string, std::string>*> requiredFonts;
+    std::list<std::unordered_map<std::string, std::string>*> requiredSounds;
 
     for(auto hashIter = hashCodes.begin(); hashIter != hashCodes.end(); ++hashIter)
     {

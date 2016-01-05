@@ -11,19 +11,20 @@
 #include <stdexcept>
 #include <iostream>
 
-#if defined(ResourcePacker_FOUND)
 #include <ResourcePacker.hpp>
-#endif
 
 template <class Resource>
 class ResourceHolder
 {
 public:
-    ResourceHolder(GameResources::LoadingMode mode, std::string packfile = "", bool retainData = false);
+    ResourceHolder(GameResources::LoadingMode mode, std::string packfile = "", bool retainData = true);
 
     void load(const std::string& id);
+    void loadFromPackfile(const std::string& id, const std::string& packfile);
     template <class Parameter>
     void load(const std::string& id, const Parameter& secondParam);
+    template <class Parameter>
+    void loadFromPackfile(const std::string& id, const std::string& packfile, const Parameter& secondParam);
 
     void unload(const std::string& id);
 
@@ -37,8 +38,6 @@ private:
     std::unordered_map<std::string, std::unique_ptr<Resource> > resourceMap;
 
     GameResources::LoadingMode mode;
-
-    std::string packfile;
 
     bool retainData;
     std::unordered_map<std::string, std::unique_ptr<char[]> > dataMap;
