@@ -2,18 +2,23 @@ SFML_GameEngine_VERSION = 1.1
 
 SRC_ROOT = ../src
 SFML_ROOT ?= /home/stephen/Downloads/SFML-2.3.2-source/build64Win/install
-RESOURCE_PACKER_ROOT ?= /home/stephen/Git/ResourcePacker/buildRelease/install
-RESOURCE_PACKER_LIB ?= /home/stephen/Git/ResourcePacker/buildWin/libResourcePacker1.2.0.dll
+RESOURCE_PACKER_SRC = ../ResourcePacker/src
+RESOURCE_PACKER_LIB = ../ResourcePacker/buildWin/libResourcePacker1.2.0.dll
+RESOURCE_PACKER_EXE = ../ResourcePacker/buildWin/ResourcePacker.exe
+ifdef CXX_OVERRIDE
+CXX = ${CXX_OVERRIDE}
+else
 CXX = x86_64-w64-mingw32-g++
+endif
 CXXFLAGS = -c -std=c++11 -Wall -Wextra -O3 -D NDEBUG \
            -I${SFML_ROOT}/include \
            -I${SRC_ROOT} \
-           -I${RESOURCE_PACKER_ROOT}/include \
+           -I${RESOURCE_PACKER_SRC} \
            -mwindows
 CXXDEBUGFLAGS = -c -std=c++11 -Wall -Wextra -O0 -g -D_GLIBCXX_DEBUG \
            -I${SFML_ROOT}/include \
            -I${SRC_ROOT} \
-           -I${RESOURCE_PACKER_ROOT}/include \
+           -I${RESOURCE_PACKER_SRC} \
            -mwindows
 LINKER_FLAGS = -mwindows -Wall
 LINKER_LIBS = ${SFML_ROOT}/bin/sfml-audio-2.dll \
@@ -47,7 +52,16 @@ NetworkingTest_SOURCES = ${SRC_ROOT}/../NetworkingTest/Main.o \
           ${SRC_ROOT}/engine/connection.o \
           ${SRC_ROOT}/engine/networkIdentifiers.o
 
-all:    libSFML_GameEngine${SFML_GameEngine_VERSION}.dll NetworkingTest.exe
+all:    $(word 4,$(subst /, ,${RESOURCE_PACKER_LIB})) $(word 4,$(subst /, ,${RESOURCE_PACKER_EXE})) libSFML_GameEngine${SFML_GameEngine_VERSION}.dll NetworkingTest.exe
+
+${RESOURCE_PACKER_LIB}:
+		cd ../ResourcePacker/buildWin && ${MAKE}
+
+$(word 4,$(subst /, ,${RESOURCE_PACKER_LIB})): ${RESOURCE_PACKER_LIB}
+		cp ${RESOURCE_PACKER_LIB} .
+
+$(word 4,$(subst /, ,${RESOURCE_PACKER_EXE})): ${RESOURCE_PACKER_LIB}
+		cp ${RESOURCE_PACKER_EXE} .
 
 libSFML_GameEngine${SFML_GameEngine_VERSION}.dll: ${SFML_GameEngine_SOURCES}
 		$(CXX) $(LINKER_FLAGS) -shared -Wl,-soname,libSFML_GameEngine.so.1 -o libSFML_GameEngine${SFML_GameEngine_VERSION}.dll ${LINKER_LIBS} ${SFML_GameEngine_SOURCES}
@@ -56,10 +70,14 @@ NetworkingTest.exe: ${NetworkingTest_SOURCES}
 		$(CXX) $(LINKER_FLAGS) -o NetworkingTest.exe ${LINKER_LIBS} ${NetworkingTest_SOURCES}
 
 clean:	../src.clean ../src/engine.clean ../src/engine/ec.clean ../NetworkingTest.clean
+		rm -f $(word 4,$(subst /, ,${RESOURCE_PACKER_LIB}))
+		rm -f $(word 4,$(subst /, ,${RESOURCE_PACKER_EXE}))
 		rm -f libSFML_GameEngine${SFML_GameEngine_VERSION}.dll
 		rm -f NetworkingTest.exe
+		cd ../ResourcePacker/buildWin && ${MAKE} clean
 
 cleanObjectsOnly:	../src.clean ../src/engine.clean ../src/engine/ec.clean ../NetworkingTest.clean
+		cd ../ResourcePacker/buildWin && ${MAKE} cleanObjectsOnly
 
 
 %.clean:
