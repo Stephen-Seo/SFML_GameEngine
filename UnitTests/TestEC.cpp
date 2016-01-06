@@ -3,6 +3,7 @@
 #include <iostream>
 #include <typeindex>
 #include <memory>
+#include <random>
 
 #include "gtest/gtest.h"
 
@@ -54,13 +55,14 @@ TEST(ECTest, ECUpdate)
     bool isQuitting;
     std::unique_ptr<Connection> connection;
     sf::Color clearColor;
+    std::mt19937 randomEngine;
 
-    engine.update(sf::seconds(1.0f), Context(nullptr, rManager, mPlayer, sPlayer, engine, isQuitting, connection, clearColor));
+    engine.update(sf::seconds(1.0f), Context(nullptr, rManager, mPlayer, sPlayer, engine, isQuitting, connection, clearColor, randomEngine));
 
     EXPECT_NE(0.0f, pos->x);
     EXPECT_EQ(1.0f, pos->x);
 
-    engine.update(sf::seconds(1.0f), Context(nullptr, rManager, mPlayer, sPlayer, engine, isQuitting, connection, clearColor));
+    engine.update(sf::seconds(1.0f), Context(nullptr, rManager, mPlayer, sPlayer, engine, isQuitting, connection, clearColor, randomEngine));
 
     EXPECT_EQ(2.0f, vel->y);
     EXPECT_EQ(3.0f, pos->y);

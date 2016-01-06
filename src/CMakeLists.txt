@@ -1,6 +1,11 @@
 cmake_minimum_required(VERSION 2.6)
 project(SFML_GameEngine)
 
+add_subdirectory(../ResourcePacker/src ResourcePackerBuild)
+include_directories(../ResourcePacker/src)
+link_directories(${CMAKE_BINARY_DIR}/ResourcePackerBuild)
+link_libraries(ResourcePacker)
+
 set(SFML_GameEngine_VERSION 1.1)
 
 set(SFML_GameEngine_SOURCES
@@ -26,6 +31,8 @@ set(SFML_GameEngine_SOURCES
 
 add_library(SFML_GameEngine
     ${SFML_GameEngine_SOURCES})
+
+add_dependencies(SFML_GameEngine ResourcePacker)
 
 if(BUILD_SHARED_LIBS OR (UNIX AND NOT CYGWIN))
     find_package(SFML 2 REQUIRED audio network graphics window system)
@@ -67,9 +74,9 @@ if(SFML_FOUND)
     target_link_libraries(SFML_GameEngine ${SFML_LIBRARIES})
 endif()
 
-find_package(ResourcePacker 1 REQUIRED)
-include_directories(${ResourcePacker_INCLUDE_DIR})
-target_link_libraries(SFML_GameEngine ${ResourcePacker_LIBRARIES})
+#find_package(ResourcePacker 1 REQUIRED)
+#include_directories(${ResourcePacker_INCLUDE_DIR})
+#target_link_libraries(SFML_GameEngine ${ResourcePacker_LIBRARIES})
 
 find_package(Rational 1 CONFIG QUIET)
 if(Rational_FOUND)

@@ -4,6 +4,7 @@
 #include <exception>
 #include <iostream>
 #include <memory>
+#include <random>
 
 #include <SFML/System.hpp>
 #include <SFML/Graphics.hpp>
@@ -43,8 +44,9 @@ TEST(StateStackTest, ResourceLoading)
     bool derp;
     std::unique_ptr<Connection> connection;
     sf::Color clearColor;
+    std::mt19937 randomEngine;
 
-    Context context(nullptr, rManager, mPlayer, sPlayer, ecEngine, derp, connection, clearColor);
+    Context context(nullptr, rManager, mPlayer, sPlayer, ecEngine, derp, connection, clearColor, randomEngine);
 
 
     stack.registerState<TestState>("test", context);
