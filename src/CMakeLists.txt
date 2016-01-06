@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.6)
 project(SFML_GameEngine)
 
 if(NOT EXISTS ../ResourcePacker/src)
-    message(FATAL_ERROR "ResourcePacker is missing!\nPlease update the ResourcePacker submodule by running 'git sumbodule init' and 'git submodule update'!")
+    message(FATAL_ERROR "ResourcePacker is missing!\nPlease update the ResourcePacker submodule by running 'git submodule init' and 'git submodule update'!")
 endif()
 
 add_subdirectory(../ResourcePacker/src ResourcePackerBuild)
