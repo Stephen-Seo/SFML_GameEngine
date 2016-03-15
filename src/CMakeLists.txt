@@ -10,7 +10,7 @@ include_directories(../ResourcePacker/src)
 link_directories(${CMAKE_BINARY_DIR}/ResourcePackerBuild)
 link_libraries(ResourcePacker)
 
-set(SFML_GameEngine_VERSION 1.1)
+set(SFML_GameEngine_VERSION 2.0)
 
 set(SFML_GameEngine_SOURCES
     engine/animatedSprite.cpp
@@ -27,10 +27,6 @@ set(SFML_GameEngine_SOURCES
     engine/state.cpp
     engine/stateStack.cpp
     engine/utility.cpp
-    engine/ec/engine.cpp
-    engine/ec/entity.cpp
-    engine/ec/nMove.cpp
-    engine/ec/system.cpp
     )
 
 add_library(SFML_GameEngine
@@ -277,7 +273,6 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
 
     if(GTEST_FOUND)
         set(Unit_Tests_SOURCES
-            ../UnitTests/TestEC.cpp
             ../UnitTests/TestUtility.cpp
             ../UnitTests/TestStateStack.cpp
             ../UnitTests/main.cpp)

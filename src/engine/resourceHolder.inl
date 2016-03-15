@@ -1,9 +1,7 @@
 template <class Resource>
-ResourceHolder<Resource>::ResourceHolder(GameResources::LoadingMode mode, std::string packfile, bool retainData) :
-mode(mode),
+ResourceHolder<Resource>::ResourceHolder(bool retainData) :
 retainData(retainData)
 {
-    assert(mode == GameResources::DEFAULT || packfile.size() > 0);
 }
 
 template <class Resource>
@@ -47,10 +45,9 @@ void ResourceHolder<Resource>::load(const std::string& id, const Parameter& seco
 {
     std::unique_ptr<Resource> resource(new Resource());
 
-    if(mode == GameResources::DEFAULT)
+    if (!resource->loadFromFile(id, secondParam))
     {
-        if (!resource->loadFromFile(id, secondParam))
-            throw std::runtime_error("ResourceHolder::load - Failed to load " + id);
+        throw std::runtime_error("ResourceHolder::load - Failed to load " + id);
     }
 
     auto inserted = resourceMap.insert(std::make_pair(id, std::move(resource)));

@@ -9,9 +9,6 @@
 
 #include "resourceIdentifiers.hpp"
 
-#ifdef GAME_USE_GLFW
-class GLFWwindow;
-#endif
 class ResourceManager;
 class MusicPlayer;
 class SoundPlayer;
@@ -20,29 +17,19 @@ class Connection;
 
 struct Context
 {
-#ifdef GAME_USE_GLFW
-    Context(GLFWwindow* window,
-#else
-    Context(sf::Window* window,
-#endif
+    Context(sf::RenderWindow& window,
             ResourceManager& resourceManager,
             MusicPlayer& mPlayer,
             SoundPlayer& sPlayer,
-            Engine& ecEngine,
             bool& isQuitting,
             std::unique_ptr<Connection>& connection,
             sf::Color& clearColor,
             std::mt19937& randomEngine);
 
-#ifdef GAME_USE_GLFW
-    GLFWwindow* window;
-#else
-    sf::Window* window;
-#endif
+    sf::RenderWindow* window;
     ResourceManager* resourceManager;
     MusicPlayer* mPlayer;
     SoundPlayer* sPlayer;
-    Engine* ecEngine;
     bool* isQuitting;
     std::unique_ptr<Connection>* connection;
     sf::Color* clearColor;

@@ -12,15 +12,6 @@ namespace sf
     class SoundBuffer;
 }
 
-namespace GameResources
-{
-    enum LoadingMode
-    {
-        DEFAULT,
-        PACKFILE
-    };
-}
-
 template<class Resource>
 class ResourceHolder;
 

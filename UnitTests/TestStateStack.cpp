@@ -14,7 +14,6 @@
 #include <engine/resourceManager.hpp>
 #include <engine/musicPlayer.hpp>
 #include <engine/soundPlayer.hpp>
-#include <engine/ec/engine.hpp>
 #include <engine/context.hpp>
 #include <engine/connection.hpp>
 
@@ -36,17 +35,17 @@ TEST(StateStackTest, ResourceLoading)
 {
     // Initialization
     StateStack stack;
-    ResourceManager rManager(&stack, GameResources::DEFAULT);
+    ResourceManager rManager(&stack);
 
+    sf::RenderWindow window;
     MusicPlayer mPlayer;
     SoundPlayer sPlayer;
-    Engine ecEngine;
     bool derp;
     std::unique_ptr<Connection> connection;
     sf::Color clearColor;
     std::mt19937 randomEngine;
 
-    Context context(nullptr, rManager, mPlayer, sPlayer, ecEngine, derp, connection, clearColor, randomEngine);
+    Context context(window, rManager, mPlayer, sPlayer, derp, connection, clearColor, randomEngine);
 
 
     stack.registerState<TestState>("test", context);

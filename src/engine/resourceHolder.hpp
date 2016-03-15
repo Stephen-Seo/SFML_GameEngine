@@ -17,7 +17,7 @@ template <class Resource>
 class ResourceHolder
 {
 public:
-    ResourceHolder(GameResources::LoadingMode mode, std::string packfile = "", bool retainData = true);
+    ResourceHolder(bool retainData = true);
 
     void load(const std::string& id);
     void loadFromPackfile(const std::string& id, const std::string& packfile);
@@ -36,8 +36,6 @@ private:
     friend class ResourceManager;
 
     std::unordered_map<std::string, std::unique_ptr<Resource> > resourceMap;
-
-    GameResources::LoadingMode mode;
 
     bool retainData;
     std::unordered_map<std::string, std::unique_ptr<char[]> > dataMap;

@@ -17,7 +17,7 @@
 class ResourceManager
 {
 public:
-    ResourceManager(StateStack* sstack, GameResources::LoadingMode mode, std::string packfile = "");
+    ResourceManager(StateStack* sstack);
 
     sf::Texture& getTexture(const std::string& id);
     sf::Font& getFont(const std::string& id);
@@ -35,8 +35,6 @@ private:
     TextureHolder textureHolder;
     FontHolder fontHolder;
     SoundBufferHolder soundBufferHolder;
-
-    GameResources::LoadingMode mode;
 
     StateStack* sstack;
 

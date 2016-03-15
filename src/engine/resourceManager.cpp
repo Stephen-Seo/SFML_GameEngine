@@ -5,15 +5,14 @@
 #include <vector>
 #include <list>
 
-#ifndef N_DEBUG
+#ifndef NDEBUG
     #include <iostream>
 #endif
 
-ResourceManager::ResourceManager(StateStack* sstack, GameResources::LoadingMode mode, std::string packfile) :
-textureHolder(mode, packfile, false),
-fontHolder(mode, packfile, true),
-soundBufferHolder(mode, packfile, false),
-mode(mode),
+ResourceManager::ResourceManager(StateStack* sstack) :
+textureHolder(false),
+fontHolder(true),
+soundBufferHolder(false),
 sstack(sstack)
 {}
 
