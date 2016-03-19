@@ -1,15 +1,15 @@
 
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#ifndef ENGINE_CONNECTION_HPP
+#define ENGINE_CONNECTION_HPP
+
+#define INVALID_NOTICE_TIME 5.0f
 
 #include <unordered_map>
 #include <cassert>
 #include <functional>
 #include <list>
 
-#ifndef NDEBUG
 #include <iostream>
-#endif
 
 #include <SFML/System.hpp>
 #include <SFML/Network.hpp>
@@ -25,8 +25,7 @@ public:
         CLIENT
     };
 
-    Connection();
-    Connection(Mode mode);
+    explicit Connection(Mode mode = SERVER, unsigned int port = GAME_PORT);
 
     bool acceptNewConnections;
     bool ignoreOutOfSequence;
@@ -55,6 +54,7 @@ private:
     Mode mode;
 
     sf::UdpSocket socket;
+    unsigned int socketPort;
 
     std::unordered_map<sf::Uint32, ConnectionData> connectionData;
 
@@ -66,6 +66,10 @@ private:
     std::function<void(sf::Packet, sf::Uint32, bool)> receivedCallback;
     std::function<void(sf::Uint32)> connectedCallback;
     std::function<void(sf::Uint32)> disconnectedCallback;
+
+    bool initialized;
+    bool validState;
+    float invalidNoticeTimer;
 
     void registerConnection(sf::Uint32 address, sf::Uint32 ID = 0);
     void unregisterConnection(sf::Uint32 address);
@@ -91,6 +95,8 @@ private:
     void connectionMade(sf::Uint32 address);
 
     void connectionLost(sf::Uint32 address);
+
+    void initialize();
 
 };
 

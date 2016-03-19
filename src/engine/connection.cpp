@@ -1,28 +1,45 @@
 
 #include "connection.hpp"
 
-Connection::Connection() :
+Connection::Connection(Mode mode, unsigned int port) :
 acceptNewConnections(true),
 ignoreOutOfSequence(false),
 resendTimedOutPackets(true),
-mode(SERVER)
+mode(mode),
+socketPort(port),
+initialized(false),
+validState(false),
+invalidNoticeTimer(0)
 {
-    socket.bind(GAME_PORT);
-    socket.setBlocking(false);
-}
-
-Connection::Connection(Mode mode) :
-acceptNewConnections(true),
-ignoreOutOfSequence(false),
-resendTimedOutPackets(true),
-mode(mode)
-{
-    socket.bind(GAME_PORT);
+#ifndef NDEBUG
+    std::cout << "Constructed connection:\n  Game port value " << port << std::endl;
+    std::cout << "  Mode value " << (unsigned int)mode << std::endl;
+#endif
     socket.setBlocking(false);
 }
 
 void Connection::update(sf::Time dt)
 {
+    if(!initialized)
+    {
+#ifndef NDEBUG
+        std::cout << "Lazy initializing connection..." << std::endl;
+#endif
+        initialize();
+        initialized = true;
+    }
+
+    if(!validState)
+    {
+        invalidNoticeTimer -= dt.asSeconds();
+        if(invalidNoticeTimer <= 0)
+        {
+            std::clog << "Warning: Connection is in invalid state, not doing anything!" << std::endl;
+            invalidNoticeTimer = INVALID_NOTICE_TIME;
+        }
+        return;
+    }
+
     for(auto iter = connectionData.begin(); iter != connectionData.end(); ++iter)
     {
         iter->second.toggleTimer += dt.asSeconds();
@@ -712,5 +729,45 @@ void Connection::connectionLost(sf::Uint32 address)
     {
         disconnectedCallback(address);
     }
+}
+
+void Connection::initialize()
+{
+    if(socketPort == 0)
+    {
+        std::clog << "Warning: socket port set to 0, will bind to any port..." << std::endl;
+    }
+
+    switch(socket.bind(socketPort))
+    {
+    case sf::UdpSocket::Error:
+        std::cerr << "ERROR: Binding socket to port " << socketPort << " returned error!" << std::endl;
+        validState = false;
+        return;
+    case sf::UdpSocket::Done:
+#ifndef NDEBUG
+        std::cout << "Binding socket returned \"Done\"" << std::endl;
+#endif
+        break;
+    case sf::UdpSocket::NotReady:
+#ifndef NDEBUG
+        std::cout << "Binding socket returned \"NotReady\"" << std::endl;
+#endif
+        break;
+    case sf::UdpSocket::Partial:
+#ifndef NDEBUG
+        std::cout << "Binding socket returned \"Partial\"" << std::endl;
+#endif
+        break;
+    case sf::UdpSocket::Disconnected:
+#ifndef NDEBUG
+        std::cout << "Binding socket returned \"Disconected\"" << std::endl;
+#endif
+        break;
+    default:
+        break;
+    }
+
+    validState = true;
 }
 
