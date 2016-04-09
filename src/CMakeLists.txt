@@ -158,23 +158,6 @@ install(
         Devel
 )
 
-install(
-    FILES
-        engine/ec/cAcceleration.hpp
-        engine/ec/component.hpp
-        engine/ec/cPosition.hpp
-        engine/ec/cVelocity.hpp
-        engine/ec/engine.hpp
-        engine/ec/entity.hpp
-        engine/ec/nMove.hpp
-        engine/ec/node.hpp
-        engine/ec/system.hpp
-    DESTINATION
-        include/engine/ec
-    COMPONENT
-        Devel
-)
-
 if(WIN32)
     install(FILES "${SFML_ROOT}/bin/libsndfile-1.dll" DESTINATION SFML_GameEngine)
     install(FILES "${SFML_ROOT}/bin/openal32.dll" DESTINATION SFML_GameEngine)
