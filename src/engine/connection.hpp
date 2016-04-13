@@ -25,7 +25,7 @@ public:
         CLIENT
     };
 
-    explicit Connection(Mode mode = SERVER, unsigned int port = GAME_PORT);
+    Connection(Mode mode = SERVER, unsigned int serverPort = GAME_PORT);
 
     bool acceptNewConnections;
     bool ignoreOutOfSequence;
@@ -54,7 +54,6 @@ private:
     Mode mode;
 
     sf::UdpSocket socket;
-    unsigned int socketPort;
 
     std::unordered_map<sf::Uint32, ConnectionData> connectionData;
 
@@ -71,7 +70,11 @@ private:
     bool validState;
     float invalidNoticeTimer;
 
-    void registerConnection(sf::Uint32 address, sf::Uint32 ID = 0);
+    unsigned short serverPort;
+
+    float clientRetryTimer;
+
+    void registerConnection(sf::Uint32 address, sf::Uint32 ID, unsigned short port);
     void unregisterConnection(sf::Uint32 address);
 
     void shiftBitfield(sf::IpAddress address, sf::Uint32 diff);

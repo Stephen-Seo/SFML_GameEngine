@@ -1,21 +1,17 @@
 
 #include "connection.hpp"
 
-Connection::Connection(Mode mode, unsigned int port) :
+Connection::Connection(Mode mode, unsigned int serverPort) :
 acceptNewConnections(true),
 ignoreOutOfSequence(false),
 resendTimedOutPackets(true),
 mode(mode),
-socketPort(port),
 initialized(false),
 validState(false),
-invalidNoticeTimer(0)
+invalidNoticeTimer(INVALID_NOTICE_TIME),
+serverPort(serverPort),
+clientRetryTimer(CLIENT_RETRY_TIME_SECONDS)
 {
-#ifndef NDEBUG
-    std::cout << "Constructed connection:\n  Game port value " << port << std::endl;
-    std::cout << "  Mode value " << (unsigned int)mode << std::endl;
-#endif
-    socket.setBlocking(false);
 }
 
 void Connection::update(sf::Time dt)
@@ -148,7 +144,7 @@ void Connection::update(sf::Time dt)
 
                     iter->second.sentPackets.push_front(PacketInfo(toSendPacket, iter->first, sequenceID));
 
-                    socket.send(toSendPacket, sf::IpAddress(iter->first), GAME_PORT);
+                    socket.send(toSendPacket, sf::IpAddress(iter->first), iter->second.port);
                     checkSentPacketsSize(iter->first);
                 }
                 else
@@ -159,7 +155,7 @@ void Connection::update(sf::Time dt)
                     sf::Uint32 sequenceID;
                     preparePacket(toSendPacket, sequenceID, sf::IpAddress(iter->first));
                     iter->second.sentPackets.push_front(PacketInfo(toSendPacket, iter->first, sequenceID));
-                    socket.send(toSendPacket, sf::IpAddress(iter->first), GAME_PORT);
+                    socket.send(toSendPacket, sf::IpAddress(iter->first), iter->second.port);
                     checkSentPacketsSize(iter->first);
                 }
             }
@@ -196,7 +192,7 @@ void Connection::update(sf::Time dt)
                     std::cout << "SERVER: Establishing new connection with " << address.toString() << '\n';
 #endif
                     // Establish connection
-                    registerConnection(address.toInteger());
+                    registerConnection(address.toInteger(), 0, remotePort);
                     sf::Packet newPacket;
                     sendPacket(newPacket, address);
                 }
@@ -337,7 +333,7 @@ void Connection::update(sf::Time dt)
 
                     connectionData.at(serverAddress).sentPackets.push_front(PacketInfo(toSendPacket, serverAddress, sequenceID));
 
-                    socket.send(toSendPacket, clientSentAddress, GAME_PORT);
+                    socket.send(toSendPacket, clientSentAddress, serverPort);
                     checkSentPacketsSize(serverAddress);
                 }
                 else
@@ -348,7 +344,7 @@ void Connection::update(sf::Time dt)
                     sf::Uint32 sequenceID;
                     preparePacket(toSendPacket, sequenceID, clientSentAddress);
                     connectionData.at(serverAddress).sentPackets.push_front(PacketInfo(toSendPacket, serverAddress, sequenceID));
-                    socket.send(toSendPacket, clientSentAddress, GAME_PORT);
+                    socket.send(toSendPacket, clientSentAddress, serverPort);
                     checkSentPacketsSize(clientSentAddress.toInteger());
                 }
             }
@@ -464,6 +460,19 @@ void Connection::update(sf::Time dt)
         // connection not yet established
         else if(acceptNewConnections)
         {
+            // check retry timer
+            clientRetryTimer += dt.asSeconds();
+            if(clientRetryTimer >= CLIENT_RETRY_TIME_SECONDS)
+            {
+#ifndef NDEBUG
+                std::cout << "CLIENT: Establishing connection with server..." << std::endl;
+#endif
+                clientRetryTimer = 0.0f;
+                sf::Packet packet;
+                packet << (sf::Uint32) GAME_PROTOCOL_ID << (sf::Uint32) network::CONNECT << (sf::Uint32) 0 << (sf::Uint32) 0 << (sf::Uint32) 0xFFFFFFFF;
+                socket.send(packet, clientSentAddress, serverPort);
+            }
+
             // receive
             sf::Packet packet;
             sf::IpAddress address;
@@ -471,7 +480,7 @@ void Connection::update(sf::Time dt)
             sf::Socket::Status status;
             status = socket.receive(packet, address, port);
 
-            if(status == sf::Socket::Done && address == clientSentAddress)
+            if(status == sf::Socket::Done && address == clientSentAddress && port == serverPort)
             {
                 sf::Uint32 protocolID;
                 if(!(packet >> protocolID))
@@ -488,7 +497,7 @@ void Connection::update(sf::Time dt)
                 if(!(packet >> ID) || !(packet >> sequence) || !(packet >> ack) || !(packet >> bitfield))
                     return;
 
-                registerConnection(address.toInteger(), ID);
+                registerConnection(address.toInteger(), ID, serverPort);
             }
         }
     } // elif(mode == CLIENT)
@@ -499,11 +508,13 @@ void Connection::connectToServer(sf::IpAddress address)
     if(mode != CLIENT)
         return;
 #ifndef NDEBUG
-    std::cout << "CLIENT: sending connection request to server at " << address.toString() << '\n';
+    std::cout << "CLIENT: storing server ip as " << address.toString() << '\n';
 #endif
+/*
     sf::Packet packet;
     packet << (sf::Uint32) GAME_PROTOCOL_ID << (sf::Uint32) network::CONNECT << (sf::Uint32) 0 << (sf::Uint32) 0 << (sf::Uint32) 0xFFFFFFFF;
-    socket.send(packet, address, GAME_PORT);
+    socket.send(packet, address, serverPort);
+*/
     clientSentAddress = address;
 }
 
@@ -549,15 +560,15 @@ std::list<sf::Uint32> Connection::getConnected()
     return connectedList;
 }
 
-void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID)
+void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID, unsigned short port)
 {
     if(mode == SERVER)
     {
-        connectionData.insert(std::make_pair(address, ConnectionData(generateID(), 0)));
+        connectionData.insert(std::make_pair(address, ConnectionData(generateID(), 0, port)));
     }
     else if(mode == CLIENT)
     {
-        connectionData.insert(std::make_pair(address, ConnectionData(ID, 1)));
+        connectionData.insert(std::make_pair(address, ConnectionData(ID, 1, port)));
     }
 
     connectionMade(address);
@@ -733,15 +744,20 @@ void Connection::connectionLost(sf::Uint32 address)
 
 void Connection::initialize()
 {
-    if(socketPort == 0)
+    sf::Socket::Status sstatus;
+    if(mode == CLIENT)
     {
-        std::clog << "Warning: socket port set to 0, will bind to any port..." << std::endl;
+        sstatus = socket.bind(sf::Socket::AnyPort);
+    }
+    else
+    {
+        sstatus = socket.bind(serverPort);
     }
 
-    switch(socket.bind(socketPort))
+    switch(sstatus)
     {
     case sf::UdpSocket::Error:
-        std::cerr << "ERROR: Binding socket to port " << socketPort << " returned error!" << std::endl;
+        std::cerr << "ERROR: Binding socket to port " << socket.getLocalPort() << " returned error!" << std::endl;
         validState = false;
         return;
     case sf::UdpSocket::Done:
@@ -769,5 +785,6 @@ void Connection::initialize()
     }
 
     validState = true;
+    socket.setBlocking(false);
 }
 

@@ -8,6 +8,7 @@
 #define PACKET_LOST_TIMEOUT_MILLISECONDS 1000
 #define SENT_PACKET_LIST_MAX_SIZE 33
 #define CONNECTION_TIMEOUT_MILLISECONDS 10000
+#define CLIENT_RETRY_TIME_SECONDS 5.0f
 
 #define NETWORK_GOOD_MODE_SEND_INTERVAL 1.0f/30.0f
 #define NETWORK_BAD_MODE_SEND_INTERVAL 1.0f/10.0f
@@ -37,7 +38,7 @@ struct PacketInfo
 struct ConnectionData
 {
     ConnectionData();
-    ConnectionData(sf::Uint32 ID, sf::Uint32 lSequence);
+    ConnectionData(sf::Uint32 ID, sf::Uint32 lSequence, unsigned short port);
 
     sf::Clock elapsedTime;
     sf::Uint32 ID;
@@ -54,6 +55,7 @@ struct ConnectionData
     float toggleTime;
     float toggleTimer;
     float toggledTimer;
+    unsigned short port;
 
     bool operator== (const ConnectionData& other) const;
 };

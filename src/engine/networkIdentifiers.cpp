@@ -54,7 +54,7 @@ toggleTimer(0.0f),
 toggledTimer(0.0f)
 {}
 
-ConnectionData::ConnectionData(sf::Uint32 ID, sf::Uint32 lSequence) :
+ConnectionData::ConnectionData(sf::Uint32 ID, sf::Uint32 lSequence, unsigned short port) :
 ID(ID),
 lSequence(lSequence),
 rSequence(0),
@@ -65,7 +65,8 @@ isGood(false),
 isGoodRtt(false),
 toggleTime(30.0f),
 toggleTimer(0.0f),
-toggledTimer(0.0f)
+toggledTimer(0.0f),
+port(port)
 {}
 
 bool ConnectionData::operator== (const ConnectionData& other) const
