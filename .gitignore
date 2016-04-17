@@ -2,3 +2,4 @@ bin
 *.o
 build*/
 *.swp
+doxygen_html/

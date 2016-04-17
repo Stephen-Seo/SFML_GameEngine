@@ -1,11 +1,12 @@
 
 #include "connection.hpp"
 
-Connection::Connection(Mode mode, unsigned int serverPort) :
+Connection::Connection(Mode mode, unsigned short serverPort) :
 acceptNewConnections(true),
 ignoreOutOfSequence(false),
 resendTimedOutPackets(true),
 mode(mode),
+clientSentAddressSet(false),
 initialized(false),
 validState(false),
 invalidNoticeTimer(INVALID_NOTICE_TIME),
@@ -462,7 +463,7 @@ void Connection::update(sf::Time dt)
         {
             // check retry timer
             clientRetryTimer += dt.asSeconds();
-            if(clientRetryTimer >= CLIENT_RETRY_TIME_SECONDS)
+            if(clientRetryTimer >= CLIENT_RETRY_TIME_SECONDS && clientSentAddressSet)
             {
 #ifndef NDEBUG
                 std::cout << "CLIENT: Establishing connection with server..." << std::endl;
@@ -507,15 +508,13 @@ void Connection::connectToServer(sf::IpAddress address)
 {
     if(mode != CLIENT)
         return;
+
 #ifndef NDEBUG
     std::cout << "CLIENT: storing server ip as " << address.toString() << '\n';
 #endif
-/*
-    sf::Packet packet;
-    packet << (sf::Uint32) GAME_PROTOCOL_ID << (sf::Uint32) network::CONNECT << (sf::Uint32) 0 << (sf::Uint32) 0 << (sf::Uint32) 0xFFFFFFFF;
-    socket.send(packet, address, serverPort);
-*/
+
     clientSentAddress = address;
+    clientSentAddressSet = true;
 }
 
 void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address)
@@ -525,11 +524,19 @@ void Connection::sendPacket(sf::Packet& packet, sf::IpAddress address)
 
 sf::Time Connection::getRtt()
 {
+    if(connectionData.empty())
+    {
+        return sf::Time::Zero;
+    }
     return connectionData.begin()->second.rtt;
 }
 
 sf::Time Connection::getRtt(sf::Uint32 address)
 {
+    if(connectionData.find(address) == connectionData.end())
+    {
+        return sf::Time::Zero;
+    }
     return connectionData.at(address).rtt;
 }
 
@@ -558,6 +565,50 @@ std::list<sf::Uint32> Connection::getConnected()
     }
 
     return connectedList;
+}
+
+unsigned int Connection::getPacketQueueSize(sf::Uint32 destinationAddress)
+{
+    auto connectionDataIter = connectionData.find(destinationAddress);
+    if(connectionDataIter == connectionData.end())
+    {
+        return 0;
+    }
+
+    return connectionDataIter->second.sendPacketQueue.size();
+}
+
+void Connection::clearPacketQueue(sf::Uint32 destinationAddress)
+{
+    auto connectionDataIter = connectionData.find(destinationAddress);
+    if(connectionDataIter == connectionData.end())
+    {
+        return;
+    }
+
+    connectionDataIter->second.sendPacketQueue.clear();
+}
+
+bool Connection::connectionIsGood()
+{
+    auto connectionDataIter = connectionData.begin();
+    if(connectionDataIter == connectionData.end())
+    {
+        return false;
+    }
+
+    return connectionDataIter->second.isGood;
+}
+
+bool Connection::connectionIsGood(sf::Uint32 destinationAddress)
+{
+    auto connectionDataIter = connectionData.find(destinationAddress);
+    if(connectionDataIter == connectionData.end())
+    {
+        return false;
+    }
+
+    return connectionDataIter->second.isGood;
 }
 
 void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID, unsigned short port)
@@ -627,22 +678,6 @@ void Connection::checkSentPackets(sf::Uint32 ack, sf::Uint32 bitfield, sf::Uint3
 
         --ack;
     }
-}
-
-void Connection::heartbeat()
-{
-    for(auto iter = connectionData.begin(); iter != connectionData.end(); ++iter)
-    {
-        heartbeat(iter->first);
-    }
-}
-
-void Connection::heartbeat(sf::Uint32 addressInteger)
-{
-    sf::IpAddress address(addressInteger);
-
-    sf::Packet packet;
-    sendPacket(packet, address);
 }
 
 void Connection::lookupRtt(sf::Uint32 address, sf::Uint32 ack)
