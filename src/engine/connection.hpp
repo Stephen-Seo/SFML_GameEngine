@@ -44,8 +44,10 @@ public:
     /**
         \param mode The enum value specifying whether or not the connection will run as Client or Server.
         \param serverPort The port of the server. If mode is "SERVER", then the UDP socket used will bind to this port. Otherwise, the "CLIENT" will connect to a server at this port and will bind to any UDP port for its socket.
+        \param clientPort The port of the client. By default is 0, which tells the client to bind to any available UDP port. Otherwise binds to the specified port.
+        \param clientBroadcast If true (and is CLIENT), then when initiating a connection to a server, the client will send to the broadcast address (255.255.255.255) when establishing a connection and will expect the server to respond from an unknown address. Note that this will only work if the server is on the same network, as sending to the broadcast ip address will only send to the current network.
     */
-    Connection(Mode mode = SERVER, unsigned short serverPort = GAME_PORT);
+    Connection(Mode mode = SERVER, unsigned short serverPort = GAME_PORT, unsigned short clientPort = 0, bool clientBroadcast = false);
 
     /// If true, then the SERVER will accept new connections and the CLIENT will accept a connection to a server.
     /**
@@ -142,6 +144,22 @@ public:
     */
     bool connectionIsGood(sf::Uint32 destinationAddress);
 
+    /// Resets the connection as if it was just constructed.
+    /**
+        Using this function one can change the Connection instance to a different mode/port.
+        \param mode The enum value specifying whether or not the connection will run as Client or Server.
+        \param serverPort The port of the server. If mode is "SERVER", then the UDP socket used will bind to this port. Otherwise, the "CLIENT" will connect to a server at this port and will bind to any UDP port for its socket.
+        \param clientPort The port of the client. By default is 0, which tells the client to bind to any available UDP port. Otherwise binds to the specified port.
+        \param clientBroadcast If true (and is CLIENT), then when initiating a connection to a server, the client will send to the broadcast address (255.255.255.255) when establishing a connection and will expect the server to respond from an unknown address. Note that this will only work if the server is on the same network, as sending to the broadcast ip address will only send to the current network.
+    */
+    void reset(Mode mode, unsigned short serverPort = GAME_PORT, unsigned short clientPort = 0, bool clientBroadcast = false);
+
+    /// Sets whether or not the Client will broadcast when initiating a connection to a server.
+    /**
+        If true (and is CLIENT), then when initiating a connection to a server, the client will send to the broadcast address (255.255.255.255) when establishing a connection and will expect the server to respond from an unknown address. Note that this will only work if the server is on the same network, as sending to the broadcast ip address will only send to the current network.
+    */
+    void setClientBroadcast(bool clientWillBroadcast);
+
 private:
     Mode mode;
 
@@ -164,8 +182,11 @@ private:
     float invalidNoticeTimer;
 
     unsigned short serverPort;
+    unsigned short clientPort;
 
     float clientRetryTimer;
+
+    bool clientBroadcast;
 
     void registerConnection(sf::Uint32 address, sf::Uint32 ID, unsigned short port);
     void unregisterConnection(sf::Uint32 address);

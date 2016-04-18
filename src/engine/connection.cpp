@@ -1,7 +1,7 @@
 
 #include "connection.hpp"
 
-Connection::Connection(Mode mode, unsigned short serverPort) :
+Connection::Connection(Mode mode, unsigned short serverPort, unsigned short clientPort, bool clientBroadcast) :
 acceptNewConnections(true),
 ignoreOutOfSequence(false),
 resendTimedOutPackets(true),
@@ -11,7 +11,9 @@ initialized(false),
 validState(false),
 invalidNoticeTimer(INVALID_NOTICE_TIME),
 serverPort(serverPort),
-clientRetryTimer(CLIENT_RETRY_TIME_SECONDS)
+clientPort(clientPort),
+clientRetryTimer(CLIENT_RETRY_TIME_SECONDS),
+clientBroadcast(clientBroadcast)
 {
 }
 
@@ -463,7 +465,7 @@ void Connection::update(sf::Time dt)
         {
             // check retry timer
             clientRetryTimer += dt.asSeconds();
-            if(clientRetryTimer >= CLIENT_RETRY_TIME_SECONDS && clientSentAddressSet)
+            if(clientRetryTimer >= CLIENT_RETRY_TIME_SECONDS && (clientSentAddressSet || clientBroadcast))
             {
 #ifndef NDEBUG
                 std::cout << "CLIENT: Establishing connection with server..." << std::endl;
@@ -471,7 +473,14 @@ void Connection::update(sf::Time dt)
                 clientRetryTimer = 0.0f;
                 sf::Packet packet;
                 packet << (sf::Uint32) GAME_PROTOCOL_ID << (sf::Uint32) network::CONNECT << (sf::Uint32) 0 << (sf::Uint32) 0 << (sf::Uint32) 0xFFFFFFFF;
-                socket.send(packet, clientSentAddress, serverPort);
+                if(clientBroadcast)
+                {
+                    socket.send(packet, sf::IpAddress::Broadcast, serverPort);
+                }
+                else
+                {
+                    socket.send(packet, clientSentAddress, serverPort);
+                }
             }
 
             // receive
@@ -481,8 +490,11 @@ void Connection::update(sf::Time dt)
             sf::Socket::Status status;
             status = socket.receive(packet, address, port);
 
-            if(status == sf::Socket::Done && address == clientSentAddress && port == serverPort)
+            if(status == sf::Socket::Done && (address == clientSentAddress || clientBroadcast) && port == serverPort)
             {
+#ifndef NDEBUG
+                std::cout << "." << std::flush;
+#endif
                 sf::Uint32 protocolID;
                 if(!(packet >> protocolID))
                     return;
@@ -498,6 +510,11 @@ void Connection::update(sf::Time dt)
                 if(!(packet >> ID) || !(packet >> sequence) || !(packet >> ack) || !(packet >> bitfield))
                     return;
 
+                if(clientBroadcast)
+                {
+                    clientSentAddress = address;
+                    clientSentAddressSet = true;
+                }
                 registerConnection(address.toInteger(), ID, serverPort);
             }
         }
@@ -609,6 +626,26 @@ bool Connection::connectionIsGood(sf::Uint32 destinationAddress)
     }
 
     return connectionDataIter->second.isGood;
+}
+
+void Connection::reset(Connection::Mode mode, unsigned short serverPort, unsigned short clientPort, bool clientBroadcast)
+{
+    this->mode = mode;
+    this->serverPort = serverPort;
+    this->clientPort = clientPort;
+    socket.unbind();
+    connectionData.clear();
+    clientSentAddressSet = false;
+    initialized = false;
+    validState = false;
+    invalidNoticeTimer = INVALID_NOTICE_TIME;
+    clientRetryTimer = CLIENT_RETRY_TIME_SECONDS;
+    this->clientBroadcast = clientBroadcast;
+}
+
+void Connection::setClientBroadcast(bool clientWillBroadcast)
+{
+    clientBroadcast = clientWillBroadcast;
 }
 
 void Connection::registerConnection(sf::Uint32 address, sf::Uint32 ID, unsigned short port)
@@ -782,7 +819,14 @@ void Connection::initialize()
     sf::Socket::Status sstatus;
     if(mode == CLIENT)
     {
-        sstatus = socket.bind(sf::Socket::AnyPort);
+        if(clientPort == 0)
+        {
+            sstatus = socket.bind(sf::Socket::AnyPort);
+        }
+        else
+        {
+            sstatus = socket.bind(clientPort);
+        }
     }
     else
     {
