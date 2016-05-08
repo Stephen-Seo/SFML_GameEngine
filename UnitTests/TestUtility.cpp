@@ -146,8 +146,29 @@ TEST(UtilityTest, lineIntersect)
     y_3 = 0.9f;
 
     ASSERT_FALSE(Utility::lineIntersect(x_0, y_0, x_1, y_1, x_2, y_2, x_3, y_3));
+
+    x_0 = 0.0f;
+    y_0 = 0.0f;
+    x_1 = 1.0f;
+    y_1 = 0.0f;
+    x_2 = 3.0f;
+    y_2 = 0.0f;
+    x_3 = 4.0f;
+    y_3 = 0.0f;
+
+    ASSERT_FALSE(Utility::lineIntersect(x_0, y_0, x_1, y_1, x_2, y_2, x_3, y_3));
+
+    x_1 = 0.0f;
+    y_1 = 1.0f;
+    x_2 = 0.0f;
+    y_2 = 3.0f;
+    x_3 = 0.0f;
+    y_3 = 4.0f;
+
+    ASSERT_FALSE(Utility::lineIntersect(x_0, y_0, x_1, y_1, x_2, y_2, x_3, y_3));
 }
 
+#ifdef Rational_FOUND
 TEST(UtilityTest, lineIntersectRational)
 {
     int x_0 = 0;
@@ -222,6 +243,7 @@ TEST(UtilityTest, lineIntersectRational)
 
     ASSERT_FALSE(Utility::lineIntersect(x_0, y_0, x_1, y_1, x_2, y_2, x_3, y_3));
 }
+#endif
 
 TEST(UtilityTest, lineCircleIntersect)
 {

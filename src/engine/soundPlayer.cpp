@@ -2,6 +2,7 @@
 #include "soundPlayer.hpp"
 
 #include <algorithm>
+#include <cmath>
 
 namespace
 {
