@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 2.6)
 project(SFML_GameEngine)
 
-if(NOT EXISTS ../ResourcePacker/src)
+if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../ResourcePacker/src)
     message(FATAL_ERROR "ResourcePacker is missing!\nPlease update the ResourcePacker submodule by running 'git submodule init' and 'git submodule update'!")
 endif()
 
-add_subdirectory(../ResourcePacker/src ResourcePackerBuild)
-include_directories(../ResourcePacker/src)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../ResourcePacker/src ResourcePackerBuild)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../ResourcePacker/src)
 link_directories(${CMAKE_BINARY_DIR}/ResourcePackerBuild)
 link_libraries(ResourcePacker)
 
@@ -41,7 +41,7 @@ else()
     add_definitions(-DSFML_STATIC)
 endif()
 
-include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(GAME_USE_GLFW)
     message(STATUS "Enabling GLFW")
