@@ -24,7 +24,8 @@ struct Context
             bool& isQuitting,
             std::unique_ptr<Connection>& connection,
             sf::Color& clearColor,
-            std::mt19937& randomEngine);
+            std::mt19937& randomEngine,
+            void* extraContext);
 
     sf::RenderWindow* window;
     ResourceManager* resourceManager;
@@ -34,6 +35,7 @@ struct Context
     std::unique_ptr<Connection>* connection;
     sf::Color* clearColor;
     std::mt19937* randomEngine;
+    void* extraContext;
 };
 
 #endif

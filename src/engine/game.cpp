@@ -4,13 +4,13 @@
 #include <iostream>
 #include <cassert>
 
-Game::Game()
+Game::Game(void* extraContext)
 : window(sf::VideoMode(960,540), "SFML App", sf::Style::Titlebar | sf::Style::Close),
 resourceManager(&stateStack),
 mPlayer(),
 sPlayer(),
 stateStack(),
-context(window, resourceManager, mPlayer, sPlayer, isQuitting, connection, clearColor, randomEngine),
+context(window, resourceManager, mPlayer, sPlayer, isQuitting, connection, clearColor, randomEngine, extraContext),
 isQuitting(false),
 connection(),
 randomEngine(std::random_device()())

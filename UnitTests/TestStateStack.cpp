@@ -45,7 +45,7 @@ TEST(StateStackTest, ResourceLoading)
     sf::Color clearColor;
     std::mt19937 randomEngine;
 
-    Context context(window, rManager, mPlayer, sPlayer, derp, connection, clearColor, randomEngine);
+    Context context(window, rManager, mPlayer, sPlayer, derp, connection, clearColor, randomEngine, nullptr);
 
 
     stack.registerState<TestState>("test", context);

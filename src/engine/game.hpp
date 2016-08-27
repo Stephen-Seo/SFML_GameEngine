@@ -20,7 +20,7 @@
 class Game
 {
 public:
-    Game();
+    Game(void* extraContext = nullptr);
     ~Game();
 
     void run();
