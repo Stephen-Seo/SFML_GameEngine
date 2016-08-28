@@ -342,7 +342,7 @@ bool Utility::isWithinPolygon(const sf::VertexArray& coords, float x_0, float y_
         v0_y = coords[j].position.y - coords[i].position.y;
 
         v1_x = x_0 - coords[i].position.x;
-        v1_y = y_0 - coords[j].position.y;
+        v1_y = y_0 - coords[i].position.y;
 
         if(i == 0)
         {
