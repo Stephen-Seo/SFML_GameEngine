@@ -1,4 +1,7 @@
 
+# DEPRECATED
+
+This project is no longer being developed. It is replaced by https://github.com/Stephen-Seo/GameDevTools.
 
 # Compiling
 
